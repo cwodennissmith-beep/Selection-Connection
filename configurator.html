@@ -203,16 +203,17 @@
       flex-direction: column;
       background: #080808;
       position: relative;
-      overflow: hidden;
+      min-width: 0;
     }
     .viewport-svg-wrap {
       flex: 1;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      padding: 24px;
+      overflow: auto;
     }
-    .viewport-svg-wrap svg { max-width: 100%; max-height: 100%; }
+    .viewport-svg-wrap svg { width: 100%; height: 100%; }
     .viewport-info {
       position: absolute;
       bottom: 12px;
@@ -2375,14 +2376,14 @@ function renderCabinetSVG() {
   var ax = 0.45;  /* depth skew X */
   var ay = -0.35; /* depth skew Y */
 
-  /* Scale to fit viewport */
+  /* Scale to fit viewport — extra margin for dimension annotations */
   var maxDim = Math.max(W + D * ax, H + D * Math.abs(ay));
   var svgW = 600, svgH = 500;
-  var margin = 60;
+  var margin = 80;
   var scale = Math.min((svgW - 2 * margin) / (W + D * ax), (svgH - 2 * margin) / (H + D * Math.abs(ay)));
 
-  /* Origin: bottom-left-front of cabinet */
-  var ox = margin + 10;
+  /* Origin: bottom-left-front of cabinet (offset for dimension labels) */
+  var ox = margin + 20;
   var oy = svgH - margin;
 
   function px(x, z) { return ox + (x + z * ax) * scale; }
@@ -2553,7 +2554,7 @@ function renderCabinetSVG() {
   addText(W + 2, H, D / 2, D.toFixed(1) + '"', '#666', 9);
 
   /* Build SVG */
-  var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + svgW + ' ' + svgH + '">';
+  var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + svgW + ' ' + svgH + '" preserveAspectRatio="xMidYMid meet">';
   svg += fills.join('');
   svg += lines.join('');
   svg += '</svg>';
