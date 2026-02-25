@@ -35,6 +35,7 @@ var SC_NAV = {
     var left = [
       this._link("SC", "index.html", currentPage, "nav-brand"),
       this._link("Configurator", "configurator.html", currentPage),
+      this._link("Library", "library.html", currentPage),
       this._link("LamiForm", "lamiform.html", currentPage),
       this._link("Marketplace", "marketplace.html", currentPage)
     ].join("");

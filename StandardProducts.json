@@ -1,0 +1,325 @@
+{
+  "schema_version": "1.0",
+  "source": "PIF_StandardProducts / Selection-Connection Library",
+  "description": "Standard inventory-ready products with fixed pricing. Each product is a complete configurator state snapshot.",
+  "pricing": {
+    "markupFactor": 1.35,
+    "customSurchargePercent": 15
+  },
+  "products": {
+    "SP-001": {
+      "name": "Kitchen Base 36",
+      "sku": "SP-001",
+      "category": "Kitchen",
+      "description": "Standard 36\" wide kitchen base cabinet. Two-door, single adjustable shelf with 4\" toe kick.",
+      "dimensions": { "Width": 36, "Height": 34.5, "Depth": 24 },
+      "chassisPreset": "Kitchen Base",
+      "hardware": { "hinge": "manual", "slide": "manual", "pull": "manual" },
+      "state": {
+        "Width": 36, "Height": 34.5, "Depth": 24, "NominalWidth": 36,
+        "DoorCount": 2, "DrawerCount": 0, "ShelfCount": 1,
+        "ToeKickHeight": 4, "ToeKickDepth": 3,
+        "DoorOverlayLeft": 0.5, "DoorOverlayRight": 0.5,
+        "DoorOverlayTop": 0.5, "DoorOverlayBottom": 0.5,
+        "SideThickness": 0.75, "BottomThickness": 0.75, "BackPanelThickness": 0.25
+      },
+      "materialCost": 155.00,
+      "standardPrice": 209.25,
+      "dateAdded": "2026-02-25",
+      "active": true,
+      "tags": ["base", "standard", "two-door"]
+    },
+    "SP-002": {
+      "name": "Kitchen Base 30",
+      "sku": "SP-002",
+      "category": "Kitchen",
+      "description": "Compact 30\" kitchen base cabinet. Two-door, single shelf. Fits tight spaces.",
+      "dimensions": { "Width": 30, "Height": 34.5, "Depth": 24 },
+      "chassisPreset": "Kitchen Base",
+      "hardware": { "hinge": "manual", "slide": "manual", "pull": "manual" },
+      "state": {
+        "Width": 30, "Height": 34.5, "Depth": 24, "NominalWidth": 30,
+        "DoorCount": 2, "DrawerCount": 0, "ShelfCount": 1,
+        "ToeKickHeight": 4, "ToeKickDepth": 3,
+        "DoorOverlayLeft": 0.5, "DoorOverlayRight": 0.5,
+        "DoorOverlayTop": 0.5, "DoorOverlayBottom": 0.5,
+        "SideThickness": 0.75, "BottomThickness": 0.75, "BackPanelThickness": 0.25
+      },
+      "materialCost": 142.00,
+      "standardPrice": 191.70,
+      "dateAdded": "2026-02-25",
+      "active": true,
+      "tags": ["base", "standard", "two-door", "compact"]
+    },
+    "SP-003": {
+      "name": "Kitchen Base ADA 36",
+      "sku": "SP-003",
+      "category": "Kitchen",
+      "description": "ADA-compliant 36\" base cabinet. Lower height, deeper toe kick for wheelchair access.",
+      "dimensions": { "Width": 36, "Height": 31, "Depth": 24 },
+      "chassisPreset": "Kitchen Base (ADA)",
+      "hardware": { "hinge": "manual", "slide": "manual", "pull": "manual" },
+      "state": {
+        "Width": 36, "Height": 31, "Depth": 24, "NominalWidth": 36,
+        "DoorCount": 2, "DrawerCount": 0, "ShelfCount": 1,
+        "ToeKickHeight": 9, "ToeKickDepth": 6,
+        "SideThickness": 0.75, "BottomThickness": 0.75, "BackPanelThickness": 0.25
+      },
+      "materialCost": 148.00,
+      "standardPrice": 199.80,
+      "dateAdded": "2026-02-25",
+      "active": true,
+      "tags": ["base", "ada", "accessible", "two-door"]
+    },
+    "SP-004": {
+      "name": "Wall Cabinet 36",
+      "sku": "SP-004",
+      "category": "Kitchen",
+      "description": "Standard 36\" wall-mount upper cabinet. Two doors, two shelves, no toe kick.",
+      "dimensions": { "Width": 36, "Height": 30, "Depth": 12 },
+      "chassisPreset": "Wall / Upper Cabinet",
+      "hardware": { "hinge": "manual", "slide": "manual", "pull": "manual" },
+      "state": {
+        "Width": 36, "Height": 30, "Depth": 12, "NominalWidth": 36,
+        "DoorCount": 2, "DrawerCount": 0, "ShelfCount": 2,
+        "ToeKickHeight": 0, "ToeKickDepth": 0,
+        "SideThickness": 0.75, "BottomThickness": 0.75, "BackPanelThickness": 0.5
+      },
+      "materialCost": 108.00,
+      "standardPrice": 145.80,
+      "dateAdded": "2026-02-25",
+      "active": true,
+      "tags": ["wall", "upper", "standard", "two-door"]
+    },
+    "SP-005": {
+      "name": "Bathroom Vanity 36",
+      "sku": "SP-005",
+      "category": "Bathroom",
+      "description": "Standard 36\" bathroom vanity. Two-door, one shelf, 21\" depth for bathroom clearance.",
+      "dimensions": { "Width": 36, "Height": 34.5, "Depth": 21 },
+      "chassisPreset": "Bathroom Vanity",
+      "hardware": { "hinge": "manual", "slide": "manual", "pull": "manual" },
+      "state": {
+        "Width": 36, "Height": 34.5, "Depth": 21, "NominalWidth": 36,
+        "DoorCount": 2, "DrawerCount": 0, "ShelfCount": 1,
+        "ToeKickHeight": 4, "ToeKickDepth": 3,
+        "DoorOverlayLeft": 0.5, "DoorOverlayRight": 0.5,
+        "SideThickness": 0.75, "BottomThickness": 0.75, "BackPanelThickness": 0.25
+      },
+      "materialCost": 140.00,
+      "standardPrice": 189.00,
+      "dateAdded": "2026-02-25",
+      "active": true,
+      "tags": ["vanity", "bathroom", "standard", "two-door"]
+    },
+    "SP-006": {
+      "name": "Pantry Tower 24x84",
+      "sku": "SP-006",
+      "category": "Kitchen",
+      "description": "Tall 84\" pantry tower. 24\" wide, 5 shelves. Ideal for dry goods storage.",
+      "dimensions": { "Width": 24, "Height": 84, "Depth": 24 },
+      "chassisPreset": "Pantry Tower",
+      "hardware": { "hinge": "manual", "slide": "manual", "pull": "manual" },
+      "state": {
+        "Width": 24, "Height": 84, "Depth": 24, "NominalWidth": 24,
+        "DoorCount": 2, "DrawerCount": 0, "ShelfCount": 5,
+        "ToeKickHeight": 4, "ToeKickDepth": 3, "ShelfSetback": 0,
+        "SideThickness": 0.75, "BottomThickness": 0.75, "BackPanelThickness": 0.5
+      },
+      "materialCost": 218.00,
+      "standardPrice": 294.30,
+      "dateAdded": "2026-02-25",
+      "active": true,
+      "tags": ["pantry", "tower", "tall", "kitchen"]
+    },
+    "SP-007": {
+      "name": "Bookcase 36x60",
+      "sku": "SP-007",
+      "category": "Living",
+      "description": "Open bookcase. 36\" wide, 60\" tall, 4 adjustable shelves. No doors.",
+      "dimensions": { "Width": 36, "Height": 60, "Depth": 12 },
+      "chassisPreset": "Bookcase",
+      "hardware": { "hinge": "manual", "slide": "manual", "pull": "manual" },
+      "state": {
+        "Width": 36, "Height": 60, "Depth": 12, "NominalWidth": 36,
+        "DoorCount": 0, "DrawerCount": 0, "ShelfCount": 4,
+        "ToeKickHeight": 3, "ToeKickDepth": 1,
+        "SideThickness": 0.75, "ShelfThickness": 0.75,
+        "BottomThickness": 0.75, "BackPanelThickness": 0.25
+      },
+      "materialCost": 128.00,
+      "standardPrice": 172.80,
+      "dateAdded": "2026-02-25",
+      "active": true,
+      "tags": ["bookcase", "open", "shelves", "living"]
+    },
+    "SP-008": {
+      "name": "Media Console 66",
+      "sku": "SP-008",
+      "category": "Living",
+      "description": "Wide 66\" media console. Low profile, 4 doors, 2 shelves. Perfect for entertainment centers.",
+      "dimensions": { "Width": 66, "Height": 24, "Depth": 18 },
+      "chassisPreset": "Media Console",
+      "hardware": { "hinge": "manual", "slide": "manual", "pull": "manual" },
+      "state": {
+        "Width": 66, "Height": 24, "Depth": 18, "NominalWidth": 36,
+        "DoorCount": 4, "DrawerCount": 0, "ShelfCount": 2,
+        "ToeKickHeight": 0, "ToeKickDepth": 0,
+        "DoorOverlayLeft": 0.5, "DoorOverlayRight": 0.5,
+        "DoorOverlayTop": 0.5, "DoorOverlayBottom": 0.5,
+        "SideThickness": 0.75, "BottomThickness": 0.75, "BackPanelThickness": 0.25
+      },
+      "materialCost": 198.00,
+      "standardPrice": 267.30,
+      "dateAdded": "2026-02-25",
+      "active": true,
+      "tags": ["media", "console", "entertainment", "wide"]
+    },
+    "SP-009": {
+      "name": "Nightstand 22x26",
+      "sku": "SP-009",
+      "category": "Bedroom",
+      "description": "Compact nightstand. 2 drawers, 1 shelf. 22\" wide, 26\" tall.",
+      "dimensions": { "Width": 22, "Height": 26, "Depth": 16 },
+      "chassisPreset": "Nightstand",
+      "hardware": { "hinge": "manual", "slide": "manual", "pull": "manual" },
+      "state": {
+        "Width": 22, "Height": 26, "Depth": 16, "NominalWidth": 22,
+        "DoorCount": 0, "DrawerCount": 2, "ShelfCount": 1,
+        "ToeKickHeight": 0, "ToeKickDepth": 0,
+        "DrawerHeight": 4, "DrawerBoxHeight": 3.5,
+        "SideThickness": 0.75, "BottomThickness": 0.75, "BackPanelThickness": 0.25
+      },
+      "materialCost": 88.00,
+      "standardPrice": 118.80,
+      "dateAdded": "2026-02-25",
+      "active": true,
+      "tags": ["nightstand", "bedroom", "drawers", "compact"]
+    },
+    "SP-010": {
+      "name": "Wardrobe 48x78",
+      "sku": "SP-010",
+      "category": "Bedroom",
+      "description": "Full-size wardrobe. 48\" wide, 78\" tall. 2 doors, 2 drawers, 1 shelf.",
+      "dimensions": { "Width": 48, "Height": 78, "Depth": 24 },
+      "chassisPreset": "Wardrobe / Armoire",
+      "hardware": { "hinge": "manual", "slide": "manual", "pull": "manual" },
+      "state": {
+        "Width": 48, "Height": 78, "Depth": 24, "NominalWidth": 36,
+        "DoorCount": 2, "DrawerCount": 2, "ShelfCount": 1,
+        "ToeKickHeight": 0, "ToeKickDepth": 0,
+        "SideThickness": 0.75, "BottomThickness": 0.75, "BackPanelThickness": 0.5
+      },
+      "materialCost": 248.00,
+      "standardPrice": 334.80,
+      "dateAdded": "2026-02-25",
+      "active": true,
+      "tags": ["wardrobe", "armoire", "bedroom", "tall"]
+    },
+    "SP-011": {
+      "name": "Linen Cabinet 24x72",
+      "sku": "SP-011",
+      "category": "Bathroom",
+      "description": "Tall linen cabinet. 24\" wide, 72\" tall, 5 shelves. Great for bathroom or hallway.",
+      "dimensions": { "Width": 24, "Height": 72, "Depth": 18 },
+      "chassisPreset": "Linen Cabinet",
+      "hardware": { "hinge": "manual", "slide": "manual", "pull": "manual" },
+      "state": {
+        "Width": 24, "Height": 72, "Depth": 18, "NominalWidth": 24,
+        "DoorCount": 2, "DrawerCount": 0, "ShelfCount": 5,
+        "ToeKickHeight": 4, "ToeKickDepth": 3, "ShelfSetback": 0,
+        "SideThickness": 0.75, "BottomThickness": 0.75, "BackPanelThickness": 0.25
+      },
+      "materialCost": 168.00,
+      "standardPrice": 226.80,
+      "dateAdded": "2026-02-25",
+      "active": true,
+      "tags": ["linen", "bathroom", "tall", "shelves"]
+    },
+    "SP-012": {
+      "name": "Filing Cabinet 18x29",
+      "sku": "SP-012",
+      "category": "Office",
+      "description": "Two-drawer filing cabinet. 18\" wide, 29\" tall. Fits under most desks.",
+      "dimensions": { "Width": 18, "Height": 29, "Depth": 24 },
+      "chassisPreset": "Filing Cabinet",
+      "hardware": { "hinge": "manual", "slide": "manual", "pull": "manual" },
+      "state": {
+        "Width": 18, "Height": 29, "Depth": 24, "NominalWidth": 18,
+        "DoorCount": 0, "DrawerCount": 2, "ShelfCount": 0,
+        "ToeKickHeight": 2, "ToeKickDepth": 2,
+        "DrawerHeight": 10, "DrawerBoxHeight": 9.5, "DrawerClearance": 0.5,
+        "DrawerBoxSideThickness": 0.5,
+        "SideThickness": 0.75, "BottomThickness": 0.75
+      },
+      "materialCost": 105.00,
+      "standardPrice": 141.75,
+      "dateAdded": "2026-02-25",
+      "active": true,
+      "tags": ["filing", "office", "drawers", "desk"]
+    },
+    "SP-013": {
+      "name": "Garage Storage 36x72",
+      "sku": "SP-013",
+      "category": "Utility",
+      "description": "Heavy-duty garage cabinet. 36\" wide, 72\" tall. 2 doors, 3 shelves.",
+      "dimensions": { "Width": 36, "Height": 72, "Depth": 24 },
+      "chassisPreset": "Garage / Workshop",
+      "hardware": { "hinge": "manual", "slide": "manual", "pull": "manual" },
+      "state": {
+        "Width": 36, "Height": 72, "Depth": 24, "NominalWidth": 36,
+        "DoorCount": 2, "DrawerCount": 0, "ShelfCount": 3,
+        "ToeKickHeight": 4, "ToeKickDepth": 3,
+        "SideThickness": 0.75, "ShelfThickness": 0.75,
+        "BottomThickness": 0.75, "BackPanelThickness": 0.5
+      },
+      "materialCost": 215.00,
+      "standardPrice": 290.25,
+      "dateAdded": "2026-02-25",
+      "active": true,
+      "tags": ["garage", "workshop", "utility", "heavy-duty"]
+    },
+    "SP-014": {
+      "name": "Shoe Cabinet 30x42",
+      "sku": "SP-014",
+      "category": "Living",
+      "description": "Shoe cabinet with 5 shelves. 30\" wide, 42\" tall, slim 14\" depth.",
+      "dimensions": { "Width": 30, "Height": 42, "Depth": 14 },
+      "chassisPreset": "Shoe Cabinet",
+      "hardware": { "hinge": "manual", "slide": "manual", "pull": "manual" },
+      "state": {
+        "Width": 30, "Height": 42, "Depth": 14, "NominalWidth": 30,
+        "DoorCount": 2, "DrawerCount": 0, "ShelfCount": 5,
+        "ToeKickHeight": 3, "ToeKickDepth": 1,
+        "ShelfSetback": 0, "ShelfThickness": 0.5,
+        "SideThickness": 0.75, "BottomThickness": 0.75, "BackPanelThickness": 0.25
+      },
+      "materialCost": 112.00,
+      "standardPrice": 151.20,
+      "dateAdded": "2026-02-25",
+      "active": true,
+      "tags": ["shoe", "entryway", "slim", "shelves"]
+    },
+    "SP-015": {
+      "name": "Desk Pedestal 16x26",
+      "sku": "SP-015",
+      "category": "Office",
+      "description": "Three-drawer desk pedestal. 16\" wide, 26\" tall. Pairs with any desktop.",
+      "dimensions": { "Width": 16, "Height": 26, "Depth": 22 },
+      "chassisPreset": "Desk Pedestal",
+      "hardware": { "hinge": "manual", "slide": "manual", "pull": "manual" },
+      "state": {
+        "Width": 16, "Height": 26, "Depth": 22, "NominalWidth": 16,
+        "DoorCount": 0, "DrawerCount": 3, "ShelfCount": 0,
+        "ToeKickHeight": 0, "ToeKickDepth": 0,
+        "DrawerHeight": 6, "DrawerBoxHeight": 5.5, "DrawerBoxSideThickness": 0.5,
+        "SideThickness": 0.75, "BottomThickness": 0.75
+      },
+      "materialCost": 95.00,
+      "standardPrice": 128.25,
+      "dateAdded": "2026-02-25",
+      "active": true,
+      "tags": ["desk", "pedestal", "office", "drawers"]
+    }
+  }
+}

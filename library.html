@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Standard Library | Selection-Connection</title>
+  <meta name="description" content="Browse standard-size cabinets ready for production. Pre-configured dimensions at lower prices. Customize any product for made-to-order.">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #f7f5f0;
+      color: #1a1a1a;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+    a { color: inherit; text-decoration: none; }
+
+    /* ── Nav ── */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      height: 52px;
+      border-bottom: 1px solid #e0dcd4;
+      background: #ffffff;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .top-bar a { color: #777; font-size: 13px; letter-spacing: 1px; transition: color 0.15s; }
+    .top-bar a:hover { color: #1a1a1a; }
+    .nav-left { display: flex; align-items: center; gap: 24px; }
+    .nav-brand { font-size: 14px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: #1a1a1a !important; }
+    .nav-active { color: #1a1a1a !important; font-weight: 500; }
+    .nav-right { display: flex; align-items: center; gap: 16px; }
+    .brand-tag { font-size: 11px; letter-spacing: 3px; color: #bbb; text-transform: uppercase; }
+
+    /* ── Hero ── */
+    .library-hero {
+      text-align: center;
+      padding: 64px 24px 40px;
+      background: linear-gradient(180deg, #ffffff 0%, #f7f5f0 100%);
+    }
+    .hero-label {
+      font-size: 11px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: #999;
+      margin-bottom: 12px;
+    }
+    .hero-title {
+      font-size: 36px;
+      font-weight: 300;
+      letter-spacing: 1px;
+      color: #1a1a1a;
+      margin-bottom: 10px;
+    }
+    .hero-subtitle {
+      font-size: 15px;
+      color: #777;
+      max-width: 560px;
+      margin: 0 auto 16px;
+      line-height: 1.6;
+    }
+    .hero-count {
+      display: inline-block;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #555;
+      background: #edeae4;
+      padding: 6px 16px;
+      border-radius: 20px;
+    }
+
+    /* ── Filter bar ── */
+    .filter-bar {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px 24px 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .filter-pill {
+      padding: 7px 18px;
+      font-size: 12px;
+      letter-spacing: 1px;
+      border: 1px solid #ddd;
+      background: #ffffff;
+      color: #777;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+    .filter-pill:hover { border-color: #aaa; color: #333; }
+    .filter-pill.active {
+      background: #3a3028;
+      color: #fff;
+      border-color: #3a3028;
+    }
+    .filter-search {
+      margin-left: auto;
+      padding: 8px 16px;
+      font-size: 13px;
+      border: 1px solid #ddd;
+      background: #ffffff;
+      color: #1a1a1a;
+      border-radius: 20px;
+      width: 220px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .filter-search:focus { border-color: #999; }
+    .filter-search::placeholder { color: #bbb; }
+
+    /* ── Product grid ── */
+    .product-grid {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 24px;
+    }
+
+    /* ── Product card ── */
+    .product-card {
+      background: #ffffff;
+      border: 1px solid #e8e4dd;
+      border-radius: 10px;
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+      cursor: default;
+    }
+    .product-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    }
+
+    /* Card preview area */
+    .product-preview {
+      background: #faf8f5;
+      height: 160px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      border-bottom: 1px solid #eee;
+    }
+    .product-dims-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 10px;
+      letter-spacing: 1px;
+      color: #999;
+      background: rgba(255,255,255,0.85);
+      padding: 3px 8px;
+      border-radius: 4px;
+      border: 1px solid #eee;
+    }
+    /* Mini schematic */
+    .product-schematic {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Card info area */
+    .product-info {
+      padding: 18px 20px 20px;
+    }
+    .product-category-label {
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #aaa;
+      margin-bottom: 6px;
+    }
+    .product-name {
+      font-size: 17px;
+      font-weight: 500;
+      color: #1a1a1a;
+      margin-bottom: 6px;
+    }
+    .product-desc {
+      font-size: 13px;
+      color: #888;
+      line-height: 1.5;
+      margin-bottom: 16px;
+      min-height: 40px;
+    }
+    .product-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .product-price-wrap {
+      display: flex;
+      flex-direction: column;
+    }
+    .product-price {
+      font-size: 22px;
+      font-weight: 600;
+      color: #2c6e3f;
+    }
+    .product-material-cost {
+      font-size: 10px;
+      color: #bbb;
+      letter-spacing: 0.5px;
+    }
+    .product-configure-btn {
+      display: inline-block;
+      padding: 9px 22px;
+      font-size: 12px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      background: #3a3028;
+      color: #fff;
+      border-radius: 6px;
+      transition: opacity 0.15s, transform 0.15s;
+      font-family: inherit;
+    }
+    .product-configure-btn:hover {
+      opacity: 0.85;
+      transform: translateY(-1px);
+    }
+
+    /* ── Tags ── */
+    .product-tags {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    .product-tag {
+      font-size: 9px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #999;
+      background: #f5f3ee;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+
+    /* ── Empty state ── */
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 80px 24px;
+      color: #aaa;
+    }
+    .empty-state-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.4;
+    }
+    .empty-state-text {
+      font-size: 15px;
+      letter-spacing: 1px;
+    }
+
+    /* ── Pricing info bar ── */
+    .pricing-info {
+      max-width: 1200px;
+      margin: 0 auto 8px;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+    .pricing-note {
+      font-size: 11px;
+      color: #aaa;
+      letter-spacing: 0.5px;
+    }
+    .pricing-note strong {
+      color: #2c6e3f;
+      font-weight: 500;
+    }
+    .pricing-note .custom {
+      color: #b8860b;
+    }
+
+    /* ── Footer ── */
+    .site-footer {
+      text-align: center;
+      padding: 48px 24px;
+      color: #bbb;
+      font-size: 12px;
+      letter-spacing: 1px;
+    }
+    .site-footer a { color: #999; }
+    .site-footer a:hover { color: #555; }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      .hero-title { font-size: 26px; }
+      .filter-bar { flex-direction: column; align-items: stretch; }
+      .filter-search { margin-left: 0; width: 100%; }
+      .product-grid { grid-template-columns: 1fr; }
+      .filter-pills { display: flex; overflow-x: auto; gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <header class="top-bar">
+    <div class="nav-left">
+      <a href="index.html" class="nav-brand">SC</a>
+      <a href="configurator.html">Configurator</a>
+      <a href="library.html" class="nav-active">Library</a>
+      <a href="lamiform.html">LamiForm</a>
+    </div>
+    <div class="nav-right">
+      <span class="brand-tag">Powered by PIF</span>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="library-hero">
+    <div class="hero-label">Standard Products</div>
+    <h1 class="hero-title">Ready-Made Cabinet Library</h1>
+    <p class="hero-subtitle">
+      Pre-configured standard sizes built for batch production.
+      Lower cost than custom. Click any product to customize dimensions in the configurator.
+    </p>
+    <span class="hero-count" id="productCount">Loading...</span>
+  </section>
+
+  <!-- Filter bar -->
+  <div class="filter-bar" id="filterBar">
+    <button class="filter-pill active" data-category="all">All</button>
+    <!-- Category pills injected dynamically -->
+    <input class="filter-search" type="text" id="searchInput" placeholder="Search products...">
+  </div>
+
+  <!-- Pricing info -->
+  <div class="pricing-info">
+    <span class="pricing-note"><strong>Standard prices</strong> shown below &mdash; modify any dimension in the configurator and pricing adjusts to <span class="custom">custom rates</span></span>
+  </div>
+
+  <!-- Product grid -->
+  <div class="product-grid" id="productGrid">
+    <!-- Cards injected by JS -->
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <p>Selection-Connection &middot; <a href="index.html">Home</a> &middot; <a href="configurator.html">Configurator</a></p>
+    <p style="margin-top:8px;">Powered by PIF Parametric Engine</p>
+  </footer>
+
+<script>
+/* ── State ── */
+var catalog = null;
+var allProducts = [];
+var activeCategory = "all";
+var searchQuery = "";
+
+/* ── Load catalog ── */
+fetch("StandardProducts.json")
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    catalog = data;
+    allProducts = [];
+    Object.keys(data.products).forEach(function(sku) {
+      var p = data.products[sku];
+      if (p.active) allProducts.push(p);
+    });
+    buildCategoryPills();
+    renderProducts();
+    document.getElementById("productCount").textContent =
+      allProducts.length + " standard product" + (allProducts.length !== 1 ? "s" : "");
+  })
+  .catch(function(err) {
+    document.getElementById("productGrid").innerHTML =
+      '<div class="empty-state"><div class="empty-state-icon">!</div><div class="empty-state-text">Could not load product catalog</div></div>';
+    console.error("Failed to load StandardProducts.json:", err);
+  });
+
+/* ── Build category filter pills ── */
+function buildCategoryPills() {
+  var cats = {};
+  allProducts.forEach(function(p) { cats[p.category] = true; });
+  var bar = document.getElementById("filterBar");
+  var search = document.getElementById("searchInput");
+  /* Sort categories alphabetically */
+  var sorted = Object.keys(cats).sort();
+  sorted.forEach(function(cat) {
+    var btn = document.createElement("button");
+    btn.className = "filter-pill";
+    btn.dataset.category = cat;
+    btn.textContent = cat;
+    btn.addEventListener("click", function() { setCategory(cat); });
+    bar.insertBefore(btn, search);
+  });
+}
+
+/* ── Category filter ── */
+function setCategory(cat) {
+  activeCategory = cat;
+  document.querySelectorAll(".filter-pill").forEach(function(btn) {
+    btn.classList.toggle("active", btn.dataset.category === cat);
+  });
+  renderProducts();
+}
+
+/* All button handler */
+document.querySelector('.filter-pill[data-category="all"]').addEventListener("click", function() {
+  setCategory("all");
+});
+
+/* ── Search ── */
+document.getElementById("searchInput").addEventListener("input", function() {
+  searchQuery = this.value.toLowerCase().trim();
+  renderProducts();
+});
+
+/* ── Render product cards ── */
+function renderProducts() {
+  var grid = document.getElementById("productGrid");
+  var filtered = allProducts.filter(function(p) {
+    if (activeCategory !== "all" && p.category !== activeCategory) return false;
+    if (searchQuery) {
+      var haystack = (p.name + " " + p.description + " " + p.category + " " + (p.tags || []).join(" ")).toLowerCase();
+      if (haystack.indexOf(searchQuery) === -1) return false;
+    }
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    grid.innerHTML =
+      '<div class="empty-state">' +
+        '<div class="empty-state-icon">&#9744;</div>' +
+        '<div class="empty-state-text">No products match your search</div>' +
+      '</div>';
+    return;
+  }
+
+  var html = "";
+  filtered.forEach(function(p) {
+    var d = p.dimensions;
+    var dimStr = d.Width + '"W &times; ' + d.Height + '"H &times; ' + d.Depth + '"D';
+    var svgPreview = buildMiniSVG(d.Width, d.Height, d.Depth);
+    var tagsHtml = "";
+    if (p.tags && p.tags.length) {
+      tagsHtml = '<div class="product-tags">';
+      p.tags.slice(0, 4).forEach(function(t) {
+        tagsHtml += '<span class="product-tag">' + t + '</span>';
+      });
+      tagsHtml += '</div>';
+    }
+
+    html +=
+      '<div class="product-card" data-sku="' + p.sku + '" data-category="' + p.category + '">' +
+        '<div class="product-preview">' +
+          svgPreview +
+          '<span class="product-dims-badge">' + dimStr + '</span>' +
+        '</div>' +
+        '<div class="product-info">' +
+          '<div class="product-category-label">' + p.category + '</div>' +
+          '<div class="product-name">' + p.name + '</div>' +
+          '<div class="product-desc">' + p.description + '</div>' +
+          tagsHtml +
+          '<div class="product-footer">' +
+            '<div class="product-price-wrap">' +
+              '<span class="product-price">$' + p.standardPrice.toFixed(2) + '</span>' +
+              '<span class="product-material-cost">Material: $' + p.materialCost.toFixed(2) + '</span>' +
+            '</div>' +
+            '<a href="configurator.html?product=' + p.sku + '" class="product-configure-btn">Configure</a>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+  });
+
+  grid.innerHTML = html;
+}
+
+/* ── Mini SVG preview — simple isometric box ── */
+function buildMiniSVG(W, H, D) {
+  /* Normalize dimensions to fit in 240x140 preview area */
+  var ax = 0.4, ay = -0.3;
+  var effW = W + D * ax;
+  var effH = H + D * Math.abs(ay);
+  var svgW = 240, svgH = 140;
+  var margin = 16;
+  var scale = Math.min((svgW - 2 * margin) / effW, (svgH - 2 * margin) / effH);
+  var ox = (svgW - effW * scale) / 2;
+  var oy = svgH - (svgH - effH * scale) / 2;
+
+  function px(x, z) { return (ox + (x + z * ax) * scale).toFixed(1); }
+  function py(y, z) { return (oy - (y + z * Math.abs(ay)) * scale).toFixed(1); }
+
+  var lines = [];
+  lines.push('<svg class="product-schematic" viewBox="0 0 ' + svgW + ' ' + svgH + '" xmlns="http://www.w3.org/2000/svg">');
+
+  /* Front face */
+  lines.push('<polygon points="' +
+    px(0,0)+','+py(0,0)+' '+px(W,0)+','+py(0,0)+' '+px(W,0)+','+py(H,0)+' '+px(0,0)+','+py(H,0)+
+    '" fill="#e8e2d6" stroke="#b8a88a" stroke-width="1"/>');
+
+  /* Top face */
+  lines.push('<polygon points="' +
+    px(0,0)+','+py(H,0)+' '+px(W,0)+','+py(H,0)+' '+px(W,D)+','+py(H,D)+' '+px(0,D)+','+py(H,D)+
+    '" fill="#d4ccbc" stroke="#b8a88a" stroke-width="1"/>');
+
+  /* Right face */
+  lines.push('<polygon points="' +
+    px(W,0)+','+py(0,0)+' '+px(W,D)+','+py(0,D)+' '+px(W,D)+','+py(H,D)+' '+px(W,0)+','+py(H,0)+
+    '" fill="#c9c0ae" stroke="#b8a88a" stroke-width="1"/>');
+
+  lines.push('</svg>');
+  return lines.join('');
+}
+</script>
+</body>
+</html>
