@@ -1,0 +1,1341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PIF LamiForm — Laminated 3D Parts from Flat CNC Slices</title>
+  <meta name="description" content="Configure turned legs, bun feet, corbels, and decorative parts from laminated CNC-cut slices. Instant slice count, material estimate, and DXF export.">
+  <meta property="og:title" content="PIF LamiForm — Laminated 3D Parts">
+  <meta property="og:description" content="Configure turned legs, bun feet, corbels and more from flat CNC slices. Instant slice count, material estimate, and production exports.">
+  <meta property="og:type" content="website">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0a;
+      color: #ffffff;
+      font-family: 'Segoe UI', sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Header ── */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      height: 48px;
+      border-bottom: 1px solid #222;
+      flex-shrink: 0;
+    }
+    .top-bar a {
+      color: #888;
+      text-decoration: none;
+      font-size: 13px;
+      letter-spacing: 1px;
+    }
+    .top-bar a:hover { color: #fff; }
+    .top-bar .title {
+      font-size: 14px;
+      font-weight: 400;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    .top-bar .brand {
+      font-size: 11px;
+      color: #444;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+
+    /* ── Main Layout ── */
+    .app-layout {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── Controls Panel ── */
+    .controls-panel {
+      width: 40%;
+      min-width: 340px;
+      max-width: 440px;
+      overflow-y: auto;
+      border-right: 1px solid #222;
+      flex-shrink: 0;
+    }
+    .controls-panel::-webkit-scrollbar { width: 6px; }
+    .controls-panel::-webkit-scrollbar-track { background: #0a0a0a; }
+    .controls-panel::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+    /* ── Section ── */
+    .ctrl-section {
+      padding: 16px;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    .ctrl-section-label {
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #555;
+      margin-bottom: 12px;
+    }
+
+    /* ── Select ── */
+    .ctrl-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .ctrl-row label {
+      flex: 0 0 120px;
+      font-size: 12px;
+      color: #999;
+    }
+    .ctrl-row select, .ctrl-row input[type="number"] {
+      flex: 1;
+      background: #111;
+      border: 1px solid #222;
+      color: #fff;
+      padding: 6px 8px;
+      font-size: 12px;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .ctrl-row select:focus, .ctrl-row input[type="number"]:focus {
+      outline: none;
+      border-color: #444;
+    }
+
+    /* ── Slider ── */
+    .slider-row {
+      display: flex;
+      align-items: center;
+      padding: 6px 0;
+    }
+    .slider-row .slider-label {
+      flex: 0 0 120px;
+      font-size: 12px;
+      color: #999;
+    }
+    .slider-row .slider-range {
+      flex: 1;
+      padding: 0 10px;
+    }
+    .slider-row .slider-range input[type="range"] {
+      width: 100%;
+      accent-color: #555;
+    }
+    .slider-row .slider-value input[type="number"] {
+      width: 70px;
+      background: #111;
+      border: 1px solid #222;
+      color: #fff;
+      padding: 4px 6px;
+      font-size: 12px;
+      text-align: right;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .slider-row .slider-value input[type="number"]:focus {
+      outline: none;
+      border-color: #444;
+    }
+
+    /* ── Preview Panel ── */
+    .preview-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .preview-area {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #080808;
+      position: relative;
+    }
+    .preview-area svg {
+      max-width: 90%;
+      max-height: 90%;
+    }
+
+    /* ── Results Panel (bottom of preview) ── */
+    .results-panel {
+      background: #111;
+      border-top: 1px solid #222;
+      padding: 16px 24px;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+    .results-panel::-webkit-scrollbar { width: 6px; }
+    .results-panel::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+    .results-title {
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #555;
+      margin-bottom: 10px;
+    }
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .result-card {
+      background: #1a1a1a;
+      border-radius: 6px;
+      padding: 12px;
+      text-align: center;
+    }
+    .result-value {
+      font-size: 20px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 2px;
+    }
+    .result-label {
+      font-size: 10px;
+      color: #666;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    /* ── Slice Table ── */
+    .slice-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+    }
+    .slice-table th {
+      text-align: left;
+      padding: 4px 8px;
+      color: #666;
+      font-weight: 400;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border-bottom: 1px solid #222;
+    }
+    .slice-table td {
+      padding: 4px 8px;
+      color: #aaa;
+      border-bottom: 1px solid #151515;
+    }
+    .slice-table tr:hover td { background: #1a1a1a; }
+
+    /* ── Footer ── */
+    .action-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      height: 52px;
+      border-top: 1px solid #222;
+      flex-shrink: 0;
+    }
+    .action-bar .left-actions { display: flex; gap: 12px; }
+    .btn-action {
+      padding: 10px 24px;
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      border: none;
+      cursor: pointer;
+      font-family: 'Segoe UI', sans-serif;
+      transition: opacity 0.15s;
+    }
+    .btn-action:hover { opacity: 0.8; }
+    .btn-export { background: #fff; color: #000; }
+    .btn-pdf { background: #c0392b; color: #fff; }
+    .info-text { font-size: 11px; color: #333; letter-spacing: 1px; }
+
+    /* ── Responsive ── */
+    @media (min-width: 1600px) {
+      .controls-panel { max-width: 520px; }
+    }
+    @media (max-width: 900px) {
+      .app-layout { flex-direction: column; }
+      .controls-panel {
+        width: 100%;
+        min-width: unset;
+        max-width: unset;
+        max-height: 40vh;
+        border-right: none;
+        border-bottom: 1px solid #222;
+      }
+      .results-grid { grid-template-columns: repeat(2, 1fr); }
+      .action-bar { flex-wrap: wrap; height: auto; padding: 8px 16px; gap: 8px; justify-content: center; }
+    }
+    @media (max-width: 480px) {
+      .top-bar { padding: 0 12px; }
+      .top-bar .brand { display: none; }
+      .ctrl-section-label { font-size: 9px; }
+      .slider-label { font-size: 10px; }
+      .results-grid { grid-template-columns: 1fr; }
+      .action-bar .btn-action { padding: 6px 12px; font-size: 10px; }
+    }
+  </style>
+  <!-- Supabase + SC Platform -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/sc-config.js"></script>
+  <script src="js/sc-auth.js"></script>
+  <script src="js/sc-api.js"></script>
+  <script src="js/sc-nav.js"></script>
+</head>
+<body>
+
+  <header class="top-bar">
+    <a href="index.html">&larr; Home</a>
+    <span class="title">LamiForm</span>
+    <div>
+      <a href="configurator.html" style="margin-right:16px;">Cabinet Configurator</a>
+      <span class="brand">Powered by PIF</span>
+    </div>
+  </header>
+
+  <main class="app-layout">
+    <aside class="controls-panel" id="controlsPanel">
+
+      <!-- Profile Preset -->
+      <div class="ctrl-section">
+        <div class="ctrl-section-label">Profile</div>
+        <div class="ctrl-row">
+          <label>Preset</label>
+          <select id="profileSelect"></select>
+        </div>
+        <div class="ctrl-row">
+          <label>Type</label>
+          <select id="profileType">
+            <option value="tapered">Tapered</option>
+            <option value="cylindrical">Cylindrical</option>
+            <option value="bullnose">Bullnose</option>
+            <option value="ogee">Ogee (S-curve)</option>
+            <option value="compound">Compound</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Dimensions -->
+      <div class="ctrl-section">
+        <div class="ctrl-section-label">Dimensions</div>
+        <div class="slider-row" data-key="height">
+          <span class="slider-label">Height</span>
+          <div class="slider-range"><input type="range" min="3" max="48" step="0.125" value="29"></div>
+          <div class="slider-value"><input type="number" min="3" max="48" step="0.125" value="29"></div>
+        </div>
+        <div class="slider-row" data-key="topWidth">
+          <span class="slider-label">Top Width</span>
+          <div class="slider-range"><input type="range" min="0.5" max="12" step="0.125" value="1.75"></div>
+          <div class="slider-value"><input type="number" min="0.5" max="12" step="0.125" value="1.75"></div>
+        </div>
+        <div class="slider-row" data-key="bottomWidth">
+          <span class="slider-label">Bottom Width</span>
+          <div class="slider-range"><input type="range" min="0.5" max="12" step="0.125" value="2.5"></div>
+          <div class="slider-value"><input type="number" min="0.5" max="12" step="0.125" value="2.5"></div>
+        </div>
+        <div class="slider-row" data-key="taperStart">
+          <span class="slider-label">Taper Start</span>
+          <div class="slider-range"><input type="range" min="0" max="24" step="0.125" value="2"></div>
+          <div class="slider-value"><input type="number" min="0" max="24" step="0.125" value="2"></div>
+        </div>
+        <div class="slider-row" data-key="curveFactor">
+          <span class="slider-label">Curve Factor</span>
+          <div class="slider-range"><input type="range" min="0" max="1" step="0.05" value="0"></div>
+          <div class="slider-value"><input type="number" min="0" max="1" step="0.05" value="0.00"></div>
+        </div>
+      </div>
+
+      <!-- Slicing -->
+      <div class="ctrl-section">
+        <div class="ctrl-section-label">Slicing</div>
+        <div class="slider-row" data-key="materialThickness">
+          <span class="slider-label">Material (in)</span>
+          <div class="slider-range"><input type="range" min="0.25" max="1.5" step="0.125" value="0.75"></div>
+          <div class="slider-value"><input type="number" min="0.25" max="1.5" step="0.125" value="0.75"></div>
+        </div>
+        <div class="ctrl-row">
+          <label>Slice Direction</label>
+          <select id="sliceDirection">
+            <option value="horizontal">Horizontal (discs)</option>
+            <option value="vertical">Vertical (slabs)</option>
+          </select>
+        </div>
+        <div id="sliceRecommendation" style="margin-top:6px; padding:8px 10px; background:#111; border:1px solid #1a1a1a; border-radius:6px; font-size:11px; color:#888; line-height:1.5; display:none;">
+          <span id="recBadge" style="display:inline-block; padding:2px 6px; border-radius:3px; font-size:9px; letter-spacing:1px; text-transform:uppercase; margin-right:6px;"></span>
+          <span id="recText"></span>
+        </div>
+      </div>
+
+      <!-- Alignment -->
+      <div class="ctrl-section">
+        <div class="ctrl-section-label">Alignment</div>
+        <div class="ctrl-row">
+          <label>Method</label>
+          <select id="alignMethod">
+            <option value="threaded_rod">Threaded Rod (3/8")</option>
+            <option value="dowel_pins">Dowel Pins (1/4")</option>
+            <option value="interlocking">Interlocking Slots</option>
+          </select>
+        </div>
+        <div class="ctrl-row">
+          <label>Edge Profiling</label>
+          <select id="edgeLevel">
+            <option value="0">Level 0 — Square edges</option>
+            <option value="1">Level 1 — Chamfered</option>
+            <option value="2">Level 2 — Ball-nose contour</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Material Cost -->
+      <div class="ctrl-section">
+        <div class="ctrl-section-label">Material Pricing</div>
+        <div class="slider-row" data-key="sheetPrice">
+          <span class="slider-label">$/sheet (4x8)</span>
+          <div class="slider-range"><input type="range" min="20" max="120" step="1" value="58"></div>
+          <div class="slider-value"><input type="number" min="20" max="120" step="1" value="58"></div>
+        </div>
+      </div>
+
+    </aside>
+
+    <section class="preview-panel">
+      <div class="preview-area" id="previewArea">
+        <!-- SVG profile drawn here -->
+      </div>
+      <div class="results-panel" id="resultsPanel">
+        <div class="results-title">Slice Summary</div>
+        <div class="results-grid" id="resultsGrid"></div>
+        <table class="slice-table" id="sliceTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Width (in)</th>
+              <th>Depth (in)</th>
+              <th>Area (sq in)</th>
+            </tr>
+          </thead>
+          <tbody id="sliceTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="action-bar">
+    <div class="left-actions">
+      <a href="configurator.html" class="btn-action" style="background:transparent; color:#888; border:1px solid #333;">Cabinet Mode</a>
+    </div>
+    <span class="info-text" id="sliceCount"></span>
+    <div class="left-actions">
+      <button class="btn-action btn-export" id="btnExportJSON">Export JSON</button>
+      <button class="btn-action btn-pdf" id="btnExportPDF">PDF</button>
+      <button class="btn-action" id="btnExportDXF" style="background:#2a6; color:#fff;">DXF</button>
+    </div>
+  </footer>
+
+<script>
+/* ================================================================
+   LAMIFORM PROFILE PRESETS
+   9 presets from PIF_LamiForm_Reference.md
+   ================================================================ */
+var LAMIFORM_PRESETS = [
+  /* ── Legs ── */
+  {
+    name: "Turned Leg (Tapered)",
+    type: "tapered",
+    height: 29, topWidth: 1.75, bottomWidth: 2.5,
+    taperStart: 2, curveFactor: 0,
+    sliceDir: "horizontal", alignment: "threaded_rod"
+  },
+  {
+    name: "Pedestal Leg",
+    type: "cylindrical",
+    height: 28, topWidth: 3, bottomWidth: 3,
+    taperStart: 0, curveFactor: 0,
+    sliceDir: "horizontal", alignment: "threaded_rod"
+  },
+  {
+    name: "Cabriole Leg",
+    type: "compound",
+    height: 28, topWidth: 3, bottomWidth: 1.5,
+    taperStart: 6, curveFactor: 0.9,
+    sliceDir: "vertical", alignment: "dowel_pins"
+  },
+  /* ── Feet ── */
+  {
+    name: "Bun Foot",
+    type: "bullnose",
+    height: 4, topWidth: 1.5, bottomWidth: 3.5,
+    taperStart: 0, curveFactor: 0.8,
+    sliceDir: "horizontal", alignment: "threaded_rod"
+  },
+  {
+    name: "Ogee Bracket Foot",
+    type: "ogee",
+    height: 6, topWidth: 2, bottomWidth: 4,
+    taperStart: 0, curveFactor: 0.5,
+    sliceDir: "vertical", alignment: "dowel_pins"
+  },
+  {
+    name: "Club Foot",
+    type: "bullnose",
+    height: 3.5, topWidth: 1.25, bottomWidth: 3,
+    taperStart: 0, curveFactor: 0.9,
+    sliceDir: "horizontal", alignment: "threaded_rod"
+  },
+  {
+    name: "Pad Foot",
+    type: "bullnose",
+    height: 2, topWidth: 1.5, bottomWidth: 2.5,
+    taperStart: 0, curveFactor: 0.4,
+    sliceDir: "horizontal", alignment: "dowel_pins"
+  },
+  /* ── Decorative Turnings ── */
+  {
+    name: "Baluster / Spindle",
+    type: "tapered",
+    height: 32, topWidth: 1.25, bottomWidth: 1.75,
+    taperStart: 4, curveFactor: 0.3,
+    sliceDir: "horizontal", alignment: "threaded_rod"
+  },
+  {
+    name: "Finial / Urn",
+    type: "bullnose",
+    height: 8, topWidth: 0.75, bottomWidth: 2.5,
+    taperStart: 1, curveFactor: 0.6,
+    sliceDir: "horizontal", alignment: "threaded_rod"
+  },
+  {
+    name: "Ceiling Medallion",
+    type: "ogee",
+    height: 3, topWidth: 12, bottomWidth: 12,
+    taperStart: 0, curveFactor: 0.6,
+    sliceDir: "horizontal", alignment: "dowel_pins"
+  },
+  {
+    name: "Rosette (Deep Relief)",
+    type: "bullnose",
+    height: 1.5, topWidth: 0.5, bottomWidth: 4,
+    taperStart: 0, curveFactor: 0.85,
+    sliceDir: "horizontal", alignment: "interlocking"
+  },
+  /* ── Columns & Posts ── */
+  {
+    name: "Newel Post",
+    type: "tapered",
+    height: 42, topWidth: 3.5, bottomWidth: 4.5,
+    taperStart: 6, curveFactor: 0.15,
+    sliceDir: "horizontal", alignment: "threaded_rod"
+  },
+  {
+    name: "Column (Full Round)",
+    type: "cylindrical",
+    height: 36, topWidth: 4, bottomWidth: 4,
+    taperStart: 0, curveFactor: 0,
+    sliceDir: "horizontal", alignment: "threaded_rod"
+  },
+  {
+    name: "Half Column",
+    type: "cylindrical",
+    height: 30, topWidth: 3, bottomWidth: 3,
+    taperStart: 0, curveFactor: 0,
+    sliceDir: "horizontal", alignment: "threaded_rod"
+  },
+  /* ── Corbels & Brackets ── */
+  {
+    name: "Scroll Corbel",
+    type: "ogee",
+    height: 12, topWidth: 3, bottomWidth: 6,
+    taperStart: 0, curveFactor: 0.7,
+    sliceDir: "vertical", alignment: "dowel_pins"
+  },
+  {
+    name: "Bar Bracket",
+    type: "ogee",
+    height: 10, topWidth: 4, bottomWidth: 8,
+    taperStart: 0, curveFactor: 0.65,
+    sliceDir: "vertical", alignment: "dowel_pins"
+  },
+  {
+    name: "Counter Support",
+    type: "compound",
+    height: 14, topWidth: 2, bottomWidth: 6,
+    taperStart: 2, curveFactor: 0.5,
+    sliceDir: "vertical", alignment: "dowel_pins"
+  },
+  {
+    name: "Mantel Corbel",
+    type: "ogee",
+    height: 16, topWidth: 5, bottomWidth: 10,
+    taperStart: 0, curveFactor: 0.75,
+    sliceDir: "vertical", alignment: "dowel_pins"
+  }
+];
+
+/* ── State ── */
+var lf = {
+  height: 29,
+  topWidth: 1.75,
+  bottomWidth: 2.5,
+  taperStart: 2,
+  curveFactor: 0,
+  materialThickness: 0.75,
+  sheetPrice: 58
+};
+
+/* ── Profile Radius Functions ── */
+function profileRadius(h, total, topR, botR, taperStart, curveFactor, type) {
+  if (type === "cylindrical") return Math.max(topR, botR) / 2;
+
+  var t = total > 0 ? h / total : 0;
+
+  if (type === "bullnose") {
+    /* Sinusoidal bulge */
+    var base = botR / 2 + (topR / 2 - botR / 2) * t;
+    var bulge = curveFactor * (botR / 2) * Math.sin(Math.PI * t);
+    return Math.max(0.25, base + bulge);
+  }
+
+  if (type === "ogee") {
+    /* S-curve profile */
+    var mid = botR / 2 + (topR / 2 - botR / 2) * t;
+    var scurve = curveFactor * (botR / 4) * Math.sin(2 * Math.PI * t);
+    return Math.max(0.25, mid + scurve);
+  }
+
+  if (type === "compound") {
+    /* Cabriole / compound curve: wide knee at ~25%, narrows, slight flare at foot */
+    var base = botR / 2 + (topR / 2 - botR / 2) * t;
+    var knee = curveFactor * (botR / 3) * Math.sin(Math.PI * t) * Math.cos(Math.PI * t * 0.5);
+    return Math.max(0.25, base + knee);
+  }
+
+  /* Tapered (default) */
+  if (h <= taperStart) return botR / 2;
+  var taperT = (h - taperStart) / (total - taperStart);
+  var r = botR / 2 + (topR / 2 - botR / 2) * taperT;
+
+  if (curveFactor > 0) {
+    var swell = curveFactor * (botR / 4) * Math.sin(Math.PI * taperT);
+    r += swell;
+  }
+
+  return Math.max(0.25, r);
+}
+
+/* ── Compute Slices ── */
+function computeSlices() {
+  var H = lf.height;
+  var T = lf.materialThickness;
+  var type = document.getElementById("profileType").value;
+  var dir = document.getElementById("sliceDirection").value;
+  var slices = [];
+  var maxW = Math.max(lf.topWidth, lf.bottomWidth);
+
+  /* Horizontal: stack discs along height; Vertical: stack slabs along width */
+  var numSlices = dir === "horizontal" ? Math.ceil(H / T) : Math.ceil(maxW / T);
+
+  for (var i = 0; i < numSlices; i++) {
+    if (dir === "horizontal") {
+      var hMid = T * i + T / 2;
+      if (hMid > H) hMid = H - T / 2;
+      var r = profileRadius(hMid, H, lf.topWidth, lf.bottomWidth, lf.taperStart, lf.curveFactor, type);
+      var dia = r * 2;
+      slices.push({
+        index: i + 1,
+        z: T * i,
+        width: dia,
+        depth: dia,
+        area: dia * dia /* bounding square for nesting */
+      });
+    } else {
+      /* Vertical slabs: profile silhouette, bounding rectangle maxW x H */
+      slices.push({
+        index: i + 1,
+        z: T * i,
+        width: maxW,
+        depth: H,
+        area: maxW * H
+      });
+    }
+  }
+  return slices;
+}
+
+/* ── Render SVG Preview ── */
+function renderPreview() {
+  var H = lf.height;
+  var T = lf.materialThickness;
+  var type = document.getElementById("profileType").value;
+  var dir = document.getElementById("sliceDirection").value;
+  var maxR = Math.max(lf.topWidth, lf.bottomWidth) / 2;
+
+  var svgW = 280, svgH = 400;
+  var margin = 30;
+  var drawH = svgH - 2 * margin;
+  var drawW = svgW - 2 * margin;
+  var scaleY = drawH / H;
+  var scaleX = drawW / (maxR * 2 + 1);
+  var scale = Math.min(scaleX, scaleY);
+  var centerX = svgW / 2;
+  var baseY = svgH - margin;
+
+  var pts = [];
+  var steps = 60;
+  for (var s = 0; s <= steps; s++) {
+    var h = (H * s) / steps;
+    var r = profileRadius(h, H, lf.topWidth, lf.bottomWidth, lf.taperStart, lf.curveFactor, type);
+    pts.push({ h: h, r: r });
+  }
+
+  /* Build left and right profile paths */
+  var leftPath = "";
+  var rightPath = "";
+  for (var p = 0; p < pts.length; p++) {
+    var x = pts[p].r * scale;
+    var y = baseY - pts[p].h * scale;
+    if (p === 0) {
+      leftPath += "M" + (centerX - x) + "," + y;
+      rightPath = (centerX + x) + "," + y;
+    } else {
+      leftPath += " L" + (centerX - x) + "," + y;
+      rightPath = (centerX + x) + "," + y + " " + rightPath;
+    }
+  }
+
+  /* Close the shape */
+  var topY = baseY - H * scale;
+  var topR = pts[pts.length - 1].r * scale;
+  var path = leftPath + " L" + (centerX + topR) + "," + topY + " " + rightPath + " Z";
+
+  /* Slice lines */
+  var sliceLines = "";
+  var numSlices;
+  if (dir === "horizontal") {
+    numSlices = Math.ceil(H / T);
+    for (var i = 1; i < numSlices; i++) {
+      var sy = baseY - i * T * scale;
+      if (sy < margin) break;
+      var hr = profileRadius(i * T, H, lf.topWidth, lf.bottomWidth, lf.taperStart, lf.curveFactor, type);
+      var sx = hr * scale;
+      sliceLines += '<line x1="' + (centerX - sx) + '" y1="' + sy + '" x2="' + (centerX + sx) + '" y2="' + sy + '" stroke="#e67e22" stroke-width="0.5" stroke-dasharray="3,2" opacity="0.6"/>';
+    }
+  } else {
+    numSlices = Math.ceil(maxR * 2 / T);
+    var leftEdge = centerX - maxR * scale;
+    for (var i = 1; i < numSlices; i++) {
+      var sx = leftEdge + i * T * scale;
+      if (sx < margin || sx > svgW - margin) break;
+      sliceLines += '<line x1="' + sx + '" y1="' + baseY + '" x2="' + sx + '" y2="' + topY + '" stroke="#3498db" stroke-width="0.5" stroke-dasharray="3,2" opacity="0.6"/>';
+    }
+  }
+
+  /* Dimension annotations */
+  var dimLines = '';
+  /* Height dimension (left) */
+  dimLines += '<line x1="' + (margin - 10) + '" y1="' + baseY + '" x2="' + (margin - 10) + '" y2="' + topY + '" stroke="#444" stroke-width="0.5"/>';
+  dimLines += '<text x="' + (margin - 14) + '" y="' + (baseY - (baseY - topY) / 2) + '" fill="#666" font-size="9" text-anchor="end" dominant-baseline="middle">' + H.toFixed(1) + '"</text>';
+  /* Bottom width (bottom) */
+  var botR = pts[0].r * scale;
+  dimLines += '<line x1="' + (centerX - botR) + '" y1="' + (baseY + 12) + '" x2="' + (centerX + botR) + '" y2="' + (baseY + 12) + '" stroke="#444" stroke-width="0.5"/>';
+  dimLines += '<text x="' + centerX + '" y="' + (baseY + 22) + '" fill="#666" font-size="9" text-anchor="middle">' + lf.bottomWidth.toFixed(2) + '"</text>';
+  /* Top width */
+  dimLines += '<line x1="' + (centerX - topR) + '" y1="' + (topY - 8) + '" x2="' + (centerX + topR) + '" y2="' + (topY - 8) + '" stroke="#444" stroke-width="0.5"/>';
+  dimLines += '<text x="' + centerX + '" y="' + (topY - 14) + '" fill="#666" font-size="9" text-anchor="middle">' + lf.topWidth.toFixed(2) + '"</text>';
+
+  /* Center alignment indicator */
+  var alignMethod = document.getElementById("alignMethod").value;
+  var alignDot = '';
+  if (alignMethod === "threaded_rod") {
+    alignDot = '<line x1="' + centerX + '" y1="' + baseY + '" x2="' + centerX + '" y2="' + topY + '" stroke="#c0392b" stroke-width="1" stroke-dasharray="4,3" opacity="0.5"/>';
+    alignDot += '<circle cx="' + centerX + '" cy="' + (baseY + 3) + '" r="3" fill="none" stroke="#c0392b" stroke-width="0.8"/>';
+    alignDot += '<circle cx="' + centerX + '" cy="' + (topY - 3) + '" r="3" fill="none" stroke="#c0392b" stroke-width="0.8"/>';
+  }
+
+  var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + svgW + ' ' + svgH + '" width="' + svgW + '" height="' + svgH + '">';
+  svg += '<rect width="' + svgW + '" height="' + svgH + '" fill="#080808"/>';
+  /* Profile fill */
+  svg += '<path d="' + path + '" fill="#1a2a1a" stroke="#27ae60" stroke-width="1.5"/>';
+  /* Slice lines */
+  svg += sliceLines;
+  /* Alignment */
+  svg += alignDot;
+  /* Dimensions */
+  svg += dimLines;
+  /* Labels */
+  svg += '<text x="' + centerX + '" y="16" fill="#555" font-size="10" text-anchor="middle" letter-spacing="2">' + numSlices + ' SLICES @ ' + T + '"</text>';
+  svg += '</svg>';
+
+  document.getElementById("previewArea").innerHTML = svg;
+}
+
+/* ── Update Results Panel ── */
+function updateResults() {
+  var slices = computeSlices();
+  var numSlices = slices.length;
+  var WASTE = 1.35;
+  var SHEET_AREA = 48 * 96;
+
+  var totalArea = 0;
+  slices.forEach(function(s) { totalArea += s.area; });
+  totalArea *= WASTE;
+
+  var sheetsNeeded = Math.ceil(totalArea / SHEET_AREA);
+  var cost = sheetsNeeded * lf.sheetPrice;
+
+  /* Results cards */
+  var grid = document.getElementById("resultsGrid");
+  grid.innerHTML =
+    '<div class="result-card"><div class="result-value">' + numSlices + '</div><div class="result-label">Slices</div></div>' +
+    '<div class="result-card"><div class="result-value">' + Math.round(totalArea) + '</div><div class="result-label">Sq In (w/ waste)</div></div>' +
+    '<div class="result-card"><div class="result-value">' + sheetsNeeded + '</div><div class="result-label">Sheets (4x8)</div></div>' +
+    '<div class="result-card"><div class="result-value">$' + cost.toFixed(0) + '</div><div class="result-label">Material Cost</div></div>';
+
+  /* Slice table */
+  var tbody = document.getElementById("sliceTableBody");
+  var rows = "";
+  slices.forEach(function(s) {
+    rows += '<tr><td>' + s.index + '</td><td>' + s.width.toFixed(2) + '</td><td>' + s.depth.toFixed(2) + '</td><td>' + s.area.toFixed(1) + '</td></tr>';
+  });
+  tbody.innerHTML = rows;
+
+  /* Footer slice count */
+  document.getElementById("sliceCount").textContent = numSlices + " slices \u00B7 " + sheetsNeeded + " sheet" + (sheetsNeeded !== 1 ? "s" : "");
+}
+
+/* ── Slice Method Recommendation ── */
+function getSliceRecommendation() {
+  var H = lf.height;
+  var maxW = Math.max(lf.topWidth, lf.bottomWidth);
+  var T = lf.materialThickness;
+  var type = document.getElementById("profileType").value;
+
+  var hCount = Math.ceil(H / T);
+  var vCount = Math.ceil(maxW / T);
+
+  /* Material area: horizontal = sum of bounding squares; vertical = slabs * maxW * H */
+  var hArea = 0;
+  for (var i = 0; i < hCount; i++) {
+    var hMid = T * i + T / 2;
+    if (hMid > H) hMid = H - T / 2;
+    var r = profileRadius(hMid, H, lf.topWidth, lf.bottomWidth, lf.taperStart, lf.curveFactor, type);
+    hArea += Math.pow(r * 2, 2);
+  }
+  var vArea = vCount * maxW * H;
+
+  var rec = "vertical";
+  var reasons = [];
+
+  /* Cylindrical profiles are natural for disc stacking */
+  if (type === "cylindrical") {
+    rec = "horizontal";
+    reasons.push("round profile — discs are natural fit");
+  }
+
+  /* Short, wide parts (medallions, rosettes) favor horizontal */
+  if (H <= maxW) {
+    rec = "horizontal";
+    reasons.push("wider than tall — disc stacking is efficient");
+  }
+
+  /* Compare slice counts */
+  if (vCount < hCount) {
+    reasons.push(vCount + " slabs vs " + hCount + " discs");
+    if (rec !== "horizontal") rec = "vertical";
+  } else if (hCount < vCount) {
+    reasons.push(hCount + " discs vs " + vCount + " slabs");
+  } else {
+    reasons.push(hCount + " slices either way");
+  }
+
+  /* Material savings */
+  if (vArea < hArea * 0.85) {
+    reasons.push("~" + Math.round((1 - vArea / hArea) * 100) + "% less material");
+    if (type !== "cylindrical" && H > maxW) rec = "vertical";
+  } else if (hArea < vArea * 0.85) {
+    reasons.push("~" + Math.round((1 - hArea / vArea) * 100) + "% less material");
+    rec = "horizontal";
+  }
+
+  return { method: rec, reasons: reasons };
+}
+
+function updateRecommendation() {
+  var rec = getSliceRecommendation();
+  var current = document.getElementById("sliceDirection").value;
+  var container = document.getElementById("sliceRecommendation");
+  var badge = document.getElementById("recBadge");
+  var text = document.getElementById("recText");
+
+  container.style.display = "block";
+
+  if (current === rec.method) {
+    badge.textContent = "optimal";
+    badge.style.background = "#1a3a1a";
+    badge.style.color = "#4a4";
+    container.style.borderColor = "#1a3a1a";
+  } else {
+    badge.textContent = "try " + rec.method;
+    badge.style.background = "#3a2a1a";
+    badge.style.color = "#e67e22";
+    container.style.borderColor = "#3a2a1a";
+  }
+
+  text.textContent = rec.reasons.join(" · ");
+}
+
+/* ── Master Update ── */
+function updateAll() {
+  renderPreview();
+  updateResults();
+  updateRecommendation();
+}
+
+/* ── Wire Sliders ── */
+function wireSlider(key) {
+  var row = document.querySelector('[data-key="' + key + '"]');
+  if (!row) return;
+  var range = row.querySelector('input[type="range"]');
+  var num = row.querySelector('input[type="number"]');
+
+  function sync(val) {
+    var v = parseFloat(val);
+    if (isNaN(v)) return;
+    v = Math.max(parseFloat(range.min), Math.min(parseFloat(range.max), v));
+    lf[key] = v;
+    range.value = v;
+    num.value = v % 1 === 0 ? v : v.toFixed(3);
+    updateAll();
+  }
+
+  range.addEventListener("input", function() { sync(this.value); });
+  num.addEventListener("change", function() { sync(this.value); });
+}
+
+/* ── Apply Preset ── */
+function applyPreset(idx) {
+  var p = LAMIFORM_PRESETS[idx];
+  if (!p) return;
+
+  lf.height = p.height;
+  lf.topWidth = p.topWidth;
+  lf.bottomWidth = p.bottomWidth;
+  lf.taperStart = p.taperStart;
+  lf.curveFactor = p.curveFactor;
+
+  document.getElementById("profileType").value = p.type;
+  document.getElementById("sliceDirection").value = p.sliceDir;
+  document.getElementById("alignMethod").value = p.alignment;
+
+  /* Sync DOM sliders */
+  ["height", "topWidth", "bottomWidth", "taperStart", "curveFactor"].forEach(function(k) {
+    var row = document.querySelector('[data-key="' + k + '"]');
+    if (row) {
+      row.querySelector('input[type="range"]').value = lf[k];
+      row.querySelector('input[type="number"]').value = lf[k] % 1 === 0 ? lf[k] : lf[k].toFixed(3);
+    }
+  });
+
+  updateAll();
+}
+
+/* ── JSON Export ── */
+function exportJSON() {
+  var config = {
+    schema_version: "lamiform-2.0",
+    pif_type: "lamiform",
+    form: {
+      profile_type: document.getElementById("profileType").value,
+      definition_method: "curve_profile",
+      height: lf.height,
+      unit: "inches",
+      parameters: {
+        top_width: lf.topWidth,
+        bottom_width: lf.bottomWidth,
+        taper_start_height: lf.taperStart,
+        curve_factor: lf.curveFactor
+      }
+    },
+    slicing: {
+      material_thickness: lf.materialThickness,
+      slice_direction: document.getElementById("sliceDirection").value === "horizontal" ? "Z" : "X",
+      kerf_compensation: 0.01,
+      grain_direction: "alternating"
+    },
+    alignment: {
+      method: document.getElementById("alignMethod").value,
+      primary: {
+        type: document.getElementById("alignMethod").value,
+        diameter: document.getElementById("alignMethod").value === "threaded_rod" ? 0.375 : 0.25,
+        position: "center"
+      }
+    },
+    edge_profiling: {
+      enabled: parseInt(document.getElementById("edgeLevel").value) > 0,
+      level: parseInt(document.getElementById("edgeLevel").value)
+    },
+    nesting: {
+      sheet_width: 48,
+      sheet_height: 96,
+      spacing: 0.25,
+      edge_margin: 0.5
+    },
+    output: {
+      format: "dxf",
+      layers: ["CUT", "DRILL", "ENGRAVE", "REFERENCE"]
+    }
+  };
+
+  var json = JSON.stringify(config, null, 2);
+  var blob = new Blob([json], { type: "application/json" });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url;
+  a.download = "PIF_LamiForm_" + new Date().toISOString().split("T")[0] + ".json";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/* ── Init ── */
+/* Populate preset dropdown */
+var presetSel = document.getElementById("profileSelect");
+LAMIFORM_PRESETS.forEach(function(p, i) {
+  var opt = document.createElement("option");
+  opt.value = i;
+  opt.textContent = p.name;
+  presetSel.appendChild(opt);
+});
+
+/* Wire sliders */
+["height", "topWidth", "bottomWidth", "taperStart", "curveFactor", "materialThickness", "sheetPrice"].forEach(wireSlider);
+
+/* Wire dropdowns */
+presetSel.addEventListener("change", function() { applyPreset(parseInt(this.value)); });
+document.getElementById("profileType").addEventListener("change", updateAll);
+document.getElementById("sliceDirection").addEventListener("change", updateAll);
+document.getElementById("alignMethod").addEventListener("change", updateAll);
+document.getElementById("edgeLevel").addEventListener("change", updateAll);
+
+/* ── PDF Export ── */
+function generatePDF() {
+  var jsPDF = window.jspdf.jsPDF;
+  var doc = new jsPDF('p', 'pt', 'letter');
+  var pageW = doc.internal.pageSize.getWidth();
+  var margin = 50;
+  var y = margin;
+
+  /* Header */
+  doc.setFontSize(22);
+  doc.text("PIF LamiForm Plan", margin, y);
+  y += 28;
+  doc.setFontSize(10);
+  doc.setTextColor(128);
+  doc.text("Generated " + new Date().toISOString().split("T")[0] + " | Selection-Connection", margin, y);
+  doc.setTextColor(0);
+  y += 30;
+
+  /* Profile info */
+  doc.setFontSize(14);
+  doc.text("Profile Configuration", margin, y);
+  y += 20;
+
+  var presetIdx = parseInt(document.getElementById("profileSelect").value);
+  var presetName = LAMIFORM_PRESETS[presetIdx] ? LAMIFORM_PRESETS[presetIdx].name : "Custom";
+
+  var info = [
+    ["Preset", presetName],
+    ["Profile Type", document.getElementById("profileType").value],
+    ["Height", lf.height.toFixed(2) + '"'],
+    ["Top Width", lf.topWidth.toFixed(2) + '"'],
+    ["Bottom Width", lf.bottomWidth.toFixed(2) + '"'],
+    ["Taper Start", lf.taperStart.toFixed(2) + '"'],
+    ["Curve Factor", lf.curveFactor.toFixed(2)],
+    ["Material Thickness", lf.materialThickness.toFixed(3) + '"'],
+    ["Slice Direction", document.getElementById("sliceDirection").value],
+    ["Alignment", document.getElementById("alignMethod").value],
+    ["Edge Profiling", "Level " + document.getElementById("edgeLevel").value]
+  ];
+
+  doc.autoTable({
+    startY: y,
+    head: [["Parameter", "Value"]],
+    body: info,
+    margin: { left: margin, right: margin },
+    styles: { fontSize: 10 },
+    headStyles: { fillColor: [40, 40, 40] },
+    theme: "grid"
+  });
+
+  y = doc.lastAutoTable.finalY + 30;
+
+  /* Slice table */
+  doc.setFontSize(14);
+  doc.text("Slice Schedule", margin, y);
+  y += 10;
+
+  var slices = computeSlices();
+  var sliceData = slices.map(function(s) {
+    return [s.index, s.width.toFixed(2), s.depth.toFixed(2), s.area.toFixed(1)];
+  });
+
+  doc.autoTable({
+    startY: y,
+    head: [["#", "Width (in)", "Depth (in)", "Area (sq in)"]],
+    body: sliceData,
+    margin: { left: margin, right: margin },
+    styles: { fontSize: 9 },
+    headStyles: { fillColor: [40, 40, 40] },
+    theme: "grid"
+  });
+
+  y = doc.lastAutoTable.finalY + 30;
+
+  /* Material summary */
+  var WASTE = 1.35;
+  var SHEET_AREA = 48 * 96;
+  var totalArea = 0;
+  slices.forEach(function(s) { totalArea += s.area; });
+  totalArea *= WASTE;
+  var sheetsNeeded = Math.ceil(totalArea / SHEET_AREA);
+  var cost = sheetsNeeded * lf.sheetPrice;
+
+  doc.setFontSize(14);
+  doc.text("Material Estimate", margin, y);
+  y += 10;
+
+  doc.autoTable({
+    startY: y,
+    head: [["Item", "Value"]],
+    body: [
+      ["Total Slices", String(slices.length)],
+      ["Total Area (w/ 35% waste)", totalArea.toFixed(0) + " sq in"],
+      ["Sheets Needed (4x8)", String(sheetsNeeded)],
+      ["Estimated Cost", "$" + cost.toFixed(2)]
+    ],
+    margin: { left: margin, right: margin },
+    styles: { fontSize: 10 },
+    headStyles: { fillColor: [40, 40, 40] },
+    theme: "grid"
+  });
+
+  /* Footer */
+  doc.setFontSize(8);
+  doc.setTextColor(128);
+  doc.text("Generated by Selection-Connection / Powered by PIF", margin, doc.internal.pageSize.getHeight() - 30);
+
+  doc.save("PIF_LamiForm_" + new Date().toISOString().split("T")[0] + ".pdf");
+}
+
+/* ── Analytics ── */
+var LF_ANALYTICS = {
+  track: function(event, data) {
+    try {
+      var stored = JSON.parse(localStorage.getItem("pif_analytics") || "[]");
+      stored.push({
+        event: event,
+        data: data || {},
+        timestamp: new Date().toISOString(),
+        page: "lamiform"
+      });
+      if (stored.length > 200) stored = stored.slice(-200);
+      localStorage.setItem("pif_analytics", JSON.stringify(stored));
+    } catch(e) {}
+  }
+};
+LF_ANALYTICS.track("page_load", { page: "lamiform" });
+
+/* ── DXF Export ── */
+function generateDXF() {
+  var slices = computeSlices();
+  var dir = document.getElementById("sliceDirection").value;
+  var align = document.getElementById("alignMethod").value;
+  var presetName = LAMIFORM_PRESETS[parseInt(document.getElementById("profileSelect").value)].name;
+  var lines = [];
+
+  /* DXF header */
+  lines.push('0', 'SECTION', '2', 'HEADER');
+  lines.push('9', '$ACADVER', '1', 'AC1015');
+  lines.push('9', '$INSUNITS', '70', '1');
+  lines.push('0', 'ENDSEC');
+
+  /* Tables — define 4 layers */
+  lines.push('0', 'SECTION', '2', 'TABLES');
+  lines.push('0', 'TABLE', '2', 'LAYER', '70', '4');
+  var layers = [
+    { name: 'CUT',       color: 7 },
+    { name: 'DRILL',     color: 1 },
+    { name: 'ENGRAVE',   color: 3 },
+    { name: 'REFERENCE', color: 5 }
+  ];
+  layers.forEach(function(lyr) {
+    lines.push('0', 'LAYER', '2', lyr.name, '70', '0', '62', String(lyr.color), '6', 'Continuous');
+  });
+  lines.push('0', 'ENDTAB');
+  lines.push('0', 'ENDSEC');
+
+  /* Entities */
+  lines.push('0', 'SECTION', '2', 'ENTITIES');
+
+  /* Nesting: arrange slices on 48x96 sheets */
+  var SHEET_W = 96, SHEET_H = 48, GAP = 0.5;
+  var curX = 0, curY = 0, rowH = 0, sheetNum = 0;
+
+  function startSheet() {
+    curX = 0; curY = sheetNum * (SHEET_H + 10); rowH = 0;
+    /* Sheet boundary on REFERENCE */
+    dxfRect(lines, 0, curY, SHEET_W, SHEET_H, 'REFERENCE');
+    dxfText(lines, 'Sheet ' + (sheetNum + 1) + ' — ' + presetName + ' — ' + lf.materialThickness + '" stock', 1, curY + SHEET_H + 2, 'REFERENCE', 1.5);
+  }
+
+  startSheet();
+
+  slices.forEach(function(s) {
+    if (dir === 'horizontal') {
+      /* Circular slices — bounding box is s.width x s.depth */
+      var bbox = s.width + GAP;
+      var radius = s.width / 2;
+
+      /* Advance row if needed */
+      if (curX + bbox > SHEET_W) { curX = 0; curY += rowH + GAP; rowH = 0; }
+      if (curY + bbox > sheetNum * (SHEET_H + 10) + SHEET_H) { sheetNum++; startSheet(); }
+
+      var cx = curX + radius;
+      var cy = curY + radius;
+
+      /* CUT layer: circle outline */
+      dxfCircle(lines, cx, cy, radius, 'CUT');
+
+      /* DRILL layer: alignment hole at center */
+      var holeDia = align === 'threaded_rod' ? 0.375 : (align === 'dowel_pins' ? 0.25 : 0.1875);
+      dxfCircle(lines, cx, cy, holeDia / 2, 'DRILL');
+
+      /* ENGRAVE layer: slice number */
+      dxfText(lines, '#' + s.index, cx - 0.3, cy - 0.3, 'ENGRAVE', 0.6);
+
+      /* REFERENCE layer: dimension */
+      dxfText(lines, s.width.toFixed(2) + '" dia', curX, curY + s.width + 0.3, 'REFERENCE', 0.4);
+
+      curX += bbox;
+      if (s.width > rowH) rowH = s.width;
+
+    } else {
+      /* Vertical slabs: rectangles (s.width x s.depth) */
+      var pw = s.width + GAP, ph = s.depth + GAP;
+
+      if (curX + pw > SHEET_W) { curX = 0; curY += rowH + GAP; rowH = 0; }
+      if (curY + ph > sheetNum * (SHEET_H + 10) + SHEET_H) { sheetNum++; startSheet(); }
+
+      /* CUT layer: rectangle */
+      dxfRect(lines, curX, curY, s.width, s.depth, 'CUT');
+
+      /* DRILL layer: alignment holes (top and bottom center, proportional inset) */
+      var holeDia2 = align === 'threaded_rod' ? 0.375 : (align === 'dowel_pins' ? 0.25 : 0.1875);
+      var holeInset = Math.max(0.5, Math.min(2, s.depth * 0.15));
+      dxfCircle(lines, curX + s.width / 2, curY + holeInset, holeDia2 / 2, 'DRILL');
+      dxfCircle(lines, curX + s.width / 2, curY + s.depth - holeInset, holeDia2 / 2, 'DRILL');
+
+      /* ENGRAVE layer: slice number */
+      dxfText(lines, '#' + s.index, curX + 0.25, curY + 0.5, 'ENGRAVE', 0.6);
+
+      /* REFERENCE layer: dimensions */
+      dxfText(lines, s.width.toFixed(2) + '"', curX + s.width / 2, curY + s.depth + 0.3, 'REFERENCE', 0.4);
+
+      curX += pw;
+      if (s.depth > rowH) rowH = s.depth;
+    }
+  });
+
+  lines.push('0', 'ENDSEC');
+  lines.push('0', 'EOF');
+
+  /* Download */
+  var dxfContent = lines.join('\n');
+  var blob = new Blob([dxfContent], { type: 'application/dxf' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'PIF_LamiForm_' + presetName.replace(/[^a-zA-Z0-9]/g, '_') + '_' + new Date().toISOString().split('T')[0] + '.dxf';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function dxfRect(lines, x, y, w, h, layer) {
+  lines.push('0', 'LWPOLYLINE', '8', layer, '90', '4', '70', '1');
+  lines.push('10', String(x),     '20', String(y));
+  lines.push('10', String(x + w), '20', String(y));
+  lines.push('10', String(x + w), '20', String(y + h));
+  lines.push('10', String(x),     '20', String(y + h));
+}
+
+function dxfCircle(lines, cx, cy, r, layer) {
+  lines.push('0', 'CIRCLE', '8', layer);
+  lines.push('10', String(cx), '20', String(cy), '30', '0');
+  lines.push('40', String(r));
+}
+
+function dxfText(lines, text, x, y, layer, height) {
+  lines.push('0', 'TEXT', '8', layer);
+  lines.push('10', String(x), '20', String(y), '30', '0');
+  lines.push('40', String(height || 1));
+  lines.push('1', text);
+}
+
+/* Wire export buttons */
+document.getElementById("btnExportJSON").addEventListener("click", function() {
+  LF_ANALYTICS.track("export", { type: "json", preset: LAMIFORM_PRESETS[parseInt(document.getElementById("profileSelect").value)].name });
+  exportJSON();
+});
+document.getElementById("btnExportPDF").addEventListener("click", function() {
+  LF_ANALYTICS.track("export", { type: "pdf", preset: LAMIFORM_PRESETS[parseInt(document.getElementById("profileSelect").value)].name });
+  var btn = document.getElementById("btnExportPDF");
+  var orig = btn.textContent;
+  btn.textContent = "Working...";
+  btn.disabled = true;
+  try {
+    generatePDF();
+    btn.textContent = "PDF!";
+  } catch(e) {
+    btn.textContent = "Error";
+    console.error(e);
+  }
+  setTimeout(function() { btn.textContent = orig; btn.disabled = false; }, 1500);
+});
+
+document.getElementById("btnExportDXF").addEventListener("click", function() {
+  LF_ANALYTICS.track("export", { type: "dxf", preset: LAMIFORM_PRESETS[parseInt(document.getElementById("profileSelect").value)].name });
+  var btn = document.getElementById("btnExportDXF");
+  var orig = btn.textContent;
+  btn.textContent = "Working...";
+  btn.disabled = true;
+  try {
+    generateDXF();
+    btn.textContent = "DXF!";
+  } catch(e) {
+    btn.textContent = "Error";
+    console.error(e);
+  }
+  setTimeout(function() { btn.textContent = orig; btn.disabled = false; }, 1500);
+});
+
+/* Track preset changes */
+var origApplyPreset = applyPreset;
+applyPreset = function(idx) {
+  LF_ANALYTICS.track("preset_load", { preset: LAMIFORM_PRESETS[idx] ? LAMIFORM_PRESETS[idx].name : idx });
+  origApplyPreset(idx);
+};
+
+/* Initial render */
+applyPreset(0);
+</script>
+
+</body>
+</html>

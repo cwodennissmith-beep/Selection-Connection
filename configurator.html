@@ -1,0 +1,3550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PIF Cabinet Configurator — 17 Presets, Instant Cut Lists, CNC-Ready DXF</title>
+  <meta name="description" content="Configure custom cabinets with 49 parametric sliders. Choose from 17 furniture types, select hardware brands, get instant cut lists, and export CNC-ready DXF files. Powered by PIF.">
+  <meta property="og:title" content="PIF Cabinet Configurator">
+  <meta property="og:description" content="CNC-ready cabinet plans in minutes. 17 furniture templates, 49 parametric controls, instant cut lists and DXF export.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://selection-connection.com/configurator.html">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #0a0a0a;
+      color: #ffffff;
+      font-family: 'Segoe UI', sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Header ── */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      height: 48px;
+      border-bottom: 1px solid #222;
+      flex-shrink: 0;
+    }
+    .top-bar a {
+      color: #888;
+      text-decoration: none;
+      font-size: 13px;
+      letter-spacing: 1px;
+    }
+    .top-bar a:hover { color: #fff; }
+    .top-bar .title {
+      font-size: 14px;
+      font-weight: 400;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    .top-bar .brand {
+      font-size: 11px;
+      color: #444;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+
+    /* ── Main Layout ── */
+    .app-layout {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── Controls Panel ── */
+    .controls-panel {
+      width: 40%;
+      min-width: 360px;
+      max-width: 480px;
+      overflow-y: auto;
+      border-right: 1px solid #222;
+      flex-shrink: 0;
+    }
+    .controls-panel::-webkit-scrollbar { width: 6px; }
+    .controls-panel::-webkit-scrollbar-track { background: #0a0a0a; }
+    .controls-panel::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+    /* ── Slider Group ── */
+    .group-header {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      background: #111;
+      border-bottom: 1px solid #1a1a1a;
+      cursor: pointer;
+      user-select: none;
+    }
+    .group-header:hover { background: #151515; }
+    .group-header .arrow {
+      display: inline-block;
+      width: 10px;
+      margin-right: 10px;
+      font-size: 10px;
+      color: #555;
+      transition: transform 0.2s ease;
+    }
+    .group-header.expanded .arrow { transform: rotate(90deg); }
+    .group-header .group-label {
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #888;
+      flex: 1;
+    }
+    .group-header .group-count {
+      font-size: 10px;
+      color: #444;
+      letter-spacing: 1px;
+    }
+
+    .group-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+      background: #0d0d0d;
+    }
+    .group-body.expanded {
+      max-height: 2000px;
+    }
+
+    /* ── Slider Row ── */
+    .slider-row {
+      display: flex;
+      align-items: center;
+      padding: 8px 16px;
+      border-bottom: 1px solid #141414;
+    }
+    .slider-row:last-child { border-bottom: none; }
+    .slider-label {
+      width: 40%;
+      font-size: 12px;
+      color: #777;
+      padding-right: 8px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .slider-range {
+      width: 38%;
+      padding: 0 8px;
+    }
+    .slider-value {
+      width: 22%;
+    }
+    .slider-value input {
+      width: 100%;
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      color: #ddd;
+      font-family: 'Consolas', 'Segoe UI', monospace;
+      font-size: 12px;
+      padding: 4px 6px;
+      text-align: right;
+      border-radius: 3px;
+      outline: none;
+    }
+    .slider-value input:focus {
+      border-color: #555;
+      color: #fff;
+    }
+
+    /* ── Range Input Styling ── */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 4px;
+      background: #333;
+      border-radius: 2px;
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #888;
+      cursor: pointer;
+      border: none;
+      transition: background 0.15s;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover { background: #fff; }
+    input[type="range"]::-webkit-slider-thumb:active { background: #fff; }
+    input[type="range"]::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #888;
+      cursor: pointer;
+      border: none;
+    }
+    input[type="range"]::-moz-range-thumb:hover { background: #fff; }
+    input[type="range"]::-moz-range-track {
+      height: 4px;
+      background: #333;
+      border-radius: 2px;
+    }
+
+    /* ── Viewport Panel ── */
+    .viewport-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #080808;
+      position: relative;
+      overflow: hidden;
+    }
+    .viewport-svg-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .viewport-svg-wrap svg { max-width: 100%; max-height: 100%; }
+    .viewport-info {
+      position: absolute;
+      bottom: 12px;
+      right: 16px;
+      font-size: 10px;
+      color: #333;
+      letter-spacing: 1px;
+    }
+    .viewport-dims {
+      position: absolute;
+      top: 12px;
+      left: 16px;
+      font-size: 11px;
+      color: #555;
+      letter-spacing: 1px;
+    }
+
+    /* ── Footer ── */
+    .action-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      height: 52px;
+      border-top: 1px solid #222;
+      flex-shrink: 0;
+    }
+    .action-bar .left-actions {
+      display: flex;
+      gap: 12px;
+    }
+    .action-bar .param-count {
+      font-size: 11px;
+      color: #333;
+      letter-spacing: 1px;
+    }
+    .btn-action {
+      padding: 10px 24px;
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      border: none;
+      cursor: pointer;
+      font-family: 'Segoe UI', sans-serif;
+      transition: opacity 0.15s;
+    }
+    .btn-action:hover { opacity: 0.8; }
+    .btn-reset {
+      background: transparent;
+      color: #888;
+      border: 1px solid #333;
+    }
+    .btn-export {
+      background: #ffffff;
+      color: #000000;
+    }
+    .btn-pdf {
+      background: #c0392b;
+      color: #fff;
+    }
+    .btn-dxf {
+      background: #2980b9;
+      color: #fff;
+    }
+    .btn-csv {
+      background: #27ae60;
+      color: #fff;
+    }
+    .btn-locked { position: relative; opacity: 0.65; }
+    .btn-locked::after {
+      content: "\1F512";
+      font-size: 10px;
+      margin-left: 6px;
+    }
+    .btn-unlocked::after {
+      content: "\2713";
+      font-size: 10px;
+      margin-left: 6px;
+    }
+
+    /* ── Button Spinner ── */
+    .btn-action.btn-working {
+      pointer-events: none;
+      opacity: 0.7;
+    }
+    .btn-spinner {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: btn-spin 0.6s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @keyframes btn-spin { to { transform: rotate(360deg); } }
+    .btn-done {
+      pointer-events: none;
+    }
+
+    /* ── Pricing Modal ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.visible { display: flex; }
+    .modal-card {
+      background: #141414;
+      border: 1px solid #333;
+      border-radius: 12px;
+      max-width: 560px;
+      width: 90%;
+      padding: 36px;
+      position: relative;
+    }
+    .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 20px;
+      background: none;
+      border: none;
+      color: #666;
+      font-size: 24px;
+      cursor: pointer;
+    }
+    .modal-close:hover { color: #fff; }
+    .modal-title {
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+      color: #fff;
+    }
+    .modal-subtitle {
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 28px;
+    }
+    .purchase-summary {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      padding: 28px 24px;
+      text-align: center;
+    }
+    .tier-price {
+      font-size: 32px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+    .tier-period {
+      font-size: 11px;
+      color: #666;
+      margin-bottom: 16px;
+    }
+    .tier-features {
+      list-style: none;
+      text-align: left;
+      font-size: 12px;
+      color: #999;
+      line-height: 2;
+    }
+    .tier-features li::before {
+      content: "\2713 ";
+      color: #27ae60;
+      margin-right: 4px;
+    }
+    .tier-btn {
+      display: inline-block;
+      margin-top: 16px;
+      padding: 10px 24px;
+      background: #2980b9;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .tier-btn:hover { background: #3498db; }
+    .modal-footer-note {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 11px;
+      color: #555;
+    }
+    /* ── Preset Selector ── */
+    .preset-section {
+      padding: 12px 16px;
+      border-bottom: 1px solid #222;
+      background: #111;
+    }
+    .preset-section label {
+      display: block;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #888;
+      margin-bottom: 8px;
+    }
+    .preset-section select {
+      width: 100%;
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      color: #ddd;
+      font-family: 'Segoe UI', sans-serif;
+      font-size: 13px;
+      padding: 8px 10px;
+      border-radius: 3px;
+      outline: none;
+      cursor: pointer;
+    }
+    .preset-section select:focus { border-color: #555; color: #fff; }
+
+    /* ── Cut List Panel ── */
+    .cutlist-section { border-top: 1px solid #222; }
+    .cutlist-header {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      background: #111;
+      border-bottom: 1px solid #1a1a1a;
+      cursor: pointer;
+      user-select: none;
+    }
+    .cutlist-header:hover { background: #151515; }
+    .cutlist-header .arrow {
+      display: inline-block;
+      width: 10px;
+      margin-right: 10px;
+      font-size: 10px;
+      color: #555;
+      transition: transform 0.2s ease;
+    }
+    .cutlist-header.expanded .arrow { transform: rotate(90deg); }
+    .cutlist-header .cutlist-label {
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #888;
+      flex: 1;
+    }
+    .cutlist-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+      background: #0d0d0d;
+    }
+    .cutlist-body.expanded { max-height: 4000px; }
+    .cutlist-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .cutlist-table th {
+      text-align: left;
+      padding: 6px 10px;
+      color: #555;
+      font-weight: 400;
+      font-size: 10px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    .cutlist-table td {
+      padding: 5px 10px;
+      color: #aaa;
+      border-bottom: 1px solid #111;
+      font-family: 'Consolas', monospace;
+    }
+    .cutlist-table tr:last-child td { border-bottom: none; }
+    .cutlist-table .part-name { color: #ccc; font-family: 'Segoe UI', sans-serif; }
+    .sheet-estimate {
+      padding: 12px 16px;
+      background: #0f0f0f;
+      border-top: 1px solid #1a1a1a;
+    }
+    .sheet-estimate .sheet-title {
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #555;
+      margin-bottom: 6px;
+    }
+    .sheet-estimate .sheet-line {
+      font-size: 12px;
+      color: #aaa;
+      padding: 2px 0;
+    }
+    .sheet-estimate .sheet-line span {
+      color: #ddd;
+      font-family: 'Consolas', monospace;
+    }
+
+    /* ── Validation Warnings ── */
+    .slider-row.warning { background: rgba(217, 74, 74, 0.08); }
+    .slider-row.warning .slider-label { color: #d94a4a; }
+    .slider-row.warning .slider-value input { border-color: #d94a4a; color: #d94a4a; }
+    .validation-section { border-top: 1px solid #222; }
+    .validation-header {
+      display: flex; align-items: center; padding: 12px 16px;
+      background: #111; border-bottom: 1px solid #1a1a1a;
+      cursor: pointer; user-select: none;
+    }
+    .validation-header:hover { background: #151515; }
+    .validation-header .arrow {
+      display: inline-block; width: 10px; margin-right: 10px;
+      font-size: 10px; color: #555; transition: transform 0.2s ease;
+    }
+    .validation-header.expanded .arrow { transform: rotate(90deg); }
+    .validation-header .validation-label {
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: #888; flex: 1;
+    }
+    .validation-header .validation-count {
+      font-size: 10px; color: #d94a4a; letter-spacing: 1px;
+    }
+    .validation-header.all-clear .validation-count { color: #4ad94a; }
+    .validation-body {
+      max-height: 0; overflow: hidden; transition: max-height 0.3s ease; background: #0d0d0d;
+    }
+    .validation-body.expanded { max-height: 2000px; }
+    .validation-item {
+      padding: 6px 16px; font-size: 12px; color: #d94a4a; border-bottom: 1px solid #141414;
+    }
+    .validation-item.pass { color: #4ad94a; }
+
+    /* ── Preset Lineage Indicator ── */
+    .preset-lineage {
+      font-size: 10px; color: #555; letter-spacing: 1px;
+      padding: 4px 16px 8px; background: #111;
+    }
+    .preset-lineage .modified { color: #d9904a; }
+
+    /* ── Undo/Redo Buttons ── */
+    .undo-redo { display: flex; gap: 4px; }
+    .undo-redo button {
+      background: transparent; border: 1px solid #333; color: #666;
+      font-size: 14px; width: 32px; height: 32px; cursor: pointer;
+      border-radius: 3px; display: flex; align-items: center; justify-content: center;
+    }
+    .undo-redo button:hover { color: #fff; border-color: #555; }
+    .undo-redo button:disabled { color: #222; border-color: #1a1a1a; cursor: default; }
+
+    /* ── Hidden Group (Smart UI) ── */
+    .group-hidden { display: none !important; }
+
+    /* ── Hardware Dropdown Rows ── */
+    .hardware-row {
+      display: flex;
+      align-items: center;
+      padding: 8px 16px;
+      border-bottom: 1px solid #141414;
+    }
+    .hardware-row:last-child { border-bottom: none; }
+    .hardware-row .slider-label { width: 20%; min-width: 50px; }
+    .hardware-row select {
+      flex: 1;
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      color: #ddd;
+      font-family: 'Segoe UI', sans-serif;
+      font-size: 11px;
+      padding: 5px 8px;
+      border-radius: 3px;
+      outline: none;
+      cursor: pointer;
+    }
+    .hardware-row select:focus { border-color: #555; color: #fff; }
+
+    /* ── Hardware Schedule (in Cut List) ── */
+    .hw-schedule {
+      padding: 12px 16px;
+      background: #0f0f0f;
+      border-top: 1px solid #1a1a1a;
+    }
+    .hw-schedule .hw-title {
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #555;
+      margin-bottom: 6px;
+    }
+    .hw-schedule-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .hw-schedule-table th {
+      text-align: left;
+      padding: 4px 8px;
+      color: #555;
+      font-weight: 400;
+      font-size: 10px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    .hw-schedule-table td {
+      padding: 4px 8px;
+      color: #aaa;
+      border-bottom: 1px solid #111;
+      font-family: 'Consolas', monospace;
+    }
+    .hw-schedule-table td.hw-item-name { color: #ccc; font-family: 'Segoe UI', sans-serif; }
+    .hw-schedule-table td.hw-cost { text-align: right; }
+    .hw-schedule-table tr:last-child td { border-bottom: none; }
+    .hw-subtotal {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 8px 0;
+      font-size: 12px;
+      color: #888;
+      border-top: 1px solid #2a2a2a;
+      margin-top: 6px;
+    }
+    .hw-subtotal .hw-total-value {
+      color: #ddd;
+      font-family: 'Consolas', monospace;
+    }
+
+    /* ── Cost Summary Section ── */
+    .cost-section { border-top: 1px solid #222; }
+    .cost-header {
+      display: flex; align-items: center; padding: 12px 16px;
+      background: #111; border-bottom: 1px solid #1a1a1a;
+      cursor: pointer; user-select: none;
+    }
+    .cost-header:hover { background: #151515; }
+    .cost-header .arrow {
+      display: inline-block; width: 10px; margin-right: 10px;
+      font-size: 10px; color: #555; transition: transform 0.2s ease;
+    }
+    .cost-header.expanded .arrow { transform: rotate(90deg); }
+    .cost-header .cost-label {
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: #888; flex: 1;
+    }
+    .cost-header .cost-total-badge {
+      font-size: 11px; color: #4ad94a; letter-spacing: 1px;
+      font-family: 'Consolas', monospace;
+    }
+    .cost-body {
+      max-height: 0; overflow: hidden; transition: max-height 0.3s ease; background: #0d0d0d;
+    }
+    .cost-body.expanded { max-height: 2000px; }
+    .cost-line {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 6px 16px; border-bottom: 1px solid #141414; font-size: 12px;
+    }
+    .cost-line:last-child { border-bottom: none; }
+    .cost-line .cost-line-label { color: #888; }
+    .cost-line .cost-line-detail { color: #666; font-size: 11px; }
+    .cost-line .cost-line-value {
+      color: #aaa; font-family: 'Consolas', monospace; text-align: right; min-width: 70px;
+    }
+    .cost-line.cost-grand-total {
+      border-top: 1px solid #333; padding: 10px 16px; margin-top: 2px;
+    }
+    .cost-line.cost-grand-total .cost-line-label {
+      color: #ddd; font-weight: 600; letter-spacing: 1px;
+    }
+    .cost-line.cost-grand-total .cost-line-value {
+      color: #4ad94a; font-size: 14px;
+    }
+
+    /* ── Zone Stack UI ── */
+    .zone-comp-label {
+      padding: 6px 16px;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #666;
+      background: #0a0a0a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    .zone-badge {
+      display: inline-block;
+      padding: 1px 6px;
+      border-radius: 2px;
+      font-size: 9px;
+      margin-left: 6px;
+    }
+    .zone-badge-door { background: #1a3a5c; color: #6ab0ff; }
+    .zone-badge-drawer { background: #1a4a2a; color: #6aff8a; }
+    .zone-badge-open { background: #3a3a3a; color: #aaa; }
+    .zone-svg-wrap {
+      padding: 12px 16px;
+      display: flex;
+      justify-content: center;
+      border-bottom: 1px solid #141414;
+    }
+    .zone-hidden { display: none !important; }
+
+    /* ── Responsive ── */
+    @media (min-width: 1600px) {
+      .controls-panel { max-width: 520px; }
+    }
+    @media (max-width: 1280px) {
+      .controls-panel { max-width: 420px; min-width: 320px; }
+    }
+    @media (max-width: 900px) {
+      .app-layout { flex-direction: column; }
+      .controls-panel {
+        width: 100%;
+        min-width: unset;
+        max-width: unset;
+        max-height: 50vh;
+        border-right: none;
+        border-bottom: 1px solid #222;
+      }
+      .viewport-panel { min-height: 30vh; }
+      .action-bar { flex-wrap: wrap; height: auto; padding: 8px 16px; gap: 8px; justify-content: center; }
+      .action-bar .left-actions { flex-wrap: wrap; gap: 6px; justify-content: center; }
+      .action-bar .param-count { width: 100%; text-align: center; order: -1; }
+      .btn-action { padding: 8px 16px; font-size: 11px; }
+    }
+    @media (max-width: 480px) {
+      .top-bar { padding: 0 12px; }
+      .top-bar .title { font-size: 12px; letter-spacing: 1px; }
+      .top-bar .brand { display: none; }
+      .slider-row { padding: 8px 12px; }
+      .slider-label { font-size: 10px; min-width: 60px; }
+      .modal-card { padding: 24px 16px; }
+      .btn-action { padding: 6px 12px; font-size: 10px; letter-spacing: 1px; }
+      .group-header .group-label { font-size: 10px; letter-spacing: 2px; }
+    }
+  </style>
+  <!-- Supabase + SC Platform -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/sc-config.js"></script>
+  <script src="js/sc-auth.js"></script>
+  <script src="js/sc-api.js"></script>
+  <script src="js/sc-nav.js"></script>
+</head>
+<body>
+
+  <header class="top-bar">
+    <a href="index.html">&larr; Back</a>
+    <span class="title">Cabinet Configurator</span>
+    <div class="undo-redo">
+      <button id="btnUndo" title="Undo (Ctrl+Z)" disabled>&#8630;</button>
+      <button id="btnRedo" title="Redo (Ctrl+Y)" disabled>&#8631;</button>
+    </div>
+    <div>
+      <a href="lamiform.html" style="margin-right:16px;color:#888;text-decoration:none;font-size:13px;letter-spacing:1px;">LamiForm</a>
+      <span class="brand">Powered by PIF</span>
+    </div>
+  </header>
+
+  <main class="app-layout">
+    <aside class="controls-panel" id="controlsPanel"></aside>
+
+    <section class="viewport-panel" id="viewportPanel">
+      <div class="viewport-svg-wrap" id="cabinetSvgWrap"></div>
+      <div class="viewport-dims" id="viewportDims"></div>
+      <div class="viewport-info">SVG Preview &middot; Rhino.Compute for 3D</div>
+    </section>
+  </main>
+
+  <footer class="action-bar">
+    <div class="left-actions">
+      <button class="btn-action btn-reset" id="btnReset">Reset Defaults</button>
+    </div>
+    <span class="param-count" id="paramCount"></span>
+    <div class="left-actions">
+      <button class="btn-action btn-export" id="btnExport">Export JSON</button>
+      <button class="btn-action btn-pdf" id="btnPDF">PDF</button>
+      <button class="btn-action btn-dxf btn-locked" id="btnDXF">DXF</button>
+      <button class="btn-action btn-csv btn-locked" id="btnCSV">BOM</button>
+    </div>
+  </footer>
+
+  <!-- Purchase Modal — Guest checkout, one file per transaction -->
+  <div class="modal-overlay" id="pricingModal">
+    <div class="modal-card">
+      <button class="modal-close" id="modalClose">&times;</button>
+      <div class="modal-title">Get CNC-Ready Files</div>
+      <div class="modal-subtitle">Purchase the complete output package for your current configuration. No account required.</div>
+      <div class="purchase-summary">
+        <ul class="tier-features">
+          <li>DXF cut files (4-layer: CUT, DRILL, ENGRAVE, REFERENCE)</li>
+          <li>Full BOM spreadsheet with hardware schedule</li>
+          <li>Sheet nesting layout</li>
+          <li>Cost summary</li>
+        </ul>
+        <div class="tier-price">$5.50</div>
+        <div class="tier-period">one configuration &middot; instant download</div>
+        <button class="tier-btn" id="purchaseBtn">Purchase</button>
+      </div>
+      <div class="modal-footer-note">Guest checkout via Stripe. No account needed.</div>
+    </div>
+  </div>
+
+<script>
+/* ================================================================
+   SLIDER DATA — edit this array to add/remove/reorder parameters.
+   All values from GH definition: PIF Cabinet Generator V1.0
+   ================================================================ */
+const SLIDER_GROUPS = [
+  {
+    id: "cabinet-dimensions",
+    label: "Cabinet Dimensions",
+    collapsed: false,
+    sliders: [
+      { key: "Width",        default: 48,   min: 9,   max: 96,  step: 0.125, decimals: 3 },
+      { key: "Height",       default: 36,   min: 6,   max: 96,  step: 0.125, decimals: 3 },
+      { key: "Depth",        default: 24,   min: 6,   max: 48,  step: 0.125, decimals: 3 },
+      { key: "NominalWidth", default: 36,   min: 6,   max: 60,  step: 0.125, decimals: 3 },
+    ]
+  },
+  {
+    id: "material-thickness",
+    label: "Material Thickness",
+    collapsed: true,
+    sliders: [
+      { key: "SideThickness",      default: 0.75,  min: 0.25,  max: 1.5,   step: 0.001, decimals: 3 },
+      { key: "BottomThickness",     default: 0.767, min: 0.25,  max: 1.5,   step: 0.001, decimals: 3 },
+      { key: "ShelfThickness",      default: 0.797, min: 0.25,  max: 1.5,   step: 0.001, decimals: 3 },
+      { key: "BackPanelThickness",  default: 0.25,  min: 0.125, max: 1.5,   step: 0.001, decimals: 3 },
+    ]
+  },
+  {
+    id: "toe-kick",
+    label: "Toe Kick",
+    collapsed: true,
+    sliders: [
+      { key: "ToeKickHeight", default: 7.68,  min: 0,   max: 12, step: 0.001, decimals: 3 },
+      { key: "ToeKickDepth",  default: 4.069, min: 0,   max: 6,  step: 0.001, decimals: 3 },
+    ]
+  },
+  {
+    id: "stretchers-frame",
+    label: "Stretchers / Frame",
+    collapsed: true,
+    sliders: [
+      { key: "FrontStretcherWidth",     default: 5.361, min: 0.5, max: 6,   step: 0.001, decimals: 3 },
+      { key: "FrontStretcherThickness", default: 0.733, min: 0.5, max: 1.5, step: 0.001, decimals: 3 },
+      { key: "BackStretcherThickness",  default: 0.96,  min: 0,   max: 1.5, step: 0.001, decimals: 3 },
+      { key: "BackStretcherWidth",      default: 2.8,   min: 1,   max: 6,   step: 0.001, decimals: 3 },
+      { key: "RearStretcherWidth",      default: 5.932, min: 1,   max: 6,   step: 0.001, decimals: 3 },
+      { key: "RearStretcherThickness",  default: 0.758, min: 0.5, max: 1.5, step: 0.001, decimals: 3 },
+    ]
+  },
+  {
+    id: "shelves",
+    label: "Shelves",
+    collapsed: true,
+    sliders: [
+      { key: "ShelfCount",    default: 1,     min: 0, max: 12, step: 1,     decimals: 0 },
+      { key: "ShelfSetback",  default: 3.975, min: 0, max: 4,  step: 0.001, decimals: 3 },
+      { key: "SingleShelfZ",  default: 18,    min: 4, max: 48, step: 0.125, decimals: 3 },
+    ]
+  },
+  {
+    id: "doors",
+    label: "Doors",
+    collapsed: true,
+    sliders: [
+      { key: "DoorCount",         default: 2,     min: 0,     max: 4,   step: 1,     decimals: 0 },
+      { key: "DoorThickness",     default: 0.75,  min: 0.5,   max: 1.5, step: 0.001, decimals: 3 },
+      { key: "DoorGap",           default: 0.125, min: 0.063, max: 0.25,step: 0.001, decimals: 3 },
+      { key: "DoorOverlayLeft",   default: 0.5,   min: 0,     max: 1.5, step: 0.001, decimals: 3 },
+      { key: "DoorOverlayRight",  default: 0.5,   min: 0,     max: 1.5, step: 0.001, decimals: 3 },
+      { key: "DoorOverlayTop",    default: 0.5,   min: 0,     max: 1.5, step: 0.001, decimals: 3 },
+      { key: "DoorOverlayBottom", default: 0.5,   min: 0,     max: 1.5, step: 0.001, decimals: 3 },
+    ]
+  },
+  {
+    id: "drawers",
+    label: "Drawers",
+    collapsed: true,
+    sliders: [
+      { key: "DrawerCount",            default: 0,     min: 0,     max: 6,    step: 1,     decimals: 0 },
+      { key: "DrawerHeight",           default: 6,     min: 3,     max: 12,   step: 0.001, decimals: 3 },
+      { key: "DrawerBoxHeight",        default: 4,     min: 2.5,   max: 10,   step: 0.001, decimals: 3 },
+      { key: "DrawerBoxSideThickness", default: 0.5,   min: 0.375, max: 0.75, step: 0.001, decimals: 3 },
+      { key: "DrawerBottomThickness",  default: 0.25,  min: 0.125, max: 0.5,  step: 0.001, decimals: 3 },
+      { key: "DrawerClearance",        default: 0.5,   min: 0.25,  max: 1,    step: 0.001, decimals: 3 },
+      { key: "SlideTopClearance",      default: 0.276, min: 0.236, max: 0.5,  step: 0.001, decimals: 3 },
+      { key: "SlideBottomClearance",   default: 0.551, min: 0.394, max: 0.75, step: 0.001, decimals: 3 },
+    ]
+  },
+  {
+    id: "hinges",
+    label: "Hinges",
+    collapsed: true,
+    sliders: [
+      { key: "HingeCount",          default: 2,     min: 1,     max: 5,     step: 1,     decimals: 0 },
+      { key: "HingeInsetTop",       default: 3,     min: 2,     max: 5,     step: 0.001, decimals: 3 },
+      { key: "HingeInsetBottom",    default: 3,     min: 2,     max: 5,     step: 0.001, decimals: 3 },
+      { key: "HingeCupDiameter",    default: 1.378, min: 1.024, max: 1.378, step: 0.001, decimals: 3 },
+      { key: "HingeCupDepth",       default: 0.512, min: 0.394, max: 0.531, step: 0.001, decimals: 3 },
+      { key: "HingeBoringDistance",  default: 0.197, min: 0.118, max: 0.315, step: 0.001, decimals: 3 },
+    ]
+  },
+  {
+    id: "pulls",
+    label: "Pulls",
+    collapsed: true,
+    sliders: [
+      { key: "PullCenterHeight",     default: 4,      min: 1,      max: 48,    step: 0.125, decimals: 3 },
+      { key: "PullCenterOffset",     default: 0,      min: -2,     max: 2,     step: 0.001, decimals: 3 },
+      { key: "PullBoreSpacing",      default: 3.75,   min: 0,      max: 10.063,step: 0.001, decimals: 3 },
+      { key: "PullMountingHoleDia",  default: 0.1875, min: 0.1563, max: 0.25,  step: 0.0001,decimals: 4 },
+      { key: "PullProjection",       default: 1.375,  min: 0.375,  max: 1.5,   step: 0.001, decimals: 3 },
+    ]
+  },
+  {
+    id: "tolerances",
+    label: "Tolerances",
+    collapsed: true,
+    sliders: [
+      { key: "DadoDepth",       default: 0.25,  min: 0.125, max: 0.375, step: 0.001,  decimals: 3 },
+      { key: "JointAllowance",  default: 0.01,  min: 0.005, max: 0.05,  step: 0.001,  decimals: 3 },
+      { key: "Tolerance",       default: 0.02,  min: 0.001, max: 0.02,  step: 0.001,  decimals: 3 },
+      { key: "StepFactor",      default: 0.25,  min: 0.1,   max: 0.4,   step: 0.001,  decimals: 3 },
+    ]
+  }
+];
+
+/* Section name mapping for JSON export */
+const SECTION_MAP = {
+  "cabinet-dimensions":  "CabinetDimensions",
+  "material-thickness":  "MaterialThickness",
+  "toe-kick":            "ToeKick",
+  "stretchers-frame":    "StretchersFrame",
+  "shelves":             "Shelves",
+  "doors":               "DoorParameters",
+  "drawers":             "DrawerParameters",
+  "hinges":              "HingeParameters",
+  "pulls":               "PullParameters",
+  "tolerances":          "Tolerances"
+};
+
+/* ================================================================
+   CHASSIS PRESETS — 17 furniture types with exact slider overrides.
+   Source: PIF_Chassis_Templates.md
+   Selecting a preset resets all sliders to defaults, then applies
+   only the listed overrides. "Custom" keeps current values.
+   ================================================================ */
+const CHASSIS_PRESETS = {
+  "Custom": null,
+  "Kitchen Base": {
+    Width: 36, Height: 34.5, Depth: 24, DoorCount: 2, DrawerCount: 0,
+    ShelfCount: 1, ToeKickHeight: 4, ToeKickDepth: 3,
+    DoorOverlayLeft: 0.5, DoorOverlayRight: 0.5, DoorOverlayTop: 0.5, DoorOverlayBottom: 0.5,
+    SideThickness: 0.75, BottomThickness: 0.75, BackPanelThickness: 0.25
+  },
+  "Kitchen Base (ADA)": {
+    Width: 36, Height: 31, Depth: 24, DoorCount: 2, DrawerCount: 0,
+    ShelfCount: 1, ToeKickHeight: 9, ToeKickDepth: 6,
+    SideThickness: 0.75, BottomThickness: 0.75, BackPanelThickness: 0.25
+  },
+  "Wall / Upper Cabinet": {
+    Width: 36, Height: 30, Depth: 12, DoorCount: 2, DrawerCount: 0,
+    ShelfCount: 2, ToeKickHeight: 0, ToeKickDepth: 0,
+    SideThickness: 0.75, BottomThickness: 0.75, BackPanelThickness: 0.5
+  },
+  "Bathroom Vanity": {
+    Width: 36, Height: 34.5, Depth: 21, DoorCount: 2, DrawerCount: 0,
+    ShelfCount: 1, ToeKickHeight: 4, ToeKickDepth: 3,
+    DoorOverlayLeft: 0.5, DoorOverlayRight: 0.5,
+    SideThickness: 0.75, BottomThickness: 0.75, BackPanelThickness: 0.25
+  },
+  "Pantry Tower": {
+    Width: 24, Height: 84, Depth: 24, DoorCount: 2, DrawerCount: 0,
+    ShelfCount: 5, ToeKickHeight: 4, ToeKickDepth: 3,
+    ShelfSetback: 0, SideThickness: 0.75, BottomThickness: 0.75, BackPanelThickness: 0.5
+  },
+  "Bookcase": {
+    Width: 36, Height: 60, Depth: 12, DoorCount: 0, DrawerCount: 0,
+    ShelfCount: 4, ToeKickHeight: 3, ToeKickDepth: 1,
+    SideThickness: 0.75, ShelfThickness: 0.75, BottomThickness: 0.75, BackPanelThickness: 0.25
+  },
+  "Media Console": {
+    Width: 66, Height: 24, Depth: 18, DoorCount: 4, DrawerCount: 0,
+    ShelfCount: 2, ToeKickHeight: 0, ToeKickDepth: 0,
+    DoorOverlayLeft: 0.5, DoorOverlayRight: 0.5, DoorOverlayTop: 0.5, DoorOverlayBottom: 0.5,
+    SideThickness: 0.75, BottomThickness: 0.75, BackPanelThickness: 0.25
+  },
+  "Garage / Workshop": {
+    Width: 36, Height: 72, Depth: 24, DoorCount: 2, DrawerCount: 0,
+    ShelfCount: 3, ToeKickHeight: 4, ToeKickDepth: 3,
+    SideThickness: 0.75, ShelfThickness: 0.75, BottomThickness: 0.75, BackPanelThickness: 0.5
+  },
+  "Linen Cabinet": {
+    Width: 24, Height: 72, Depth: 18, DoorCount: 2, DrawerCount: 0,
+    ShelfCount: 5, ToeKickHeight: 4, ToeKickDepth: 3,
+    ShelfSetback: 0, SideThickness: 0.75, BottomThickness: 0.75, BackPanelThickness: 0.25
+  },
+  "Wardrobe / Armoire": {
+    Width: 48, Height: 78, Depth: 24, DoorCount: 2, DrawerCount: 2,
+    ShelfCount: 1, ToeKickHeight: 0, ToeKickDepth: 0,
+    SideThickness: 0.75, BottomThickness: 0.75, BackPanelThickness: 0.5
+  },
+  "Filing Cabinet": {
+    Width: 18, Height: 29, Depth: 24, DoorCount: 0, DrawerCount: 2,
+    ShelfCount: 0, ToeKickHeight: 2, ToeKickDepth: 2,
+    SideThickness: 0.75, BottomThickness: 0.75, DrawerBoxSideThickness: 0.5,
+    DrawerHeight: 10, DrawerBoxHeight: 9.5, DrawerClearance: 0.5
+  },
+  "Nightstand": {
+    Width: 22, Height: 26, Depth: 16, DoorCount: 0, DrawerCount: 2,
+    ShelfCount: 1, ToeKickHeight: 0, ToeKickDepth: 0,
+    SideThickness: 0.75, BottomThickness: 0.75, DrawerHeight: 4, DrawerBoxHeight: 3.5,
+    BackPanelThickness: 0.25
+  },
+  "Mudroom Locker": {
+    Width: 22, Height: 78, Depth: 15, DoorCount: 0, DrawerCount: 0,
+    ShelfCount: 2, ToeKickHeight: 0, ToeKickDepth: 0,
+    SideThickness: 0.75, ShelfThickness: 0.75, BottomThickness: 0.75, BackPanelThickness: 0.25
+  },
+  "Desk Pedestal": {
+    Width: 16, Height: 26, Depth: 22, DoorCount: 0, DrawerCount: 3,
+    ShelfCount: 0, ToeKickHeight: 0, ToeKickDepth: 0,
+    SideThickness: 0.75, BottomThickness: 0.75, DrawerHeight: 6, DrawerBoxHeight: 5.5,
+    DrawerBoxSideThickness: 0.5
+  },
+  "Shoe Cabinet": {
+    Width: 30, Height: 42, Depth: 14, DoorCount: 2, DrawerCount: 0,
+    ShelfCount: 5, ToeKickHeight: 3, ToeKickDepth: 1,
+    SideThickness: 0.75, ShelfThickness: 0.5, BottomThickness: 0.75,
+    BackPanelThickness: 0.25, ShelfSetback: 0
+  },
+  "Wine Storage": {
+    Width: 24, Height: 60, Depth: 16, DoorCount: 1, DrawerCount: 0,
+    ShelfCount: 0, ToeKickHeight: 0, ToeKickDepth: 0,
+    SideThickness: 0.75, BottomThickness: 0.75, BackPanelThickness: 0.25
+  },
+  "Laundry Cabinet": {
+    Width: 36, Height: 34.5, Depth: 24, DoorCount: 2, DrawerCount: 0,
+    ShelfCount: 1, ToeKickHeight: 4, ToeKickDepth: 3,
+    SideThickness: 0.75, BottomThickness: 0.75, BackPanelThickness: 0.25
+  }
+};
+
+/* ================================================================
+   HARDWARE LIBRARY — Verified specs from PIF_HardwareLibrary_Master.json
+   Values in inches (converted from mm where noted).
+   Each entry auto-fills related sliders when selected.
+   "Manual / Custom" = user sets sliders manually.
+   ================================================================ */
+const HARDWARE_LIBRARY = {
+  hinges: [
+    { id: "manual", label: "Manual / Custom", brand: "", model: "", price: 0, params: null },
+    { id: "HG-001", label: "Blum CLIP Top BM 110\u00B0 Full OL", brand: "Blum", model: "71B3550", price: 3.50,
+      params: { HingeCupDiameter: 1.378, HingeCupDepth: 0.512, HingeBoringDistance: 0.197 } },
+    { id: "HG-002", label: "Blum CLIP Top BM 110\u00B0 Half OL", brand: "Blum", model: "71B3650", price: 3.75,
+      params: { HingeCupDiameter: 1.378, HingeCupDepth: 0.512, HingeBoringDistance: 0.197 } },
+    { id: "HG-003", label: "Blum CLIP Top BM 110\u00B0 Inset", brand: "Blum", model: "71B3750", price: 4.00,
+      params: { HingeCupDiameter: 1.378, HingeCupDepth: 0.512, HingeBoringDistance: 0.197 } },
+    { id: "HG-004", label: "Blum CLIP Top 110\u00B0 Full OL (no SC)", brand: "Blum", model: "71T3550", price: 2.25,
+      params: { HingeCupDiameter: 1.378, HingeCupDepth: 0.453, HingeBoringDistance: 0.197 } },
+    { id: "HG-005", label: "Blum CLIP Top BM 95\u00B0 Thick Door", brand: "Blum", model: "71B9550", price: 4.25,
+      params: { HingeCupDiameter: 1.378, HingeCupDepth: 0.512, HingeBoringDistance: 0.197 } },
+    { id: "HG-006", label: "Blum CLIP Top BM 110\u00B0 Press-In", brand: "Blum", model: "71B3580", price: 3.50,
+      params: { HingeCupDiameter: 1.378, HingeCupDepth: 0.512, HingeBoringDistance: 0.197 } },
+    { id: "HG-007", label: "Blum CLIP Top 170\u00B0 Wide Angle", brand: "Blum", model: "79T5580", price: 6.50,
+      params: { HingeCupDiameter: 1.378, HingeCupDepth: 0.453, HingeBoringDistance: 0.197 } },
+    { id: "HG-008", label: "Blum CLIP Top 155\u00B0 Zero Protrusion", brand: "Blum", model: "79T8500", price: 7.00,
+      params: { HingeCupDiameter: 1.378, HingeCupDepth: 0.453, HingeBoringDistance: 0.197 } },
+    { id: "HG-009", label: "Blum CLIP Top 110\u00B0 w/ Restriction", brand: "Blum", model: "70T3553", price: 2.50,
+      params: { HingeCupDiameter: 1.378, HingeCupDepth: 0.453, HingeBoringDistance: 0.197 } },
+    { id: "HG-010", label: "Blum CLIP Top Mini 94\u00B0 (26mm)", brand: "Blum", model: "70T9550.TL", price: 3.00,
+      params: { HingeCupDiameter: 1.024, HingeCupDepth: 0.394, HingeBoringDistance: 0.197 } },
+    { id: "HG-011", label: "Hettich Sensys 110\u00B0 Full OL (SC)", brand: "Hettich", model: "9071205", price: 3.50,
+      params: { HingeCupDiameter: 1.378, HingeCupDepth: 0.504, HingeBoringDistance: 0.197 } },
+    { id: "HG-012", label: "Hettich Sensys 110\u00B0 Half OL (SC)", brand: "Hettich", model: "9071206", price: 3.75,
+      params: { HingeCupDiameter: 1.378, HingeCupDepth: 0.504, HingeBoringDistance: 0.197 } },
+    { id: "HG-013", label: "Hettich Sensys 110\u00B0 Inset (SC)", brand: "Hettich", model: "9071207", price: 4.00,
+      params: { HingeCupDiameter: 1.378, HingeCupDepth: 0.504, HingeBoringDistance: 0.197 } },
+    { id: "HG-014", label: "Hettich Sensys 110\u00B0 Full OL (no SC)", brand: "Hettich", model: "9073662", price: 2.50,
+      params: { HingeCupDiameter: 1.378, HingeCupDepth: 0.504, HingeBoringDistance: 0.197 } },
+    { id: "HG-015", label: "Hettich Sensys W90 95\u00B0 Blind Corner", brand: "Hettich", model: "9085200", price: 4.50,
+      params: { HingeCupDiameter: 1.378, HingeCupDepth: 0.504, HingeBoringDistance: 0.197 } },
+    { id: "HG-016", label: "Hettich Sensys 110\u00B0 Thin Door (SC)", brand: "Hettich", model: "9094450", price: 5.00,
+      params: { HingeCupDiameter: 1.378, HingeCupDepth: 0.457, HingeBoringDistance: 0.197 } },
+    { id: "HG-017", label: "Grass Tiomos 110\u00B0 Full OL (SC)", brand: "Grass", model: "F045138502", price: 4.00,
+      params: { HingeCupDiameter: 1.378, HingeCupDepth: 0.531, HingeBoringDistance: 0.236 } },
+    { id: "HG-018", label: "Grass Tiomos 110\u00B0 Half OL (SC)", brand: "Grass", model: "F045138506", price: 4.25,
+      params: { HingeCupDiameter: 1.378, HingeCupDepth: 0.531, HingeBoringDistance: 0.236 } },
+    { id: "HG-019", label: "Salice C2A 110\u00B0 Full OL (SC)", brand: "Salice", model: "C2ABG99", price: 3.25,
+      params: { HingeCupDiameter: 1.378, HingeCupDepth: 0.472, HingeBoringDistance: 0.197 } },
+    { id: "HG-020", label: "Salice C2R 110\u00B0 Inset (SC)", brand: "Salice", model: "C2RFG99", price: 3.50,
+      params: { HingeCupDiameter: 1.378, HingeCupDepth: 0.472, HingeBoringDistance: 0.197 } },
+    { id: "HG-021", label: "Liberty H702 110\u00B0 Full OL (SC)", brand: "Liberty", model: "H70223C", price: 2.00,
+      params: { HingeCupDiameter: 1.378, HingeCupDepth: 0.472, HingeBoringDistance: 0.197 } },
+    { id: "HG-022", label: "Generic Euro 110\u00B0 (SC)", brand: "Generic", model: "EURO-110-SC", price: 1.25,
+      params: { HingeCupDiameter: 1.378, HingeCupDepth: 0.472, HingeBoringDistance: 0.197 } }
+  ],
+  slides: [
+    { id: "manual", label: "Manual / Custom", brand: "", model: "", price: 0, params: null },
+    { id: "DS-001", label: "Blum TANDEM 563H (UM, 100lb)", brand: "Blum", model: "563H", price: 28.00,
+      params: { DrawerClearance: 0.827, SlideTopClearance: 0.276, SlideBottomClearance: 0.551 } },
+    { id: "DS-002", label: "Blum TANDEM 569H HD (UM, 150lb)", brand: "Blum", model: "569H", price: 42.00,
+      params: { DrawerClearance: 0.827, SlideTopClearance: 0.276, SlideBottomClearance: 0.551 } },
+    { id: "DS-003", label: "Blum TANDEM 563F \u00BE\" (UM, 100lb)", brand: "Blum", model: "563F", price: 30.00,
+      params: { DrawerClearance: 0.965, SlideTopClearance: 0.276, SlideBottomClearance: 0.551 } },
+    { id: "DS-004", label: "Blum MOVENTO 760H (UM, 88lb)", brand: "Blum", model: "760H", price: 38.00,
+      params: { DrawerClearance: 0.502, SlideTopClearance: 0.276, SlideBottomClearance: 0.551 } },
+    { id: "DS-005", label: "Blum MOVENTO 769H HD (UM, 155lb)", brand: "Blum", model: "769H", price: 52.00,
+      params: { DrawerClearance: 0.502, SlideTopClearance: 0.276, SlideBottomClearance: 0.551 } },
+    { id: "DS-006", label: "Hettich Quadro V6 IW21 (UM, 100lb)", brand: "Hettich", model: "9134368", price: 24.00,
+      params: { DrawerClearance: 0.492, SlideTopClearance: 0.276, SlideBottomClearance: 0.433 } },
+    { id: "DS-007", label: "Hettich Quadro 4D V6 (UM, 100lb)", brand: "Hettich", model: "9135020", price: 35.00,
+      params: { DrawerClearance: 0.492, SlideTopClearance: 0.276, SlideBottomClearance: 0.433 } },
+    { id: "DS-008", label: "Hettich Quadro FAQ (UM/SM, 100lb)", brand: "Hettich", model: "9306534", price: 20.00,
+      params: { DrawerClearance: 0.492, SlideTopClearance: 0.276, SlideBottomClearance: 0.433 } },
+    { id: "DS-009", label: "Hettich Actro YOU (UM, 90lb)", brand: "Hettich", model: "9257008", price: 36.00,
+      params: { DrawerClearance: 0.492, SlideTopClearance: 0.236, SlideBottomClearance: 0.394 } },
+    { id: "DS-010", label: "Hettich Actro YOU HD (UM, 154lb)", brand: "Hettich", model: "9257010", price: 50.00,
+      params: { DrawerClearance: 0.492, SlideTopClearance: 0.236, SlideBottomClearance: 0.394 } },
+    { id: "DS-011", label: "KV 8400B (SM, 100lb)", brand: "Knape & Vogt", model: "8400B", price: 12.00,
+      params: { DrawerClearance: 0.500, SlideTopClearance: 0.250, SlideBottomClearance: 0.500 } },
+    { id: "DS-012", label: "KV 8417B Soft-Close (SM, 100lb)", brand: "Knape & Vogt", model: "8417B", price: 18.00,
+      params: { DrawerClearance: 0.500, SlideTopClearance: 0.250, SlideBottomClearance: 0.500 } },
+    { id: "DS-013", label: "KV 8450FM (UM, 75lb)", brand: "Knape & Vogt", model: "8450FM", price: 22.00,
+      params: { DrawerClearance: 0.500, SlideTopClearance: 0.276, SlideBottomClearance: 0.472 } },
+    { id: "DS-014", label: "Accuride C3832 (SM, 100lb)", brand: "Accuride", model: "C3832", price: 14.00,
+      params: { DrawerClearance: 0.500, SlideTopClearance: 0.250, SlideBottomClearance: 0.500 } },
+    { id: "DS-015", label: "Accuride C3832-SC (SM SC, 100lb)", brand: "Accuride", model: "C3832-SC", price: 20.00,
+      params: { DrawerClearance: 0.500, SlideTopClearance: 0.250, SlideBottomClearance: 0.500 } },
+    { id: "DS-016", label: "Accuride C3160 (Center, 35lb)", brand: "Accuride", model: "C3160", price: 8.00,
+      params: { DrawerClearance: 0.000, SlideTopClearance: 0.250, SlideBottomClearance: 0.250 } },
+    { id: "DS-017", label: "Liberty D806 SC (SM, 100lb)", brand: "Liberty", model: "D80622C", price: 10.00,
+      params: { DrawerClearance: 0.500, SlideTopClearance: 0.250, SlideBottomClearance: 0.500 } },
+    { id: "DS-018", label: "Liberty D942 HD (SM, 200lb)", brand: "Liberty", model: "D94222C", price: 22.00,
+      params: { DrawerClearance: 0.500, SlideTopClearance: 0.250, SlideBottomClearance: 0.500 } },
+    { id: "DS-019", label: "Grass Dynapro (UM, 100lb)", brand: "Grass", model: "Dynapro", price: 34.00,
+      params: { DrawerClearance: 0.492, SlideTopClearance: 0.236, SlideBottomClearance: 0.472 } },
+    { id: "DS-020", label: "Salice Futura (UM, 100lb)", brand: "Salice", model: "A7555/530", price: 30.00,
+      params: { DrawerClearance: 0.492, SlideTopClearance: 0.276, SlideBottomClearance: 0.472 } },
+    { id: "DS-021", label: "King Slide 2M15 (UM, 75lb)", brand: "King Slide", model: "2M15", price: 18.00,
+      params: { DrawerClearance: 0.492, SlideTopClearance: 0.276, SlideBottomClearance: 0.472 } },
+    { id: "DS-022", label: "Accuride C7432 HD (SM, 150lb)", brand: "Accuride", model: "C7432", price: 24.00,
+      params: { DrawerClearance: 0.500, SlideTopClearance: 0.250, SlideBottomClearance: 0.500 } }
+  ],
+  pulls: [
+    { id: "manual", label: "Manual / Custom", brand: "", model: "", price: 0, params: null },
+    { id: "PL-001", label: "Amerock Bar 3-3/4\" CC (Black)", brand: "Amerock", model: "BP40515", price: 5.50,
+      params: { PullBoreSpacing: 3.75, PullMountingHoleDia: 0.1875, PullProjection: 1.375 } },
+    { id: "PL-002", label: "Amerock Bar 5-1/16\" CC (Black)", brand: "Amerock", model: "BP40516", price: 6.00,
+      params: { PullBoreSpacing: 5.063, PullMountingHoleDia: 0.1875, PullProjection: 1.375 } },
+    { id: "PL-003", label: "Amerock Bar 6-5/16\" CC (Black)", brand: "Amerock", model: "BP40517", price: 6.50,
+      params: { PullBoreSpacing: 6.313, PullMountingHoleDia: 0.1875, PullProjection: 1.375 } },
+    { id: "PL-004", label: "Amerock Bar 7-9/16\" CC (Black)", brand: "Amerock", model: "BP40518", price: 7.00,
+      params: { PullBoreSpacing: 7.563, PullMountingHoleDia: 0.1875, PullProjection: 1.375 } },
+    { id: "PL-005", label: "Amerock Bar 10-1/16\" CC (Black)", brand: "Amerock", model: "BP40520", price: 8.00,
+      params: { PullBoreSpacing: 10.063, PullMountingHoleDia: 0.1875, PullProjection: 1.375 } },
+    { id: "PL-006", label: "Amerock Blackrock Knob 1-3/16\"", brand: "Amerock", model: "BP55277BBR", price: 4.00,
+      params: { PullBoreSpacing: 0, PullMountingHoleDia: 0.1875, PullProjection: 1.188 } },
+    { id: "PL-007", label: "Amerock Allison Knob 1-1/4\" (SN)", brand: "Amerock", model: "BP53005G10", price: 2.50,
+      params: { PullBoreSpacing: 0, PullMountingHoleDia: 0.1875, PullProjection: 1.0 } },
+    { id: "PL-008", label: "Top Knobs Bar 3-3/4\" CC (SN)", brand: "Top Knobs", model: "M2158", price: 8.50,
+      params: { PullBoreSpacing: 3.75, PullMountingHoleDia: 0.1875, PullProjection: 1.313 } },
+    { id: "PL-009", label: "Top Knobs Aspen 3-3/4\" CC (Bronze)", brand: "Top Knobs", model: "M1512", price: 14.00,
+      params: { PullBoreSpacing: 3.75, PullMountingHoleDia: 0.1875, PullProjection: 1.5 } },
+    { id: "PL-010", label: "Top Knobs Nouveau Knob 1-1/16\"", brand: "Top Knobs", model: "M2170", price: 5.50,
+      params: { PullBoreSpacing: 0, PullMountingHoleDia: 0.1875, PullProjection: 1.0 } },
+    { id: "PL-011", label: "Richelieu Bar 5-1/16\" CC (BN)", brand: "Richelieu", model: "BP305128195", price: 4.50,
+      params: { PullBoreSpacing: 5.063, PullMountingHoleDia: 0.1875, PullProjection: 1.25 } },
+    { id: "PL-012", label: "Richelieu Bar 7-9/16\" CC (BN)", brand: "Richelieu", model: "BP305196195", price: 5.50,
+      params: { PullBoreSpacing: 7.563, PullMountingHoleDia: 0.1875, PullProjection: 1.25 } },
+    { id: "PL-013", label: "Liberty Bar 3-3/4\" CC (Black)", brand: "Liberty", model: "P01026C", price: 3.50,
+      params: { PullBoreSpacing: 3.75, PullMountingHoleDia: 0.1875, PullProjection: 1.25 } },
+    { id: "PL-014", label: "Liberty Edge Pull 3-3/4\" CC (SN)", brand: "Liberty", model: "P29613K", price: 4.00,
+      params: { PullBoreSpacing: 3.75, PullMountingHoleDia: 0.1875, PullProjection: 0.625 } },
+    { id: "PL-015", label: "Liberty Wrapped Bar 5-1/16\" CC", brand: "Liberty", model: "P44428C", price: 4.00,
+      params: { PullBoreSpacing: 5.063, PullMountingHoleDia: 0.1875, PullProjection: 1.375 } },
+    { id: "PL-016", label: "Hickory Bar 3-3/4\" CC (Black)", brand: "Hickory", model: "HH075594", price: 4.50,
+      params: { PullBoreSpacing: 3.75, PullMountingHoleDia: 0.1875, PullProjection: 1.375 } },
+    { id: "PL-017", label: "Hickory Cup Pull 3\" CC (SS)", brand: "Hickory", model: "P3055-SS", price: 6.00,
+      params: { PullBoreSpacing: 3.0, PullMountingHoleDia: 0.1875, PullProjection: 0.875 } },
+    { id: "PL-018", label: "Amerock Cup Pull 3\" CC (SN)", brand: "Amerock", model: "BP36640G10", price: 5.50,
+      params: { PullBoreSpacing: 3.0, PullMountingHoleDia: 0.1875, PullProjection: 0.75 } },
+    { id: "PL-019", label: "Top Knobs Tab Pull 2\" (Single)", brand: "Top Knobs", model: "TK95x", price: 7.00,
+      params: { PullBoreSpacing: 0, PullMountingHoleDia: 0.1875, PullProjection: 0.375 } },
+    { id: "PL-020", label: "Berenson Euro Bar 3-3/4\" CC (BN)", brand: "Berenson", model: "2096-4BPN-P", price: 6.00,
+      params: { PullBoreSpacing: 3.75, PullMountingHoleDia: 0.1875, PullProjection: 1.375 } },
+    { id: "PL-021", label: "Atlas Bar 5-1/16\" CC (Black)", brand: "Atlas", model: "A837-BL", price: 9.00,
+      params: { PullBoreSpacing: 5.063, PullMountingHoleDia: 0.1875, PullProjection: 1.5 } },
+    { id: "PL-022", label: "Generic Euro Bar 3-3/4\" CC", brand: "Generic", model: "Euro Bar", price: 1.50,
+      params: { PullBoreSpacing: 3.75, PullMountingHoleDia: 0.1875, PullProjection: 1.25 } },
+    { id: "PL-023", label: "Generic Euro Knob 1-3/16\" (SN)", brand: "Generic", model: "Euro Knob", price: 1.00,
+      params: { PullBoreSpacing: 0, PullMountingHoleDia: 0.1875, PullProjection: 1.0 } }
+  ]
+};
+
+/* Tracks which hardware the user selected (for hardware schedule + cost) */
+var hardwareSelection = { hinge: "manual", slide: "manual", pull: "manual" };
+
+/* ================================================================
+   MATERIAL PRICING — Default US retail prices (user can override later).
+   Sheet prices are per 4×8 sheet. Edge banding per linear foot.
+   ================================================================ */
+const MATERIAL_PRICING = {
+  sheets: {
+    "0.750": { label: '\u00BE" Plywood',  pricePerSheet: 58.00 },
+    "0.767": { label: '\u00BE" Plywood',  pricePerSheet: 58.00 },
+    "0.797": { label: '\u00BE" Plywood',  pricePerSheet: 58.00 },
+    "0.733": { label: '\u00BE" Plywood',  pricePerSheet: 58.00 },
+    "0.758": { label: '\u00BE" Plywood',  pricePerSheet: 58.00 },
+    "0.960": { label: '\u00BE" Plywood',  pricePerSheet: 58.00 },
+    "0.500": { label: '\u00BD" Plywood',  pricePerSheet: 48.00 },
+    "0.375": { label: '\u00BC" Plywood',  pricePerSheet: 28.00 },
+    "0.250": { label: '\u00BC" Plywood',  pricePerSheet: 28.00 },
+    "0.125": { label: '\u2159" Hardboard', pricePerSheet: 18.00 }
+  },
+  edgeBandingPerFt: 0.75,
+  defaultSheetPrice: 50.00
+};
+
+/* ================================================================
+   ZONE STACK — Interior layout presets and defaults.
+   10 layout presets, each defining dado shelf count and
+   per-compartment types (0=door, 1=drawer, 2=open).
+   Compartments ordered bottom → top.
+   ================================================================ */
+const ZONE_LAYOUT_PRESETS = [
+  { name: "All Doors",          dado: 0, comps: [{ type: 0, doors: 2, shelves: 1, drawers: 0 }] },
+  { name: "All Drawers",        dado: 0, comps: [{ type: 1, doors: 0, shelves: 0, drawers: 3 }] },
+  { name: "All Open",           dado: 0, comps: [{ type: 2, doors: 0, shelves: 3, drawers: 0 }] },
+  { name: "Drawers Over Doors", dado: 1, dado1Pct: 0.5,  comps: [{ type: 0, doors: 2, shelves: 0, drawers: 0 }, { type: 1, doors: 0, shelves: 0, drawers: 3 }] },
+  { name: "Doors Over Drawers", dado: 1, dado1Pct: 0.35, comps: [{ type: 1, doors: 0, shelves: 0, drawers: 3 }, { type: 0, doors: 2, shelves: 1, drawers: 0 }] },
+  { name: "Split Doors",        dado: 1, dado1Pct: 0.5,  comps: [{ type: 0, doors: 2, shelves: 1, drawers: 0 }, { type: 0, doors: 2, shelves: 1, drawers: 0 }] },
+  { name: "Drawers + Open",     dado: 1, dado1Pct: 0.4,  comps: [{ type: 2, doors: 0, shelves: 1, drawers: 0 }, { type: 1, doors: 0, shelves: 0, drawers: 2 }] },
+  { name: "Open Over Doors",    dado: 1, dado1Pct: 0.5,  comps: [{ type: 0, doors: 2, shelves: 0, drawers: 0 }, { type: 2, doors: 0, shelves: 2, drawers: 0 }] },
+  { name: "Triple Zone",        dado: 2, dado1Pct: 0.33, dado2Pct: 0.67, comps: [{ type: 1, doors: 0, shelves: 0, drawers: 2 }, { type: 0, doors: 2, shelves: 0, drawers: 0 }, { type: 2, doors: 0, shelves: 1, drawers: 0 }] },
+  { name: "Custom",             dado: 0, comps: [{ type: 2, doors: 0, shelves: 0, drawers: 0 }] }
+];
+
+const ZONE_DEFAULTS = {
+  ZS_LayoutPreset: 0,
+  ZS_DadoCount: 0,
+  ZS_Dado1Z: 18, ZS_Dado2Z: 36, ZS_Dado3Z: 54,
+  ZS_DadoThickness: 0.75,
+  ZS_Comp1Type: 0, ZS_Comp2Type: 1, ZS_Comp3Type: 2, ZS_Comp4Type: 2
+};
+
+var ZONE_TYPE_NAMES = ["Door", "Drawer", "Open"];
+
+/* ── Preset Application ── */
+function applyPreset(name) {
+  var preset = CHASSIS_PRESETS[name];
+  if (!preset) return;
+
+  pushUndo();
+  currentPresetName = name;
+
+  SLIDER_GROUPS.forEach(function(group) {
+    group.sliders.forEach(function(s) { state[s.key] = s.default; });
+  });
+
+  Object.keys(preset).forEach(function(key) {
+    if (key in state) state[key] = preset[key];
+  });
+
+  /* Reset zone stack to defaults when applying a chassis preset */
+  Object.keys(ZONE_DEFAULTS).forEach(function(k) { state[k] = ZONE_DEFAULTS[k]; });
+  var zps = document.getElementById("zs_preset");
+  if (zps) zps.value = 0;
+
+  /* Capture the preset baseline for lineage tracking */
+  presetBaseState = captureState();
+  resetHardwareDropdowns();
+
+  SLIDER_GROUPS.forEach(function(group) {
+    group.sliders.forEach(function(s) {
+      var row = document.querySelector('[data-key="' + s.key + '"]');
+      if (row) {
+        row.querySelector('input[type="range"]').value = state[s.key];
+        row.querySelector('input[type="number"]').value = Number(state[s.key]).toFixed(s.decimals);
+      }
+    });
+  });
+
+  updateAll();
+}
+
+/* ── Cut List Computation ── */
+function thicknessLabel(t) {
+  if (t <= 0.26) return '\u00BC"';
+  if (t <= 0.51) return '\u00BD"';
+  return '\u00BE"';
+}
+
+function computeCutList() {
+  var W = state.Width, H = state.Height, D = state.Depth;
+  var ST = state.SideThickness, BT = state.BottomThickness;
+  var ShT = state.ShelfThickness, BPT = state.BackPanelThickness;
+  var TK = state.ToeKickHeight, DD = state.DadoDepth;
+  var interiorW = Math.max(0, W - 2 * ST);
+  var parts = [];
+
+  parts.push({ name: "Left Side",  qty: 1, w: D, h: H, t: ST });
+  parts.push({ name: "Right Side", qty: 1, w: D, h: H, t: ST });
+  parts.push({ name: "Bottom",     qty: 1, w: interiorW, h: D, t: BT });
+
+  var backH = Math.max(0, H - TK - BT);
+  parts.push({ name: "Back Panel", qty: 1, w: interiorW, h: backH, t: BPT });
+
+  if (TK > 0) {
+    parts.push({ name: "Toe Kick Board", qty: 1, w: interiorW, h: TK, t: ST });
+  }
+
+  parts.push({ name: "Front Stretcher", qty: 1, w: interiorW, h: state.FrontStretcherWidth, t: state.FrontStretcherThickness });
+  parts.push({ name: "Back Stretcher",  qty: 1, w: interiorW, h: state.BackStretcherWidth,  t: state.BackStretcherThickness });
+  parts.push({ name: "Rear Stretcher",  qty: 1, w: interiorW, h: state.RearStretcherWidth,  t: state.RearStretcherThickness });
+
+  var dadoCount = Math.round(state.ZS_DadoCount || 0);
+  var shelfW = Math.max(0, interiorW - 2 * DD);
+  var shelfD = Math.max(0, D - BPT - state.ShelfSetback);
+  var totalDoorW = interiorW + state.DoorOverlayLeft + state.DoorOverlayRight;
+  var dbW = Math.max(0, interiorW - 2 * state.DrawerClearance - 2 * state.DrawerBoxSideThickness);
+  var dbD = Math.max(0, D - BPT - 1);
+
+  if (dadoCount > 0) {
+    /* ── Zone Stack Mode ── */
+    /* Dado shelves */
+    parts.push({ name: "Dado Shelf", qty: dadoCount, w: shelfW, h: Math.max(0, D - BPT), t: state.ZS_DadoThickness });
+
+    /* Per-compartment parts */
+    var zones = computeZoneStack();
+    zones.forEach(function(zone, i) {
+      var lbl = zones.length > 1 ? "Z" + (i + 1) + " " : "";
+
+      if (zone.type === 0) { /* Door compartment */
+        var zDoorCount = 2;
+        var zDoorH = Math.max(0, zone.height + state.DoorOverlayTop + state.DoorOverlayBottom);
+        var zDoorW = Math.max(0, (totalDoorW - (zDoorCount - 1) * state.DoorGap) / zDoorCount);
+        parts.push({ name: lbl + "Door", qty: zDoorCount, w: zDoorW, h: zDoorH, t: state.DoorThickness });
+        parts.push({ name: lbl + "Adj. Shelf", qty: 1, w: shelfW, h: shelfD, t: ShT });
+      }
+
+      if (zone.type === 1) { /* Drawer compartment */
+        var zDrawerCount = 3;
+        var zFrontH = Math.max(3, zone.height / zDrawerCount);
+        parts.push({ name: lbl + "Drawer Front", qty: zDrawerCount, w: totalDoorW, h: zFrontH, t: state.DoorThickness });
+        parts.push({ name: lbl + "Drawer Side", qty: zDrawerCount * 2, w: dbD, h: state.DrawerBoxHeight, t: state.DrawerBoxSideThickness });
+        parts.push({ name: lbl + "Drawer F/B",  qty: zDrawerCount * 2, w: dbW, h: state.DrawerBoxHeight, t: state.DrawerBoxSideThickness });
+        parts.push({ name: lbl + "Drawer Bottom", qty: zDrawerCount, w: dbW, h: dbD, t: state.DrawerBottomThickness });
+      }
+
+      if (zone.type === 2) { /* Open compartment */
+        parts.push({ name: lbl + "Adj. Shelf", qty: 2, w: shelfW, h: shelfD, t: ShT });
+      }
+    });
+
+  } else {
+    /* ── Standard Mode (no zones) ── */
+    if (state.ShelfCount > 0) {
+      parts.push({ name: "Adj. Shelf", qty: Math.round(state.ShelfCount), w: shelfW, h: shelfD, t: ShT });
+    }
+
+    if (state.DoorCount > 0) {
+      var dc = Math.round(state.DoorCount);
+      var doorW = Math.max(0, (totalDoorW - (dc - 1) * state.DoorGap) / dc);
+      var doorH = Math.max(0, H - TK + state.DoorOverlayTop + state.DoorOverlayBottom);
+      parts.push({ name: "Door", qty: dc, w: doorW, h: doorH, t: state.DoorThickness });
+    }
+
+    if (state.DrawerCount > 0) {
+      var drc = Math.round(state.DrawerCount);
+      parts.push({ name: "Drawer Front", qty: drc, w: totalDoorW, h: state.DrawerHeight, t: state.DoorThickness });
+      parts.push({ name: "Drawer Box Side", qty: drc * 2, w: dbD,  h: state.DrawerBoxHeight, t: state.DrawerBoxSideThickness });
+      parts.push({ name: "Drawer Box F/B",  qty: drc * 2, w: dbW,  h: state.DrawerBoxHeight, t: state.DrawerBoxSideThickness });
+      parts.push({ name: "Drawer Bottom",   qty: drc,     w: dbW,  h: dbD,                   t: state.DrawerBottomThickness });
+    }
+  }
+
+  return parts;
+}
+
+/* ── Sheet Goods Calculator ── */
+function computeSheetGoods(parts) {
+  var SHEET_AREA = 48 * 96;
+  var WASTE = 1.3;
+  var byThickness = {};
+
+  parts.forEach(function(p) {
+    var k = p.t.toFixed(3);
+    if (!byThickness[k]) byThickness[k] = 0;
+    byThickness[k] += p.qty * p.w * p.h;
+  });
+
+  var sheets = [];
+  Object.keys(byThickness).sort(function(a, b) { return parseFloat(b) - parseFloat(a); }).forEach(function(k) {
+    sheets.push({ thickness: parseFloat(k), count: Math.ceil((byThickness[k] * WASTE) / SHEET_AREA) });
+  });
+  return sheets;
+}
+
+/* ── Render: Preset Dropdown ── */
+function renderPresetDropdown() {
+  var container = document.getElementById("controlsPanel");
+  var section = document.createElement("div");
+  section.className = "preset-section";
+  var options = Object.keys(CHASSIS_PRESETS).map(function(name) {
+    return '<option value="' + name + '">' + name + '</option>';
+  }).join("");
+  section.innerHTML = '<label>Chassis Preset</label><select id="presetSelect">' + options + '</select>';
+  container.appendChild(section);
+}
+
+/* ── Hardware Schedule Computation ── */
+function findHardwareItem(type, id) {
+  var items = HARDWARE_LIBRARY[type];
+  for (var i = 0; i < items.length; i++) {
+    if (items[i].id === id) return items[i];
+  }
+  return null;
+}
+
+function computeHardwareSchedule() {
+  var schedule = [];
+  var dc, drc;
+  var dadoCount = Math.round(state.ZS_DadoCount || 0);
+
+  if (dadoCount > 0) {
+    /* Zone mode: sum doors/drawers across all compartments */
+    var zones = computeZoneStack();
+    dc = 0; drc = 0;
+    zones.forEach(function(z) {
+      if (z.type === 0) dc += 2;   /* 2 doors per door compartment */
+      if (z.type === 1) drc += 3;  /* 3 drawers per drawer compartment */
+    });
+  } else {
+    dc = Math.round(state.DoorCount);
+    drc = Math.round(state.DrawerCount);
+  }
+  var hc = Math.round(state.HingeCount);
+
+  /* Hinges: HingeCount per door × DoorCount */
+  if (dc > 0) {
+    var hinge = findHardwareItem("hinges", hardwareSelection.hinge);
+    var hingeQty = hc * dc;
+    schedule.push({
+      category: "Hinge",
+      label: hinge && hinge.brand ? hinge.brand + " " + hinge.model : "Custom",
+      qty: hingeQty,
+      unit: "ea",
+      unitPrice: hinge ? hinge.price : 0,
+      total: hingeQty * (hinge ? hinge.price : 0)
+    });
+  }
+
+  /* Slides: 1 pair per drawer (2 rails) */
+  if (drc > 0) {
+    var slide = findHardwareItem("slides", hardwareSelection.slide);
+    schedule.push({
+      category: "Slide Pair",
+      label: slide && slide.brand ? slide.brand + " " + slide.model : "Custom",
+      qty: drc,
+      unit: "pr",
+      unitPrice: slide ? slide.price : 0,
+      total: drc * (slide ? slide.price : 0)
+    });
+  }
+
+  /* Pulls: 1 per door + 1 per drawer */
+  if (dc > 0 || drc > 0) {
+    var pull = findHardwareItem("pulls", hardwareSelection.pull);
+    var pullQty = dc + drc;
+    schedule.push({
+      category: "Pull",
+      label: pull && pull.brand ? pull.brand + " " + pull.model : "Custom",
+      qty: pullQty,
+      unit: "ea",
+      unitPrice: pull ? pull.price : 0,
+      total: pullQty * (pull ? pull.price : 0)
+    });
+  }
+
+  return schedule;
+}
+
+/* ── Zone Stack Computation ── */
+function computeZoneStack() {
+  var interiorH = state.Height - state.ToeKickHeight - state.BottomThickness - state.FrontStretcherWidth;
+  if (interiorH <= 0) return [];
+
+  var dadoCount = Math.round(state.ZS_DadoCount || 0);
+  var compCount = dadoCount + 1;
+  var dadoT = state.ZS_DadoThickness || 0.75;
+  var maxDadoZ = interiorH - dadoT;
+  var dadoZ = [
+    Math.min(state.ZS_Dado1Z, maxDadoZ),
+    Math.min(state.ZS_Dado2Z, maxDadoZ),
+    Math.min(state.ZS_Dado3Z, maxDadoZ)
+  ];
+  /* Ensure dado positions are sorted ascending */
+  for (var d = 1; d < dadoCount; d++) {
+    if (dadoZ[d] <= dadoZ[d - 1] + dadoT) dadoZ[d] = dadoZ[d - 1] + dadoT + 1;
+  }
+  var baseZ = state.ToeKickHeight + state.BottomThickness;
+  var compartments = [];
+
+  for (var i = 0; i < compCount; i++) {
+    var bottom = i === 0 ? 0 : dadoZ[i - 1] + dadoT;
+    var top = i < dadoCount ? dadoZ[i] : interiorH;
+    compartments.push({
+      index: i,
+      type: Math.round(state['ZS_Comp' + (i + 1) + 'Type'] || 0),
+      height: Math.max(0, top - bottom),
+      bottomZ: baseZ + bottom,
+      topZ: baseZ + top
+    });
+  }
+  return compartments;
+}
+
+/* ── Apply Zone Layout Preset ── */
+function applyZonePreset(presetIdx) {
+  var preset = ZONE_LAYOUT_PRESETS[presetIdx];
+  if (!preset) return;
+
+  pushUndo();
+  state.ZS_LayoutPreset = presetIdx;
+  state.ZS_DadoCount = preset.dado;
+
+  /* Set dado Z positions based on percentage of interior height */
+  var interiorH = state.Height - state.ToeKickHeight - state.BottomThickness - state.FrontStretcherWidth;
+  if (preset.dado1Pct) state.ZS_Dado1Z = Math.round(interiorH * preset.dado1Pct * 8) / 8;
+  if (preset.dado2Pct) state.ZS_Dado2Z = Math.round(interiorH * preset.dado2Pct * 8) / 8;
+
+  /* Set compartment types from preset */
+  for (var i = 0; i < 4; i++) {
+    var comp = preset.comps[i] || { type: 2, doors: 0, shelves: 0, drawers: 0 };
+    state['ZS_Comp' + (i + 1) + 'Type'] = comp.type;
+  }
+
+  updateZoneUI();
+  updateAll();
+}
+
+/* ── Zone Stack UI ── */
+var zoneElements = {};
+
+function renderZoneStackSection() {
+  var container = document.getElementById("controlsPanel");
+
+  var header = document.createElement("div");
+  header.className = "group-header";
+  header.innerHTML =
+    '<span class="arrow">&#9654;</span>' +
+    '<span class="group-label">Interior Layout</span>' +
+    '<span class="group-count">zones</span>';
+
+  var body = document.createElement("div");
+  body.className = "group-body";
+
+  header.addEventListener("click", function() {
+    header.classList.toggle("expanded");
+    body.classList.toggle("expanded");
+  });
+
+  /* Layout preset dropdown */
+  var presetRow = document.createElement("div");
+  presetRow.className = "hardware-row";
+  presetRow.innerHTML = '<span class="slider-label">Layout</span>';
+  var presetSel = document.createElement("select");
+  presetSel.id = "zs_preset";
+  ZONE_LAYOUT_PRESETS.forEach(function(p, i) {
+    var opt = document.createElement("option");
+    opt.value = i; opt.textContent = p.name;
+    presetSel.appendChild(opt);
+  });
+  presetSel.addEventListener("change", function() { applyZonePreset(parseInt(presetSel.value)); });
+  presetRow.appendChild(presetSel);
+  body.appendChild(presetRow);
+
+  /* Dado shelf count */
+  var dadoRow = document.createElement("div");
+  dadoRow.className = "slider-row";
+  dadoRow.setAttribute("data-key", "ZS_DadoCount");
+  dadoRow.innerHTML =
+    '<span class="slider-label">Dado Shelves</span>' +
+    '<div class="slider-range"><input type="range" min="0" max="3" step="1" value="0"></div>' +
+    '<div class="slider-value"><input type="number" min="0" max="3" step="1" value="0"></div>';
+  wireZoneSlider(dadoRow, "ZS_DadoCount", 0);
+  body.appendChild(dadoRow);
+
+  /* Dado Z position sliders */
+  var dadoLabels = ["Dado 1 Height", "Dado 2 Height", "Dado 3 Height"];
+  var dadoKeys = ["ZS_Dado1Z", "ZS_Dado2Z", "ZS_Dado3Z"];
+  for (var d = 0; d < 3; d++) {
+    var dRow = document.createElement("div");
+    dRow.className = "slider-row";
+    dRow.setAttribute("data-key", dadoKeys[d]);
+    dRow.innerHTML =
+      '<span class="slider-label">' + dadoLabels[d] + '</span>' +
+      '<div class="slider-range"><input type="range" min="4" max="80" step="0.125" value="' + ZONE_DEFAULTS[dadoKeys[d]] + '"></div>' +
+      '<div class="slider-value"><input type="number" min="4" max="80" step="0.125" value="' + ZONE_DEFAULTS[dadoKeys[d]].toFixed(3) + '"></div>';
+    wireZoneSlider(dRow, dadoKeys[d], 3);
+    zoneElements['dado' + (d + 1)] = dRow;
+    body.appendChild(dRow);
+  }
+
+  /* Dado thickness slider */
+  var dtRow = document.createElement("div");
+  dtRow.className = "slider-row";
+  dtRow.setAttribute("data-key", "ZS_DadoThickness");
+  dtRow.innerHTML =
+    '<span class="slider-label">Dado Thickness</span>' +
+    '<div class="slider-range"><input type="range" min="0.25" max="1.5" step="0.001" value="0.75"></div>' +
+    '<div class="slider-value"><input type="number" min="0.25" max="1.5" step="0.001" value="0.750"></div>';
+  wireZoneSlider(dtRow, "ZS_DadoThickness", 3);
+  zoneElements.dadoThickness = dtRow;
+  body.appendChild(dtRow);
+
+  /* SVG diagram container */
+  var svgWrap = document.createElement("div");
+  svgWrap.className = "zone-svg-wrap";
+  svgWrap.id = "zoneSvgWrap";
+  body.appendChild(svgWrap);
+
+  /* Per-compartment type dropdowns */
+  for (var c = 0; c < 4; c++) {
+    var compDiv = document.createElement("div");
+    compDiv.id = "zs_comp_" + (c + 1);
+
+    var compLabel = document.createElement("div");
+    compLabel.className = "zone-comp-label";
+    compLabel.innerHTML = 'Compartment ' + (c + 1) + ' <span class="zone-badge" id="zs_badge_' + (c + 1) + '"></span>';
+
+    var compRow = document.createElement("div");
+    compRow.className = "hardware-row";
+    compRow.innerHTML = '<span class="slider-label">Type</span>';
+    var typeSel = document.createElement("select");
+    typeSel.id = "zs_comp_type_" + (c + 1);
+    ["Door", "Drawer", "Open"].forEach(function(name, ti) {
+      var opt = document.createElement("option");
+      opt.value = ti; opt.textContent = name;
+      typeSel.appendChild(opt);
+    });
+    (function(compIdx, sel) {
+      sel.addEventListener("change", function() {
+        pushUndo();
+        state['ZS_Comp' + compIdx + 'Type'] = parseInt(sel.value);
+        updateZoneUI();
+        updateAll();
+      });
+    })(c + 1, typeSel);
+    compRow.appendChild(typeSel);
+
+    compDiv.appendChild(compLabel);
+    compDiv.appendChild(compRow);
+    zoneElements['comp' + (c + 1)] = compDiv;
+    body.appendChild(compDiv);
+  }
+
+  container.appendChild(header);
+  container.appendChild(body);
+}
+
+function wireZoneSlider(row, stateKey, decimals) {
+  var range = row.querySelector('input[type="range"]');
+  var num = row.querySelector('input[type="number"]');
+  range.addEventListener("input", function() {
+    pushUndo();
+    state[stateKey] = parseFloat(range.value);
+    num.value = parseFloat(range.value).toFixed(decimals);
+    updateZoneUI(); updateAll();
+  });
+  num.addEventListener("input", function() {
+    pushUndo();
+    var v = parseFloat(num.value);
+    if (!isNaN(v)) { state[stateKey] = v; range.value = v; }
+    updateZoneUI(); updateAll();
+  });
+}
+
+function updateZoneUI() {
+  var dadoCount = Math.round(state.ZS_DadoCount || 0);
+
+  /* Show/hide dado Z sliders */
+  for (var d = 1; d <= 3; d++) {
+    var el = zoneElements['dado' + d];
+    if (el) el.classList.toggle("zone-hidden", d > dadoCount);
+  }
+  if (zoneElements.dadoThickness) {
+    zoneElements.dadoThickness.classList.toggle("zone-hidden", dadoCount === 0);
+  }
+
+  /* Show/hide compartment groups */
+  var compCount = dadoCount + 1;
+  for (var c = 1; c <= 4; c++) {
+    var compEl = zoneElements['comp' + c];
+    if (compEl) compEl.classList.toggle("zone-hidden", c > compCount);
+    /* Update type dropdown to match state */
+    var typeSel = document.getElementById("zs_comp_type_" + c);
+    if (typeSel) typeSel.value = state['ZS_Comp' + c + 'Type'] || 0;
+    /* Update badge */
+    var badge = document.getElementById("zs_badge_" + c);
+    if (badge && c <= compCount) {
+      var t = Math.round(state['ZS_Comp' + c + 'Type'] || 0);
+      badge.textContent = ZONE_TYPE_NAMES[t];
+      badge.className = "zone-badge zone-badge-" + ["door", "drawer", "open"][t];
+    }
+  }
+
+  /* Sync slider DOM */
+  var dadoSlider = document.querySelector('[data-key="ZS_DadoCount"]');
+  if (dadoSlider) {
+    dadoSlider.querySelector('input[type="range"]').value = dadoCount;
+    dadoSlider.querySelector('input[type="number"]').value = dadoCount;
+  }
+
+  /* Update SVG */
+  renderZoneSVG();
+}
+
+/* ── Zone Stack SVG Diagram ── */
+function renderZoneSVG() {
+  var wrap = document.getElementById("zoneSvgWrap");
+  if (!wrap) return;
+
+  var svgW = 160, svgH = 260, pad = 10;
+  var cabW = svgW - 2 * pad, cabH = svgH - 2 * pad;
+  var TK = state.ToeKickHeight, H = state.Height;
+  if (H <= 0) { wrap.innerHTML = ''; return; }
+
+  var scale = cabH / H;
+  var tkH = TK * scale;
+  var interiorH = state.Height - TK - state.BottomThickness - state.FrontStretcherWidth;
+  var zones = computeZoneStack();
+
+  var svg = '<svg width="' + svgW + '" height="' + svgH + '" xmlns="http://www.w3.org/2000/svg">';
+
+  /* Cabinet outline */
+  svg += '<rect x="' + pad + '" y="' + pad + '" width="' + cabW + '" height="' + cabH + '" fill="none" stroke="#444" stroke-width="1.5"/>';
+
+  /* Toe kick area */
+  if (tkH > 2) {
+    svg += '<rect x="' + (pad + 1) + '" y="' + (pad + cabH - tkH) + '" width="' + (cabW - 2) + '" height="' + (tkH - 1) + '" fill="#1a1a1a" stroke="none"/>';
+    svg += '<text x="' + (svgW / 2) + '" y="' + (pad + cabH - tkH / 2 + 3) + '" fill="#444" font-size="8" text-anchor="middle">Toe Kick</text>';
+  }
+
+  /* Zone compartments */
+  var baseY = pad + cabH - tkH;
+  var colors = { 0: "#1a3a5c", 1: "#1a4a2a", 2: "#2a2a2a" };
+  var labels = { 0: "Door", 1: "Drawer", 2: "Open" };
+
+  zones.forEach(function(zone) {
+    var zoneH = zone.height * scale;
+    var zoneY = baseY - (zone.topZ - state.ToeKickHeight - state.BottomThickness) * scale;
+    if (zoneH < 2) return;
+
+    svg += '<rect x="' + (pad + 2) + '" y="' + zoneY + '" width="' + (cabW - 4) + '" height="' + Math.max(1, zoneH - 1) + '" fill="' + colors[zone.type] + '" stroke="none" rx="2"/>';
+
+    if (zoneH > 14) {
+      svg += '<text x="' + (svgW / 2) + '" y="' + (zoneY + zoneH / 2 + 3) + '" fill="#888" font-size="9" text-anchor="middle">' + labels[zone.type] + '</text>';
+    }
+  });
+
+  /* Dado shelf lines */
+  var dadoCount = Math.round(state.ZS_DadoCount || 0);
+  var dadoZ = [state.ZS_Dado1Z, state.ZS_Dado2Z, state.ZS_Dado3Z];
+  for (var d = 0; d < dadoCount; d++) {
+    var lineY = baseY - dadoZ[d] * scale;
+    svg += '<line x1="' + pad + '" y1="' + lineY + '" x2="' + (pad + cabW) + '" y2="' + lineY + '" stroke="#d9904a" stroke-width="2" stroke-dasharray="4,2"/>';
+  }
+
+  svg += '</svg>';
+  wrap.innerHTML = svg;
+}
+
+/* ── Render: Hardware Selection Group ── */
+function renderHardwareSection() {
+  var container = document.getElementById("controlsPanel");
+
+  var header = document.createElement("div");
+  header.className = "group-header";
+  header.innerHTML =
+    '<span class="arrow">&#9654;</span>' +
+    '<span class="group-label">Hardware</span>' +
+    '<span class="group-count">3</span>';
+
+  var body = document.createElement("div");
+  body.className = "group-body";
+
+  header.addEventListener("click", function() {
+    header.classList.toggle("expanded");
+    body.classList.toggle("expanded");
+  });
+
+  var types = [
+    { key: "hinge", label: "Hinge", items: HARDWARE_LIBRARY.hinges },
+    { key: "slide", label: "Slide", items: HARDWARE_LIBRARY.slides },
+    { key: "pull",  label: "Pull",  items: HARDWARE_LIBRARY.pulls }
+  ];
+
+  types.forEach(function(type) {
+    var row = document.createElement("div");
+    row.className = "hardware-row";
+
+    var label = document.createElement("span");
+    label.className = "slider-label";
+    label.textContent = type.label;
+
+    var select = document.createElement("select");
+    select.id = "hw_" + type.key;
+    type.items.forEach(function(item) {
+      var opt = document.createElement("option");
+      opt.value = item.id;
+      opt.textContent = item.label;
+      select.appendChild(opt);
+    });
+
+    select.addEventListener("change", function() {
+      applyHardwareSelection(type.key, select.value);
+    });
+
+    row.appendChild(label);
+    row.appendChild(select);
+    body.appendChild(row);
+  });
+
+  container.appendChild(header);
+  container.appendChild(body);
+}
+
+/* ── Apply Hardware Selection → Auto-fill Sliders ── */
+function applyHardwareSelection(type, id) {
+  hardwareSelection[type] = id;
+
+  var items = HARDWARE_LIBRARY[type + "s"];
+  var selected = null;
+  for (var i = 0; i < items.length; i++) {
+    if (items[i].id === id) { selected = items[i]; break; }
+  }
+
+  if (!selected || !selected.params) return;
+
+  pushUndo();
+
+  Object.keys(selected.params).forEach(function(key) {
+    state[key] = selected.params[key];
+    var row = document.querySelector('[data-key="' + key + '"]');
+    if (row) {
+      row.querySelector('input[type="range"]').value = state[key];
+      var decimals = 3;
+      SLIDER_GROUPS.forEach(function(group) {
+        group.sliders.forEach(function(s) {
+          if (s.key === key) decimals = s.decimals;
+        });
+      });
+      row.querySelector('input[type="number"]').value = Number(state[key]).toFixed(decimals);
+    }
+  });
+
+  updateAll();
+}
+
+/* Helper: reset hardware dropdowns to Manual */
+function resetHardwareDropdowns() {
+  hardwareSelection = { hinge: "manual", slide: "manual", pull: "manual" };
+  ["hw_hinge", "hw_slide", "hw_pull"].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.value = "manual";
+  });
+}
+
+/* ── Render: Cut List Container ── */
+function renderCutListContainer() {
+  var container = document.getElementById("controlsPanel");
+  var section = document.createElement("div");
+  section.className = "cutlist-section";
+  section.innerHTML =
+    '<div class="cutlist-header" id="cutlistHeader">' +
+      '<span class="arrow">&#9654;</span>' +
+      '<span class="cutlist-label">Cut List</span>' +
+    '</div>' +
+    '<div class="cutlist-body" id="cutlistBody"></div>';
+  container.appendChild(section);
+  document.getElementById("cutlistHeader").addEventListener("click", function() {
+    this.classList.toggle("expanded");
+    document.getElementById("cutlistBody").classList.toggle("expanded");
+  });
+}
+
+/* ── Render: Cost Summary Container ── */
+function renderCostContainer() {
+  var container = document.getElementById("controlsPanel");
+  var section = document.createElement("div");
+  section.className = "cost-section";
+  section.innerHTML =
+    '<div class="cost-header" id="costHeader">' +
+      '<span class="arrow">&#9654;</span>' +
+      '<span class="cost-label">Cost Estimate</span>' +
+      '<span class="cost-total-badge" id="costBadge"></span>' +
+    '</div>' +
+    '<div class="cost-body" id="costBody"></div>';
+  container.appendChild(section);
+  document.getElementById("costHeader").addEventListener("click", function() {
+    this.classList.toggle("expanded");
+    document.getElementById("costBody").classList.toggle("expanded");
+  });
+}
+
+/* ── Cost Computation ── */
+function computeEdgeBandingFeet() {
+  var ST = state.SideThickness, DD = state.DadoDepth;
+  var BPT = state.BackPanelThickness, TK = state.ToeKickHeight;
+  var interiorW = Math.max(0, state.Width - 2 * ST);
+  var inches = 0;
+
+  /* Shelf front edges */
+  if (state.ShelfCount > 0) {
+    var shelfW = Math.max(0, interiorW - 2 * DD);
+    inches += Math.round(state.ShelfCount) * shelfW;
+  }
+
+  /* Bottom front edge */
+  inches += interiorW;
+
+  /* Side panel front edges (visible portion above toe kick) */
+  inches += 2 * Math.max(0, state.Height - TK);
+
+  return inches / 12;
+}
+
+function computeCostSummary() {
+  var parts = computeCutList();
+  var sheets = computeSheetGoods(parts);
+  var hwSchedule = computeHardwareSchedule();
+  var edgeFt = computeEdgeBandingFeet();
+
+  var lines = [];
+  var grandTotal = 0;
+
+  /* Sheet goods cost */
+  var sheetTotal = 0;
+  sheets.forEach(function(s) {
+    var key = s.thickness.toFixed(3);
+    var pricing = MATERIAL_PRICING.sheets[key];
+    var price = pricing ? pricing.pricePerSheet : MATERIAL_PRICING.defaultSheetPrice;
+    var label = pricing ? pricing.label : thicknessLabel(s.thickness) + ' Sheet';
+    var lineTotal = s.count * price;
+    sheetTotal += lineTotal;
+    lines.push({
+      label: label,
+      detail: s.count + '\u00D7 $' + price.toFixed(2) + '/sheet',
+      value: lineTotal
+    });
+  });
+
+  /* Hardware cost */
+  var hwTotal = 0;
+  hwSchedule.forEach(function(item) {
+    hwTotal += item.total;
+  });
+  if (hwTotal > 0) {
+    lines.push({
+      label: 'Hardware',
+      detail: hwSchedule.length + ' items',
+      value: hwTotal
+    });
+  }
+
+  /* Edge banding cost */
+  if (edgeFt > 0) {
+    var ebCost = edgeFt * MATERIAL_PRICING.edgeBandingPerFt;
+    lines.push({
+      label: 'Edge Banding',
+      detail: edgeFt.toFixed(1) + ' ft \u00D7 $' + MATERIAL_PRICING.edgeBandingPerFt.toFixed(2) + '/ft',
+      value: ebCost
+    });
+    grandTotal += ebCost;
+  }
+
+  grandTotal += sheetTotal + hwTotal;
+
+  return { lines: lines, total: grandTotal };
+}
+
+function updateCostSummary() {
+  var cost = computeCostSummary();
+  var body = document.getElementById("costBody");
+  var badge = document.getElementById("costBadge");
+  if (!body) return;
+
+  badge.textContent = '$' + cost.total.toFixed(2);
+
+  var html = '';
+  cost.lines.forEach(function(line) {
+    html += '<div class="cost-line">' +
+      '<div><span class="cost-line-label">' + line.label + '</span> ' +
+      '<span class="cost-line-detail">' + line.detail + '</span></div>' +
+      '<span class="cost-line-value">$' + line.value.toFixed(2) + '</span></div>';
+  });
+
+  html += '<div class="cost-line cost-grand-total">' +
+    '<span class="cost-line-label">Estimated Total</span>' +
+    '<span class="cost-line-value">$' + cost.total.toFixed(2) + '</span></div>';
+
+  body.innerHTML = html;
+}
+
+/* ── Update Cut List Display ── */
+function updateCutList() {
+  var parts = computeCutList();
+  var sheets = computeSheetGoods(parts);
+  var body = document.getElementById("cutlistBody");
+  if (!body) return;
+
+  var html = '<table class="cutlist-table">' +
+    '<tr><th>Part</th><th>Qty</th><th>W</th><th>H</th><th>T</th><th>Material</th></tr>';
+
+  parts.forEach(function(p) {
+    html += '<tr><td class="part-name">' + p.name + '</td>' +
+      '<td>' + p.qty + '</td>' +
+      '<td>' + p.w.toFixed(3) + '"</td>' +
+      '<td>' + p.h.toFixed(3) + '"</td>' +
+      '<td>' + p.t.toFixed(3) + '"</td>' +
+      '<td>' + thicknessLabel(p.t) + '</td></tr>';
+  });
+
+  html += '</table><div class="sheet-estimate">' +
+    '<div class="sheet-title">Sheet Goods Estimate (1.3\u00D7 waste factor)</div>';
+
+  if (sheets.length === 0) {
+    html += '<div class="sheet-line">No sheet goods required</div>';
+  } else {
+    sheets.forEach(function(s) {
+      html += '<div class="sheet-line"><span>' + s.count + '\u00D7</span> 4\u00D78 sheet ' + thicknessLabel(s.thickness) + ' plywood</div>';
+    });
+  }
+  html += '</div>';
+
+  /* ── Hardware Schedule ── */
+  var hwSchedule = computeHardwareSchedule();
+  if (hwSchedule.length > 0) {
+    html += '<div class="hw-schedule">' +
+      '<div class="hw-title">Hardware Schedule</div>' +
+      '<table class="hw-schedule-table">' +
+      '<tr><th>Item</th><th>Brand / Model</th><th>Qty</th><th style="text-align:right">Unit</th><th style="text-align:right">Total</th></tr>';
+
+    var hwTotal = 0;
+    hwSchedule.forEach(function(item) {
+      hwTotal += item.total;
+      html += '<tr>' +
+        '<td class="hw-item-name">' + item.category + '</td>' +
+        '<td>' + item.label + '</td>' +
+        '<td>' + item.qty + ' ' + item.unit + '</td>' +
+        '<td class="hw-cost">' + (item.unitPrice > 0 ? '$' + item.unitPrice.toFixed(2) : '\u2014') + '</td>' +
+        '<td class="hw-cost">' + (item.total > 0 ? '$' + item.total.toFixed(2) : '\u2014') + '</td>' +
+        '</tr>';
+    });
+
+    html += '</table>';
+    if (hwTotal > 0) {
+      html += '<div class="hw-subtotal">' +
+        '<span>Hardware Subtotal</span>' +
+        '<span class="hw-total-value">$' + hwTotal.toFixed(2) + '</span></div>';
+    }
+    html += '</div>';
+  }
+
+  body.innerHTML = html;
+}
+
+/* ── Constraint Validation Engine ── */
+function validateConfig() {
+  var warnings = [];
+  var W = state.Width, H = state.Height, D = state.Depth;
+  var ST = state.SideThickness, BT = state.BottomThickness;
+  var TK = state.ToeKickHeight, BPT = state.BackPanelThickness;
+  var DD = state.DadoDepth;
+  var interiorW = W - 2 * ST;
+  var interiorH = H - TK - BT - state.FrontStretcherWidth;
+
+  /* Boundary constraints — does the cabinet make sense? */
+  if (interiorW <= 0) {
+    warnings.push({ key: "SideThickness", msg: "Side thickness (" + (2 * ST).toFixed(3) + "\") exceeds cabinet width (" + W.toFixed(3) + "\")" });
+  }
+  if (interiorH <= 0) {
+    warnings.push({ key: "Height", msg: "No usable interior height after toe kick + bottom + stretcher" });
+  }
+  if (D - BPT <= 0) {
+    warnings.push({ key: "BackPanelThickness", msg: "Back panel thickness exceeds depth" });
+  }
+
+  /* Clearance constraints — do parts fit? */
+  if (state.DoorCount > 0) {
+    var dc = Math.round(state.DoorCount);
+    var totalDoorW = interiorW + state.DoorOverlayLeft + state.DoorOverlayRight;
+    var doorW = (totalDoorW - (dc - 1) * state.DoorGap) / dc;
+    if (doorW < 3) {
+      warnings.push({ key: "DoorCount", msg: "Door width (" + doorW.toFixed(1) + "\") too narrow for " + dc + " doors at this cabinet width" });
+    }
+  }
+
+  if (state.DrawerCount > 0) {
+    var drc = Math.round(state.DrawerCount);
+    var drawerStackH = drc * state.DrawerHeight;
+    if (drawerStackH > interiorH && interiorH > 0) {
+      warnings.push({ key: "DrawerCount", msg: "Drawer stack (" + drawerStackH.toFixed(1) + "\") exceeds interior height (" + interiorH.toFixed(1) + "\")" });
+    }
+    var dbW = interiorW - 2 * state.DrawerClearance - 2 * state.DrawerBoxSideThickness;
+    if (dbW < 2) {
+      warnings.push({ key: "DrawerClearance", msg: "Drawer box width (" + dbW.toFixed(1) + "\") too narrow after clearances" });
+    }
+    if (state.DrawerBoxHeight >= state.DrawerHeight) {
+      warnings.push({ key: "DrawerBoxHeight", msg: "Drawer box height (" + state.DrawerBoxHeight.toFixed(3) + "\") must be less than drawer front height (" + state.DrawerHeight.toFixed(3) + "\")" });
+    }
+  }
+
+  /* Module stacking — do shelves + drawers fit? */
+  if (state.ShelfCount > 0 && interiorH > 0) {
+    var shelfStackH = Math.round(state.ShelfCount) * state.ShelfThickness;
+    if (shelfStackH > interiorH * 0.8) {
+      warnings.push({ key: "ShelfCount", msg: "Shelves use " + Math.round(shelfStackH / interiorH * 100) + "% of interior height" });
+    }
+  }
+
+  /* Shelf geometry */
+  if (state.ShelfCount > 0) {
+    var shelfW = interiorW - 2 * DD;
+    if (shelfW < 2) {
+      warnings.push({ key: "DadoDepth", msg: "Shelf width (" + shelfW.toFixed(1) + "\") too narrow after dado depth" });
+    }
+    var shelfD = D - BPT - state.ShelfSetback;
+    if (shelfD < 2) {
+      warnings.push({ key: "ShelfSetback", msg: "Shelf depth (" + shelfD.toFixed(1) + "\") too shallow after setback" });
+    }
+  }
+
+  /* Hinge constraints */
+  if (state.DoorCount > 0 && state.HingeCount > 0) {
+    var doorH = H - TK + state.DoorOverlayTop + state.DoorOverlayBottom;
+    var hingeSpread = state.HingeInsetTop + state.HingeInsetBottom;
+    if (hingeSpread >= doorH && doorH > 0) {
+      warnings.push({ key: "HingeInsetTop", msg: "Hinge insets (" + hingeSpread.toFixed(1) + "\") exceed door height (" + doorH.toFixed(1) + "\")" });
+    }
+  }
+
+  /* Empty cabinet: no doors, no drawers, no shelves, no zones */
+  var dadoCount = Math.round(state.ZS_DadoCount || 0);
+  if (state.DoorCount === 0 && state.DrawerCount === 0 && state.ShelfCount === 0 && dadoCount === 0) {
+    warnings.push({ key: "DoorCount", msg: "No doors, drawers, or shelves configured \u2014 cabinet interior is empty" });
+  }
+
+  /* Zone stack: compartment height too small */
+  if (dadoCount > 0 && interiorH > 0) {
+    var zones = computeZoneStack();
+    zones.forEach(function(z) {
+      if (z.height < 2) {
+        warnings.push({ key: "ZS_DadoCount", msg: "Compartment " + (z.index + 1) + " height (" + z.height.toFixed(1) + "\") is too small (min 2\")" });
+      }
+    });
+  }
+
+  /* Zone stack: dado positions exceed interior */
+  if (dadoCount >= 1 && state.ZS_Dado1Z >= interiorH) {
+    warnings.push({ key: "ZS_Dado1Z", msg: "Dado 1 position (" + state.ZS_Dado1Z.toFixed(1) + "\") exceeds interior height (" + interiorH.toFixed(1) + "\")" });
+  }
+  if (dadoCount >= 2 && state.ZS_Dado2Z >= interiorH) {
+    warnings.push({ key: "ZS_Dado2Z", msg: "Dado 2 position exceeds interior height" });
+  }
+  if (dadoCount >= 3 && state.ZS_Dado3Z >= interiorH) {
+    warnings.push({ key: "ZS_Dado3Z", msg: "Dado 3 position exceeds interior height" });
+  }
+
+  return warnings;
+}
+
+/* ── Validation Display ── */
+function renderValidationContainer() {
+  var container = document.getElementById("controlsPanel");
+  var section = document.createElement("div");
+  section.className = "validation-section";
+  section.innerHTML =
+    '<div class="validation-header" id="validationHeader">' +
+      '<span class="arrow">&#9654;</span>' +
+      '<span class="validation-label">Validation</span>' +
+      '<span class="validation-count" id="validationCount"></span>' +
+    '</div>' +
+    '<div class="validation-body" id="validationBody"></div>';
+  container.appendChild(section);
+  document.getElementById("validationHeader").addEventListener("click", function() {
+    this.classList.toggle("expanded");
+    document.getElementById("validationBody").classList.toggle("expanded");
+  });
+}
+
+function updateValidation() {
+  var warnings = validateConfig();
+  var countEl = document.getElementById("validationCount");
+  var bodyEl = document.getElementById("validationBody");
+  var headerEl = document.getElementById("validationHeader");
+  if (!countEl || !bodyEl) return warnings;
+
+  /* Clear previous row warnings */
+  document.querySelectorAll(".slider-row.warning").forEach(function(row) {
+    row.classList.remove("warning");
+  });
+
+  if (warnings.length === 0) {
+    countEl.textContent = "ALL CLEAR";
+    headerEl.classList.add("all-clear");
+    bodyEl.innerHTML = '<div class="validation-item pass">All constraints satisfied</div>';
+  } else {
+    countEl.textContent = warnings.length + " WARNING" + (warnings.length > 1 ? "S" : "");
+    headerEl.classList.remove("all-clear");
+    var html = "";
+    warnings.forEach(function(w) {
+      html += '<div class="validation-item">' + w.msg + '</div>';
+      /* Highlight the offending slider row */
+      var row = document.querySelector('[data-key="' + w.key + '"]');
+      if (row) row.classList.add("warning");
+    });
+    bodyEl.innerHTML = html;
+  }
+  return warnings;
+}
+
+/* ── Smart UI: Show/Hide Groups ── */
+var GROUP_VISIBILITY_RULES = {
+  "doors":    function() { return state.DoorCount > 0; },
+  "hinges":   function() { return state.DoorCount > 0; },
+  "pulls":    function() { return state.DoorCount > 0 || state.DrawerCount > 0; },
+  "drawers":  function() { return state.DrawerCount > 0; },
+  "shelves":  function() { return state.ShelfCount > 0; },
+  "toe-kick": function() { return state.ToeKickHeight > 0; }
+};
+
+/* Maps group IDs to the header+body DOM elements (populated after render) */
+var groupElements = {};
+
+function updateGroupVisibility() {
+  Object.keys(GROUP_VISIBILITY_RULES).forEach(function(groupId) {
+    var els = groupElements[groupId];
+    if (!els) return;
+    var visible = GROUP_VISIBILITY_RULES[groupId]();
+    els.header.classList.toggle("group-hidden", !visible);
+    els.body.classList.toggle("group-hidden", !visible);
+  });
+}
+
+/* ── Preset Lineage Tracking ── */
+var currentPresetName = "Custom";
+var presetBaseState = null;
+
+function updatePresetLineage() {
+  var el = document.getElementById("presetLineage");
+  if (!el) return;
+
+  if (!presetBaseState || currentPresetName === "Custom") {
+    el.innerHTML = "";
+    return;
+  }
+
+  var modified = [];
+  Object.keys(presetBaseState).forEach(function(key) {
+    if (state[key] !== undefined && state[key] !== presetBaseState[key]) {
+      modified.push(formatLabel(key));
+    }
+  });
+
+  if (modified.length === 0) {
+    el.innerHTML = currentPresetName;
+  } else {
+    el.innerHTML = currentPresetName + ' <span class="modified">(modified: ' + modified.slice(0, 3).join(", ") + (modified.length > 3 ? " + " + (modified.length - 3) + " more" : "") + ')</span>';
+  }
+}
+
+/* ── Undo/Redo System ── */
+var undoStack = [];
+var redoStack = [];
+var MAX_UNDO = 50;
+var undoDebounceTimer = null;
+
+function captureState() {
+  var snapshot = {};
+  Object.keys(state).forEach(function(k) { snapshot[k] = state[k]; });
+  return snapshot;
+}
+
+function pushUndo() {
+  clearTimeout(undoDebounceTimer);
+  undoDebounceTimer = setTimeout(function() {
+    undoStack.push(captureState());
+    if (undoStack.length > MAX_UNDO) undoStack.shift();
+    redoStack = [];
+    updateUndoButtons();
+  }, 500);
+}
+
+function doUndo() {
+  if (undoStack.length === 0) return;
+  redoStack.push(captureState());
+  var prev = undoStack.pop();
+  restoreState(prev);
+  updateUndoButtons();
+}
+
+function doRedo() {
+  if (redoStack.length === 0) return;
+  undoStack.push(captureState());
+  var next = redoStack.pop();
+  restoreState(next);
+  updateUndoButtons();
+}
+
+function restoreState(snapshot) {
+  Object.keys(snapshot).forEach(function(k) { state[k] = snapshot[k]; });
+  /* Sync all DOM sliders */
+  SLIDER_GROUPS.forEach(function(group) {
+    group.sliders.forEach(function(s) {
+      var row = document.querySelector('[data-key="' + s.key + '"]');
+      if (row) {
+        row.querySelector('input[type="range"]').value = state[s.key];
+        row.querySelector('input[type="number"]').value = Number(state[s.key]).toFixed(s.decimals);
+      }
+    });
+  });
+  /* Sync zone slider DOM elements */
+  ["ZS_DadoCount", "ZS_Dado1Z", "ZS_Dado2Z", "ZS_Dado3Z", "ZS_DadoThickness"].forEach(function(k) {
+    var row = document.querySelector('[data-key="' + k + '"]');
+    if (row) {
+      var rng = row.querySelector('input[type="range"]');
+      var num = row.querySelector('input[type="number"]');
+      if (rng) rng.value = state[k];
+      if (num) num.value = k === "ZS_DadoCount" ? Math.round(state[k]) : Number(state[k]).toFixed(3);
+    }
+  });
+  /* Sync zone preset dropdown */
+  var zonePresetSel = document.getElementById("zs_preset");
+  if (zonePresetSel) zonePresetSel.value = state.ZS_LayoutPreset || 0;
+  updateAll();
+}
+
+function updateUndoButtons() {
+  var btnUndo = document.getElementById("btnUndo");
+  var btnRedo = document.getElementById("btnRedo");
+  if (btnUndo) btnUndo.disabled = undoStack.length === 0;
+  if (btnRedo) btnRedo.disabled = redoStack.length === 0;
+}
+
+/* ── Cabinet SVG Preview (3/4 isometric wireframe) ── */
+function renderCabinetSVG() {
+  var W = state.Width || 36;
+  var H = state.Height || 34.5;
+  var D = state.Depth || 24;
+  var TK = state.ToeKickHeight || 0;
+  var ST = state.SideThickness || 0.75;
+  var BT = state.BottomThickness || 0.75;
+  var BPT = state.BackPanelThickness || 0.25;
+
+  /* Isometric projection angles */
+  var ax = 0.45;  /* depth skew X */
+  var ay = -0.35; /* depth skew Y */
+
+  /* Scale to fit viewport */
+  var maxDim = Math.max(W + D * ax, H + D * Math.abs(ay));
+  var svgW = 600, svgH = 500;
+  var margin = 60;
+  var scale = Math.min((svgW - 2 * margin) / (W + D * ax), (svgH - 2 * margin) / (H + D * Math.abs(ay)));
+
+  /* Origin: bottom-left-front of cabinet */
+  var ox = margin + 10;
+  var oy = svgH - margin;
+
+  function px(x, z) { return ox + (x + z * ax) * scale; }
+  function py(y, z) { return oy - (y + z * ay) * scale; }
+
+  var lines = [];
+  var fills = [];
+
+  function addLine(x1, y1, z1, x2, y2, z2, color, width, dash) {
+    lines.push('<line x1="' + px(x1, z1) + '" y1="' + py(y1, z1) + '" x2="' + px(x2, z2) + '" y2="' + py(y2, z2) + '" stroke="' + (color || '#333') + '" stroke-width="' + (width || 0.8) + '"' + (dash ? ' stroke-dasharray="' + dash + '"' : '') + '/>');
+  }
+
+  function addPoly(pts, fill, stroke) {
+    var d = pts.map(function(p, i) { return (i === 0 ? 'M' : 'L') + px(p[0], p[2]) + ',' + py(p[1], p[2]); }).join(' ') + ' Z';
+    fills.push('<path d="' + d + '" fill="' + (fill || 'none') + '" stroke="' + (stroke || '#333') + '" stroke-width="0.6"/>');
+  }
+
+  function addText(x, y, z, text, color, size) {
+    lines.push('<text x="' + px(x, z) + '" y="' + py(y, z) + '" fill="' + (color || '#555') + '" font-size="' + (size || 9) + '" text-anchor="middle" dominant-baseline="middle">' + text + '</text>');
+  }
+
+  /* ── Cabinet body ── */
+  /* Front face */
+  addPoly([[0,TK,0],[W,TK,0],[W,H,0],[0,H,0]], '#0d0d0d', '#444');
+  /* Top face */
+  addPoly([[0,H,0],[W,H,0],[W,H,D],[0,H,D]], '#141414', '#444');
+  /* Right side face */
+  addPoly([[W,TK,0],[W,TK,D],[W,H,D],[W,H,0]], '#111', '#444');
+
+  /* ── Toe kick recess ── */
+  if (TK > 0) {
+    var tkd = state.ToeKickDepth || 3;
+    /* Front toe kick face */
+    addPoly([[ST, 0, tkd], [W - ST, 0, tkd], [W - ST, TK, tkd], [ST, TK, tkd]], '#080808', '#2a2a2a');
+    /* Left toe kick return */
+    addPoly([[ST, 0, 0], [ST, 0, tkd], [ST, TK, tkd], [ST, TK, 0]], '#0a0a0a', '#2a2a2a');
+    /* Right toe kick return */
+    addPoly([[W - ST, 0, 0], [W - ST, 0, tkd], [W - ST, TK, tkd], [W - ST, TK, 0]], '#0a0a0a', '#2a2a2a');
+  }
+
+  /* ── Side panels (edges visible) ── */
+  addLine(0, TK, 0, 0, H, 0, '#555', 1.2);
+  addLine(W, TK, 0, W, H, 0, '#555', 1.2);
+  addLine(0, TK, D, 0, H, D, '#444', 0.6);
+
+  /* ── Interior lines ── */
+  var iW = W - 2 * ST;
+  var botY = TK + BT;
+  /* Bottom shelf line */
+  addLine(ST, botY, 0, W - ST, botY, 0, '#2a2a2a', 0.5, '3,3');
+
+  /* ── Zone Stack / Interior ── */
+  var dadoCount = Math.round(state.ZS_DadoCount || 0);
+  var interiorH = H - TK - BT - (state.FrontStretcherWidth || 1.5);
+
+  if (dadoCount > 0) {
+    var zones = computeZoneStack();
+    /* Draw dado shelf lines */
+    for (var d = 0; d < dadoCount; d++) {
+      var dadoY = botY + (state['ZS_Dado' + (d + 1) + 'Z'] || 18);
+      addLine(ST, dadoY, BPT, W - ST, dadoY, BPT, '#e67e22', 0.8);
+      addLine(ST, dadoY, 0, W - ST, dadoY, 0, '#e67e22', 0.5, '2,2');
+    }
+
+    /* Draw compartment contents */
+    zones.forEach(function(zone) {
+      var zBot = zone.bottomZ;
+      var zTop = zone.topZ;
+      var zMid = (zBot + zTop) / 2;
+
+      if (zone.type === 0) {
+        /* Door compartment — draw door rectangles */
+        var gap = state.DoorGap || 0.125;
+        var olL = state.DoorOverlayLeft || 0.5;
+        var olR = state.DoorOverlayRight || 0.5;
+        var olT = state.DoorOverlayTop || 0.5;
+        var olB = state.DoorOverlayBottom || 0.5;
+        var doorW = (W + olL + olR - gap) / 2;
+        /* Left door */
+        addPoly([[-olL, zBot - olB, -0.3], [doorW - olL, zBot - olB, -0.3], [doorW - olL, zTop + olT, -0.3], [-olL, zTop + olT, -0.3]], 'rgba(41,128,185,0.08)', '#2980b9');
+        /* Right door */
+        addPoly([[doorW - olL + gap, zBot - olB, -0.3], [W + olR, zBot - olB, -0.3], [W + olR, zTop + olT, -0.3], [doorW - olL + gap, zTop + olT, -0.3]], 'rgba(41,128,185,0.08)', '#2980b9');
+        /* Door knobs */
+        addText(doorW - olL - 1.5, zMid, -0.3, '\u25CF', '#2980b9', 6);
+        addText(doorW - olL + gap + 1.5, zMid, -0.3, '\u25CF', '#2980b9', 6);
+      }
+
+      if (zone.type === 1) {
+        /* Drawer compartment — draw stacked drawer fronts */
+        var drc = 3;
+        var dfH = zone.height / drc;
+        for (var di = 0; di < drc; di++) {
+          var dfBot = zBot + di * dfH;
+          var dfTop = dfBot + dfH - 0.25;
+          addPoly([[0, dfBot, -0.3], [W, dfBot, -0.3], [W, dfTop, -0.3], [0, dfTop, -0.3]], 'rgba(39,174,96,0.08)', '#27ae60');
+          addText(W / 2, (dfBot + dfTop) / 2, -0.3, '\u2501', '#27ae60', 8);
+        }
+      }
+
+      if (zone.type === 2) {
+        /* Open compartment — dashed outline + shelf lines */
+        addLine(ST + 1, zBot + 1, 0, W - ST - 1, zBot + 1, 0, '#666', 0.3, '4,4');
+        addLine(ST + 1, zTop - 1, 0, W - ST - 1, zTop - 1, 0, '#666', 0.3, '4,4');
+        addText(W / 2, zMid, 0, 'OPEN', '#444', 8);
+      }
+    });
+
+  } else {
+    /* Standard mode — doors and drawers from global sliders */
+    var dc = Math.round(state.DoorCount || 0);
+    var drc = Math.round(state.DrawerCount || 0);
+
+    if (dc > 0) {
+      var olL = state.DoorOverlayLeft || 0.5;
+      var olR = state.DoorOverlayRight || 0.5;
+      var olT = state.DoorOverlayTop || 0.5;
+      var olB = state.DoorOverlayBottom || 0.5;
+      var gap = state.DoorGap || 0.125;
+      var doorFaceW = W + olL + olR;
+      var singleDoorW = (doorFaceW - (dc - 1) * gap) / dc;
+      var doorBot = TK - olB;
+      var doorTop = H + olT;
+
+      for (var di = 0; di < dc; di++) {
+        var dx = -olL + di * (singleDoorW + gap);
+        addPoly([[dx, doorBot, -0.3], [dx + singleDoorW, doorBot, -0.3], [dx + singleDoorW, doorTop, -0.3], [dx, doorTop, -0.3]], 'rgba(41,128,185,0.06)', '#2980b9');
+      }
+    }
+
+    if (drc > 0) {
+      var drH = state.DrawerHeight || 6;
+      for (var dri = 0; dri < Math.min(drc, 6); dri++) {
+        var drBot = botY + dri * (drH + 0.5);
+        var drTop = drBot + drH - 0.5;
+        if (drTop > H) break;
+        addPoly([[0, drBot, -0.3], [W, drBot, -0.3], [W, drTop, -0.3], [0, drTop, -0.3]], 'rgba(39,174,96,0.06)', '#27ae60');
+        addText(W / 2, (drBot + drTop) / 2, -0.3, '\u2501', '#27ae60', 8);
+      }
+    }
+
+    /* Adjustable shelves */
+    var sc = Math.round(state.ShelfCount || 0);
+    if (sc > 0) {
+      var shelfSpace = interiorH / (sc + 1);
+      for (var si = 1; si <= sc; si++) {
+        var shY = botY + si * shelfSpace;
+        addLine(ST + 0.5, shY, BPT, W - ST - 0.5, shY, BPT, '#555', 0.5, '2,4');
+      }
+    }
+  }
+
+  /* ── Dimension annotations ── */
+  /* Width dimension (bottom) */
+  var dimY = TK > 0 ? -4 : TK - 4;
+  addLine(0, dimY, 0, W, dimY, 0, '#444', 0.5);
+  addLine(0, dimY - 1, 0, 0, dimY + 1, 0, '#444', 0.5);
+  addLine(W, dimY - 1, 0, W, dimY + 1, 0, '#444', 0.5);
+  addText(W / 2, dimY - 3, 0, W.toFixed(1) + '"', '#666', 9);
+
+  /* Height dimension (left) */
+  addLine(-4, TK > 0 ? 0 : TK, 0, -4, H, 0, '#444', 0.5);
+  addLine(-5, TK > 0 ? 0 : TK, 0, -3, TK > 0 ? 0 : TK, 0, '#444', 0.5);
+  addLine(-5, H, 0, -3, H, 0, '#444', 0.5);
+  addText(-10, H / 2, 0, H.toFixed(1) + '"', '#666', 9);
+
+  /* Depth dimension (top-right) */
+  addLine(W + 2, H, 0, W + 2, H, D, '#444', 0.5);
+  addText(W + 2, H, D / 2, D.toFixed(1) + '"', '#666', 9);
+
+  /* Build SVG */
+  var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + svgW + ' ' + svgH + '">';
+  svg += fills.join('');
+  svg += lines.join('');
+  svg += '</svg>';
+
+  document.getElementById("cabinetSvgWrap").innerHTML = svg;
+
+  /* Update dimension readout */
+  var preset = currentPresetName || "Custom";
+  document.getElementById("viewportDims").textContent = preset + ' \u00B7 ' + W + '" W \u00D7 ' + H + '" H \u00D7 ' + D + '" D';
+}
+
+/* ── Master Update (validation + cut list + cost + visibility + lineage + zones) ── */
+function updateAll() {
+  updateValidation();
+  updateZoneUI();
+  updateCutList();
+  updateCostSummary();
+  updateGroupVisibility();
+  updatePresetLineage();
+  renderZoneSVG();
+  renderCabinetSVG();
+}
+
+/* ── State ── */
+const state = {};
+let totalParams = 0;
+
+function initState() {
+  SLIDER_GROUPS.forEach(group => {
+    group.sliders.forEach(s => {
+      state[s.key] = s.default;
+      totalParams++;
+    });
+  });
+  /* Initialize zone stack state */
+  Object.keys(ZONE_DEFAULTS).forEach(function(k) {
+    state[k] = ZONE_DEFAULTS[k];
+  });
+  document.getElementById("paramCount").textContent = totalParams + " parameters";
+}
+
+/* ── Rendering ── */
+function renderGroups() {
+  const container = document.getElementById("controlsPanel");
+
+  SLIDER_GROUPS.forEach(group => {
+    /* Group header */
+    const header = document.createElement("div");
+    header.className = "group-header" + (group.collapsed ? "" : " expanded");
+    header.innerHTML =
+      '<span class="arrow">&#9654;</span>' +
+      '<span class="group-label">' + group.label + '</span>' +
+      '<span class="group-count">' + group.sliders.length + '</span>';
+
+    /* Group body */
+    const body = document.createElement("div");
+    body.className = "group-body" + (group.collapsed ? "" : " expanded");
+
+    /* Toggle */
+    header.addEventListener("click", function() {
+      header.classList.toggle("expanded");
+      body.classList.toggle("expanded");
+    });
+
+    /* Slider rows */
+    group.sliders.forEach(s => {
+      const row = document.createElement("div");
+      row.className = "slider-row";
+      row.setAttribute("data-key", s.key);
+
+      /* Label */
+      const label = document.createElement("span");
+      label.className = "slider-label";
+      label.textContent = formatLabel(s.key);
+      label.title = s.key;
+
+      /* Range */
+      const rangeWrap = document.createElement("div");
+      rangeWrap.className = "slider-range";
+      const range = document.createElement("input");
+      range.type = "range";
+      range.min = s.min;
+      range.max = s.max;
+      range.step = s.step;
+      range.value = s.default;
+      rangeWrap.appendChild(range);
+
+      /* Number */
+      const numWrap = document.createElement("div");
+      numWrap.className = "slider-value";
+      const num = document.createElement("input");
+      num.type = "number";
+      num.min = s.min;
+      num.max = s.max;
+      num.step = s.step;
+      num.value = Number(s.default).toFixed(s.decimals);
+      numWrap.appendChild(num);
+
+      /* Sync: range → number */
+      range.addEventListener("input", function() {
+        pushUndo();
+        const v = parseFloat(range.value);
+        state[s.key] = v;
+        num.value = v.toFixed(s.decimals);
+      });
+
+      /* Sync: number → range (on input for live update) */
+      num.addEventListener("input", function() {
+        pushUndo();
+        const raw = parseFloat(num.value);
+        if (!isNaN(raw)) {
+          state[s.key] = raw;
+          range.value = raw;
+        }
+      });
+
+      /* Clamp on blur */
+      num.addEventListener("blur", function() {
+        let v = parseFloat(num.value);
+        if (isNaN(v)) v = s.default;
+        v = Math.min(s.max, Math.max(s.min, v));
+        state[s.key] = v;
+        num.value = v.toFixed(s.decimals);
+        range.value = v;
+      });
+
+      row.appendChild(label);
+      row.appendChild(rangeWrap);
+      row.appendChild(numWrap);
+      body.appendChild(row);
+    });
+
+    container.appendChild(header);
+    container.appendChild(body);
+
+    /* Store reference for smart show/hide */
+    groupElements[group.id] = { header: header, body: body };
+  });
+}
+
+/* CamelCase key → readable label: "DoorOverlayLeft" → "Door Overlay Left" */
+function formatLabel(key) {
+  return key.replace(/([A-Z])/g, " $1").replace(/^ /, "");
+}
+
+/* ── Export JSON ── */
+function exportJSON() {
+  const output = {
+    Metadata: {
+      Source: "PIF_Configurator_Web",
+      ExportDate: new Date().toISOString().split("T")[0],
+      Version: "1.0",
+      ParameterCount: totalParams
+    }
+  };
+
+  SLIDER_GROUPS.forEach(group => {
+    const section = SECTION_MAP[group.id];
+    output[section] = {};
+    group.sliders.forEach(s => {
+      output[section][s.key] = {
+        Default: s.default,
+        Min: s.min,
+        Max: s.max,
+        UserValue: state[s.key]
+      };
+    });
+  });
+
+  /* Include hardware selections */
+  output.HardwareSelection = {
+    Hinge: hardwareSelection.hinge,
+    Slide: hardwareSelection.slide,
+    Pull: hardwareSelection.pull
+  };
+
+  /* Include zone stack layout */
+  var dadoCount = Math.round(state.ZS_DadoCount || 0);
+  output.ZoneLayout = {
+    LayoutPreset: state.ZS_LayoutPreset,
+    DadoShelfCount: dadoCount,
+    DadoShelf1_Z: state.ZS_Dado1Z,
+    DadoShelf2_Z: state.ZS_Dado2Z,
+    DadoShelf3_Z: state.ZS_Dado3Z,
+    DadoShelfThickness: state.ZS_DadoThickness,
+    Compartments: []
+  };
+  for (var ci = 0; ci < dadoCount + 1; ci++) {
+    output.ZoneLayout.Compartments.push({
+      Type: ["door", "drawer", "open"][state['ZS_Comp' + (ci + 1) + 'Type'] || 0]
+    });
+  }
+
+  const json = JSON.stringify(output, null, 2);
+  const blob = new Blob([json], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "PIF_UserConfig_" + new Date().toISOString().split("T")[0] + ".json";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  /* Brief feedback */
+  const btn = document.getElementById("btnExport");
+  const orig = btn.textContent;
+  btn.textContent = "Exported!";
+  setTimeout(function() { btn.textContent = orig; }, 1500);
+}
+
+/* ── Reset ── */
+function resetDefaults() {
+  SLIDER_GROUPS.forEach(group => {
+    group.sliders.forEach(s => {
+      state[s.key] = s.default;
+      const row = document.querySelector('[data-key="' + s.key + '"]');
+      if (row) {
+        row.querySelector('input[type="range"]').value = s.default;
+        row.querySelector('input[type="number"]').value = Number(s.default).toFixed(s.decimals);
+      }
+    });
+  });
+
+  /* Reset zone stack state */
+  Object.keys(ZONE_DEFAULTS).forEach(function(k) { state[k] = ZONE_DEFAULTS[k]; });
+  ["ZS_DadoCount", "ZS_Dado1Z", "ZS_Dado2Z", "ZS_Dado3Z", "ZS_DadoThickness"].forEach(function(k) {
+    var row = document.querySelector('[data-key="' + k + '"]');
+    if (row) {
+      var rng = row.querySelector('input[type="range"]');
+      var num = row.querySelector('input[type="number"]');
+      if (rng) rng.value = state[k];
+      if (num) num.value = k === "ZS_DadoCount" ? Math.round(state[k]) : Number(state[k]).toFixed(3);
+    }
+  });
+  var zps = document.getElementById("zs_preset");
+  if (zps) zps.value = 0;
+
+  const btn = document.getElementById("btnReset");
+  const orig = btn.textContent;
+  btn.textContent = "Reset!";
+  setTimeout(function() { btn.textContent = orig; }, 1000);
+}
+
+/* ── PDF Export (5-page cabinet plan) ── */
+function withButtonFeedback(btnId, label, fn) {
+  var btn = document.getElementById(btnId);
+  var orig = btn.innerHTML;
+  btn.innerHTML = '<span class="btn-spinner"></span>' + label;
+  btn.classList.add("btn-working");
+  btn.disabled = true;
+  /* Use setTimeout(0) to let the spinner render before the synchronous work blocks the UI */
+  setTimeout(function() {
+    try {
+      fn();
+      btn.innerHTML = "&#10003; " + label;
+      btn.classList.remove("btn-working");
+      btn.classList.add("btn-done");
+    } catch(e) {
+      btn.innerHTML = "&#10007; Error";
+      btn.classList.remove("btn-working");
+      console.error("Export error:", e);
+      alert("Export failed: " + e.message);
+    }
+    setTimeout(function() {
+      btn.innerHTML = orig;
+      btn.classList.remove("btn-done");
+      btn.disabled = false;
+    }, 1500);
+  }, 50);
+}
+
+function generatePDF() {
+  var jsPDF = window.jspdf.jsPDF;
+  var doc = new jsPDF('p', 'pt', 'letter');
+  var pageW = doc.internal.pageSize.getWidth();
+  var pageH = doc.internal.pageSize.getHeight();
+  var m = 50;
+  var dateStr = new Date().toISOString().split('T')[0];
+
+  /* Config fingerprint: djb2 hash of state JSON */
+  var stateStr = JSON.stringify(state);
+  var cfgH = 5381;
+  for (var ci = 0; ci < stateStr.length; ci++) cfgH = ((cfgH << 5) + cfgH + stateStr.charCodeAt(ci)) & 0xFFFFFFFF;
+  var cfgHash = (cfgH >>> 0).toString(16).toUpperCase();
+  while (cfgHash.length < 8) cfgHash = '0' + cfgHash;
+
+  function hdr(doc) {
+    doc.setFontSize(8); doc.setTextColor(150);
+    doc.text('PIF Cabinet Plan  |  #' + cfgHash, m, 30);
+    doc.text(dateStr, pageW - m, 30, { align: 'right' });
+  }
+  function ftr(doc, pg) {
+    doc.setFontSize(8); doc.setTextColor(150);
+    doc.text('Generated by Selection-Connection | Powered by PIF', m, pageH - 20);
+    doc.text('Page ' + pg, pageW - m, pageH - 20, { align: 'right' });
+  }
+
+  /* ── Page 1: Overview ── */
+  hdr(doc);
+  doc.setFontSize(24); doc.setTextColor(0);
+  doc.text('Cabinet Plan', m, 80);
+  doc.setFontSize(12); doc.setTextColor(80);
+  if (currentPresetName !== 'Custom') doc.text('Preset: ' + currentPresetName, m, 110);
+  doc.text('Generated: ' + dateStr, m, currentPresetName !== 'Custom' ? 130 : 110);
+
+  var y = currentPresetName !== 'Custom' ? 165 : 145;
+  doc.setFontSize(14); doc.setTextColor(0);
+  doc.text('Overall Dimensions', m, y); y += 22;
+  doc.setFontSize(11); doc.setTextColor(60);
+  doc.text('Width:  ' + state.Width.toFixed(3) + '"', m + 20, y); y += 16;
+  doc.text('Height: ' + state.Height.toFixed(3) + '"', m + 20, y); y += 16;
+  doc.text('Depth:  ' + state.Depth.toFixed(3) + '"', m + 20, y); y += 28;
+
+  doc.setFontSize(14); doc.setTextColor(0);
+  doc.text('Material Thicknesses', m, y); y += 22;
+  doc.setFontSize(11); doc.setTextColor(60);
+  doc.text('Sides: ' + state.SideThickness.toFixed(3) + '"    Bottom: ' + state.BottomThickness.toFixed(3) + '"    Shelves: ' + state.ShelfThickness.toFixed(3) + '"    Back: ' + state.BackPanelThickness.toFixed(3) + '"', m + 20, y);
+  y += 28;
+
+  doc.setFontSize(14); doc.setTextColor(0);
+  doc.text('Configuration', m, y); y += 22;
+  doc.setFontSize(11); doc.setTextColor(60);
+  var cfgLines = [];
+  cfgLines.push('Doors: ' + Math.round(state.DoorCount) + '    Drawers: ' + Math.round(state.DrawerCount) + '    Shelves: ' + Math.round(state.ShelfCount));
+  if (state.ToeKickHeight > 0) cfgLines.push('Toe Kick: ' + state.ToeKickHeight.toFixed(3) + '" H \u00D7 ' + state.ToeKickDepth.toFixed(3) + '" D');
+  cfgLines.forEach(function(line) { doc.text(line, m + 20, y); y += 16; });
+  y += 20;
+
+  /* Hardware summary */
+  var hinge = findHardwareItem("hinges", hardwareSelection.hinge);
+  var slide = findHardwareItem("slides", hardwareSelection.slide);
+  var pull = findHardwareItem("pulls", hardwareSelection.pull);
+  if ((hinge && hinge.brand) || (slide && slide.brand) || (pull && pull.brand)) {
+    doc.setFontSize(14); doc.setTextColor(0);
+    doc.text('Selected Hardware', m, y); y += 22;
+    doc.setFontSize(11); doc.setTextColor(60);
+    if (hinge && hinge.brand) { doc.text('Hinge: ' + hinge.brand + ' ' + hinge.model, m + 20, y); y += 16; }
+    if (slide && slide.brand) { doc.text('Slide: ' + slide.brand + ' ' + slide.model, m + 20, y); y += 16; }
+    if (pull && pull.brand) { doc.text('Pull: ' + pull.brand + ' ' + pull.model, m + 20, y); y += 16; }
+  }
+  ftr(doc, 1);
+
+  /* ── Page 2: Cut List ── */
+  doc.addPage(); hdr(doc);
+  doc.setFontSize(18); doc.setTextColor(0);
+  doc.text('Cut List', m, 70);
+
+  var parts = computeCutList();
+  doc.autoTable({
+    startY: 90,
+    head: [['Part', 'Qty', 'Width', 'Height', 'Thick', 'Material']],
+    body: parts.map(function(p) {
+      return [p.name, String(p.qty), p.w.toFixed(3) + '"', p.h.toFixed(3) + '"', p.t.toFixed(3) + '"', thicknessLabel(p.t)];
+    }),
+    margin: { left: m, right: m },
+    styles: { fontSize: 9, cellPadding: 4 },
+    headStyles: { fillColor: [40, 40, 40], textColor: [200, 200, 200] },
+    alternateRowStyles: { fillColor: [245, 245, 245] }
+  });
+
+  var afterTable = doc.lastAutoTable.finalY + 20;
+  var sheets = computeSheetGoods(parts);
+  doc.setFontSize(11); doc.setTextColor(0);
+  doc.text('Sheet Goods Estimate (1.3\u00D7 waste factor)', m, afterTable);
+  afterTable += 16;
+  doc.setFontSize(10); doc.setTextColor(80);
+  sheets.forEach(function(s) {
+    doc.text(s.count + '\u00D7 4\u00D78 sheet ' + thicknessLabel(s.thickness) + ' plywood', m + 20, afterTable);
+    afterTable += 14;
+  });
+  ftr(doc, 2);
+
+  /* ── Page 3: Hardware Schedule + Boring Specs ── */
+  doc.addPage(); hdr(doc);
+  doc.setFontSize(18); doc.setTextColor(0);
+  doc.text('Hardware Schedule', m, 70);
+
+  var hwSchedule = computeHardwareSchedule();
+  if (hwSchedule.length > 0) {
+    doc.autoTable({
+      startY: 90,
+      head: [['Item', 'Brand / Model', 'Qty', 'Unit Price', 'Total']],
+      body: hwSchedule.map(function(item) {
+        return [item.category, item.label, item.qty + ' ' + item.unit,
+          item.unitPrice > 0 ? '$' + item.unitPrice.toFixed(2) : '\u2014',
+          item.total > 0 ? '$' + item.total.toFixed(2) : '\u2014'];
+      }),
+      margin: { left: m, right: m },
+      styles: { fontSize: 9, cellPadding: 4 },
+      headStyles: { fillColor: [40, 40, 40], textColor: [200, 200, 200] },
+      columnStyles: { 3: { halign: 'right' }, 4: { halign: 'right' } }
+    });
+    y = doc.lastAutoTable.finalY + 25;
+  } else {
+    y = 100;
+    doc.setFontSize(10); doc.setTextColor(120);
+    doc.text('No hardware selected', m, y); y += 25;
+  }
+
+  doc.setFontSize(13); doc.setTextColor(0);
+  doc.text('Boring Specifications', m, y); y += 20;
+  doc.setFontSize(10); doc.setTextColor(60);
+  if (state.DoorCount > 0) {
+    doc.text('Hinge Cup: ' + state.HingeCupDiameter.toFixed(3) + '" dia \u00D7 ' + state.HingeCupDepth.toFixed(3) + '" deep', m + 20, y); y += 14;
+    doc.text('Boring Distance: ' + state.HingeBoringDistance.toFixed(3) + '" from edge', m + 20, y); y += 14;
+    doc.text('Hinge Inset: Top ' + state.HingeInsetTop.toFixed(3) + '" / Bottom ' + state.HingeInsetBottom.toFixed(3) + '"', m + 20, y); y += 18;
+  }
+  if (state.DrawerCount > 0) {
+    doc.text('Drawer Slide Clearance: ' + state.DrawerClearance.toFixed(3) + '" per side', m + 20, y); y += 14;
+    doc.text('Slide Top/Bottom Clearance: ' + state.SlideTopClearance.toFixed(3) + '" / ' + state.SlideBottomClearance.toFixed(3) + '"', m + 20, y); y += 18;
+  }
+  if (state.DoorCount > 0 || state.DrawerCount > 0) {
+    doc.text('Pull Bore Spacing: ' + state.PullBoreSpacing.toFixed(3) + '"    Hole Dia: ' + state.PullMountingHoleDia.toFixed(4) + '"', m + 20, y); y += 14;
+  }
+  ftr(doc, 3);
+
+  /* ── Page 4: Material Allocation + Visual Nesting ── */
+  doc.addPage(); hdr(doc);
+  doc.setFontSize(18); doc.setTextColor(0);
+  doc.text('Material Allocation', m, 70);
+
+  var SHEET_AREA = 48 * 96;
+  var partsByThick = {};
+  parts.forEach(function(p) {
+    var k = p.t.toFixed(3);
+    if (!partsByThick[k]) partsByThick[k] = { parts: [], totalArea: 0 };
+    partsByThick[k].parts.push(p);
+    partsByThick[k].totalArea += p.qty * p.w * p.h;
+  });
+
+  y = 95;
+  var thickKeys = Object.keys(partsByThick).sort(function(a, b) { return parseFloat(b) - parseFloat(a); });
+  thickKeys.forEach(function(k) {
+    var group = partsByThick[k];
+    var sheetCount = Math.ceil((group.totalArea * 1.3) / SHEET_AREA);
+    var yieldPct = Math.round((group.totalArea / (sheetCount * SHEET_AREA)) * 100);
+
+    doc.setFontSize(12); doc.setTextColor(0);
+    doc.text(thicknessLabel(parseFloat(k)) + ' Stock \u2014 ' + sheetCount + ' sheet' + (sheetCount > 1 ? 's' : '') + ' (' + yieldPct + '% yield)', m, y);
+    y += 16;
+    doc.setFontSize(9); doc.setTextColor(80);
+    group.parts.forEach(function(p) {
+      doc.text('\u2022 ' + p.name + ' \u00D7' + p.qty + '  (' + p.w.toFixed(1) + '" \u00D7 ' + p.h.toFixed(1) + '"  = ' + (p.qty * p.w * p.h).toFixed(0) + ' sq in)', m + 20, y);
+      y += 13;
+    });
+    y += 10;
+  });
+
+  /* Visual nesting diagram — draw parts on 4x8 sheet outlines */
+  var nestScale = (pageW - 2 * m) / 96; /* scale: 96" sheet length fits page width */
+  var sheetH = 48 * nestScale;
+  var nestColors = [[60,120,200],[200,80,60],[60,180,100],[180,140,50],[140,60,180]];
+
+  thickKeys.forEach(function(k, tIdx) {
+    if (y + sheetH + 40 > pageH - 40) { doc.addPage(); hdr(doc); y = 60; }
+    var group = partsByThick[k];
+
+    doc.setFontSize(10); doc.setTextColor(0);
+    doc.text(thicknessLabel(parseFloat(k)) + ' Sheet Layout', m, y); y += 14;
+
+    /* Draw sheet outline */
+    doc.setDrawColor(180); doc.setLineWidth(0.5);
+    doc.rect(m, y, 96 * nestScale, sheetH);
+    doc.setFontSize(6); doc.setTextColor(180);
+    doc.text('48" \u00D7 96"', m + 2, y + 8);
+
+    /* Simple shelf packing: place parts left-to-right, row by row */
+    var cx = 0, cy = 0, rowH = 0;
+    var allParts = [];
+    group.parts.forEach(function(p) {
+      for (var q = 0; q < p.qty; q++) {
+        /* Orient larger dimension along sheet length */
+        var pw = Math.max(p.w, p.h), ph = Math.min(p.w, p.h);
+        allParts.push({ name: p.name, w: pw, h: ph });
+      }
+    });
+    /* Sort largest first for better packing */
+    allParts.sort(function(a, b) { return (b.w * b.h) - (a.w * a.h); });
+
+    var cIdx = 0;
+    allParts.forEach(function(part) {
+      if (cx + part.w > 96) { cx = 0; cy += rowH + 0.5; rowH = 0; }
+      if (cy + part.h > 48) return; /* overflow — doesn't fit this sheet */
+
+      var clr = nestColors[cIdx % nestColors.length]; cIdx++;
+      doc.setFillColor(clr[0], clr[1], clr[2]);
+      doc.setDrawColor(255);
+      doc.setLineWidth(0.3);
+      var rx = m + cx * nestScale, ry = y + cy * nestScale;
+      var rw = part.w * nestScale, rh = part.h * nestScale;
+      doc.rect(rx, ry, rw, rh, 'FD');
+
+      /* Label if part is large enough */
+      if (rw > 30 && rh > 8) {
+        doc.setFontSize(5); doc.setTextColor(255);
+        doc.text(part.name, rx + 2, ry + 6);
+      }
+      cx += part.w + 0.5;
+      rowH = Math.max(rowH, part.h);
+    });
+
+    y += sheetH + 16;
+  });
+  ftr(doc, 4);
+
+  /* ── Page 5: Cost Summary ── */
+  doc.addPage(); hdr(doc);
+  doc.setFontSize(18); doc.setTextColor(0);
+  doc.text('Cost Estimate', m, 70);
+
+  var cost = computeCostSummary();
+  doc.autoTable({
+    startY: 90,
+    head: [['Category', 'Detail', 'Cost']],
+    body: cost.lines.map(function(line) {
+      return [line.label, line.detail, '$' + line.value.toFixed(2)];
+    }),
+    foot: [['', 'ESTIMATED TOTAL', '$' + cost.total.toFixed(2)]],
+    margin: { left: m, right: m },
+    styles: { fontSize: 11, cellPadding: 6 },
+    headStyles: { fillColor: [40, 40, 40], textColor: [200, 200, 200] },
+    footStyles: { fillColor: [40, 40, 40], textColor: [100, 220, 100], fontStyle: 'bold' },
+    columnStyles: { 2: { halign: 'right' } }
+  });
+  ftr(doc, 5);
+
+  var filename = 'PIF_CabinetPlan_' + (currentPresetName !== 'Custom' ? currentPresetName.replace(/[^a-zA-Z0-9]/g, '_') + '_' : '') + dateStr + '.pdf';
+  doc.save(filename);
+}
+
+/* ── DXF Export (flat part outlines with layers) ── */
+function generateDXF() {
+  var parts = computeCutList();
+  var lines = [];
+
+  /* DXF header */
+  lines.push('0', 'SECTION', '2', 'HEADER');
+  lines.push('9', '$ACADVER', '1', 'AC1015');
+  lines.push('9', '$INSUNITS', '70', '1');
+  lines.push('0', 'ENDSEC');
+
+  /* Tables section — define layers */
+  lines.push('0', 'SECTION', '2', 'TABLES');
+  lines.push('0', 'TABLE', '2', 'LAYER', '70', '4');
+  var layers = [
+    { name: 'CUT',       color: 7 },
+    { name: 'DRILL',     color: 1 },
+    { name: 'ENGRAVE',   color: 3 },
+    { name: 'REFERENCE', color: 5 }
+  ];
+  layers.forEach(function(lyr) {
+    lines.push('0', 'LAYER', '2', lyr.name, '70', '0', '62', String(lyr.color), '6', 'Continuous');
+  });
+  lines.push('0', 'ENDTAB');
+  lines.push('0', 'ENDSEC');
+
+  /* Entities section — part outlines */
+  lines.push('0', 'SECTION', '2', 'ENTITIES');
+
+  var SHEET_W = 96, SHEET_H = 48;
+  var GAP = 1;
+  var curX = 0, curY = 0, rowH = 0, sheetNum = 0;
+
+  /* Group parts by thickness */
+  var byThick = {};
+  parts.forEach(function(p) {
+    var k = p.t.toFixed(3);
+    if (!byThick[k]) byThick[k] = [];
+    for (var i = 0; i < p.qty; i++) {
+      byThick[k].push({ name: p.name + (p.qty > 1 ? '_' + (i + 1) : ''), w: p.w, h: p.h });
+    }
+  });
+
+  Object.keys(byThick).sort(function(a, b) { return parseFloat(b) - parseFloat(a); }).forEach(function(thick) {
+    curX = 0; curY = sheetNum * (SHEET_H + 10); rowH = 0;
+
+    /* Sheet boundary on REFERENCE layer */
+    addRect(lines, 0, curY, SHEET_W, SHEET_H, 'REFERENCE');
+    addText(lines, thicknessLabel(parseFloat(thick)) + ' Stock', 1, curY + SHEET_H + 2, 'REFERENCE', 1.5);
+
+    byThick[thick].forEach(function(part) {
+      /* Check if part fits in current row */
+      if (curX + part.w > SHEET_W) {
+        curX = 0;
+        curY += rowH + GAP;
+        rowH = 0;
+      }
+      /* If part exceeds sheet, start new sheet line */
+      if (curY + part.h > sheetNum * (SHEET_H + 10) + SHEET_H) {
+        sheetNum++;
+        curX = 0; curY = sheetNum * (SHEET_H + 10); rowH = 0;
+        addRect(lines, 0, curY, SHEET_W, SHEET_H, 'REFERENCE');
+      }
+
+      /* Part outline on CUT layer */
+      addRect(lines, curX, curY, part.w, part.h, 'CUT');
+
+      /* Part label on ENGRAVE layer */
+      addText(lines, part.name, curX + 0.25, curY + 0.5, 'ENGRAVE', 0.75);
+
+      /* Dimension annotations on REFERENCE layer */
+      addText(lines, part.w.toFixed(2) + '"', curX + part.w / 2, curY + part.h + 0.3, 'REFERENCE', 0.5);
+
+      curX += part.w + GAP;
+      if (part.h > rowH) rowH = part.h;
+    });
+
+    sheetNum++;
+  });
+
+  /* Hinge cup bores on DRILL layer */
+  if (state.DoorCount > 0) {
+    var cupR = state.HingeCupDiameter / 2;
+    /* Note: drill positions are documented in boring specs — placed as reference circles */
+    addText(lines, 'Hinge boring: ' + state.HingeCupDiameter.toFixed(3) + '" dia cup, ' + state.HingeBoringDistance.toFixed(3) + '" from edge', 1, sheetNum * (SHEET_H + 10) + 2, 'DRILL', 1);
+  }
+
+  lines.push('0', 'ENDSEC');
+  lines.push('0', 'EOF');
+
+  /* Download */
+  var dxfContent = lines.join('\n');
+  var blob = new Blob([dxfContent], { type: 'application/dxf' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'PIF_CutParts_' + new Date().toISOString().split('T')[0] + '.dxf';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function addRect(lines, x, y, w, h, layer) {
+  lines.push('0', 'LWPOLYLINE', '8', layer, '90', '4', '70', '1');
+  lines.push('10', String(x),       '20', String(y));
+  lines.push('10', String(x + w),   '20', String(y));
+  lines.push('10', String(x + w),   '20', String(y + h));
+  lines.push('10', String(x),       '20', String(y + h));
+}
+
+function addText(lines, text, x, y, layer, height) {
+  lines.push('0', 'TEXT', '8', layer);
+  lines.push('10', String(x), '20', String(y), '30', '0');
+  lines.push('40', String(height || 1));
+  lines.push('1', text);
+}
+
+/* ── CSV BOM Export ── */
+function generateCSV() {
+  var parts = computeCutList();
+  var hwSchedule = computeHardwareSchedule();
+  var cost = computeCostSummary();
+  var dateStr = new Date().toISOString().split('T')[0];
+  var rows = [];
+
+  rows.push('PIF Cabinet BOM — ' + (currentPresetName !== 'Custom' ? currentPresetName : 'Custom Configuration') + ' — ' + dateStr);
+  rows.push('');
+
+  /* Panel schedule */
+  rows.push('PANEL SCHEDULE');
+  rows.push('Part_Name,Qty,Width_in,Height_in,Thickness_in,Material');
+  parts.forEach(function(p) {
+    rows.push(csvEscape(p.name) + ',' + p.qty + ',' + p.w.toFixed(3) + ',' + p.h.toFixed(3) + ',' + p.t.toFixed(3) + ',' + csvEscape(thicknessLabel(p.t) + ' Plywood'));
+  });
+  rows.push('');
+
+  /* Hardware schedule */
+  if (hwSchedule.length > 0) {
+    rows.push('HARDWARE SCHEDULE');
+    rows.push('Item,Brand,Model,Qty,Unit_Cost,Total_Cost');
+    hwSchedule.forEach(function(item) {
+      rows.push(csvEscape(item.category) + ',' + csvEscape(item.label.split(' ')[0] || '') + ',' +
+        csvEscape(item.label) + ',' + item.qty + ',' +
+        (item.unitPrice > 0 ? item.unitPrice.toFixed(2) : '') + ',' +
+        (item.total > 0 ? item.total.toFixed(2) : ''));
+    });
+    rows.push('');
+  }
+
+  /* Cost summary */
+  rows.push('COST SUMMARY');
+  rows.push('Category,Detail,Cost');
+  cost.lines.forEach(function(line) {
+    rows.push(csvEscape(line.label) + ',' + csvEscape(line.detail) + ',' + line.value.toFixed(2));
+  });
+  rows.push('TOTAL,,' + cost.total.toFixed(2));
+
+  var csv = rows.join('\n');
+  var blob = new Blob([csv], { type: 'text/csv' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'PIF_BOM_' + (currentPresetName !== 'Custom' ? currentPresetName.replace(/[^a-zA-Z0-9]/g, '_') + '_' : '') + dateStr + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function csvEscape(str) {
+  if (!str) return '';
+  if (str.indexOf(',') >= 0 || str.indexOf('"') >= 0 || str.indexOf('\n') >= 0) {
+    return '"' + str.replace(/"/g, '""') + '"';
+  }
+  return str;
+}
+
+/* ── Init ── */
+initState();
+renderPresetDropdown();
+
+/* Add lineage indicator after preset dropdown */
+(function() {
+  var presetSection = document.querySelector(".preset-section");
+  if (presetSection) {
+    var lineage = document.createElement("div");
+    lineage.className = "preset-lineage";
+    lineage.id = "presetLineage";
+    presetSection.appendChild(lineage);
+  }
+})();
+
+renderHardwareSection();
+renderZoneStackSection();
+renderGroups();
+renderValidationContainer();
+renderCutListContainer();
+renderCostContainer();
+updateZoneUI();
+updateAll();
+
+/* ══════════════════════════════════════════════════════════════
+   CONFIGURATOR PURCHASE SYSTEM
+   Guest checkout — no membership or account required.
+   Payment provider is abstracted for future swap-out.
+   Current: Stripe Connect. Designed to transition to cheaper methods.
+
+   NOTE: This is separate from the 5-tier platform membership system
+   (Design & Go / Emerging / Surging / Converging / Diverging).
+   Platform membership is shown on index.html. The configurator
+   sells individual file outputs as one-time purchases.
+   PIF collects 10% on every transaction (Section 6A of architecture).
+   ══════════════════════════════════════════════════════════════ */
+
+var PAYWALL_KEY = "pif_purchase";
+var unlocked = false;
+
+/*
+ * Payment Provider Abstraction Layer
+ * ────────────────────────────────────
+ * To switch providers: change PIF_PAYMENT.active to a different key.
+ * Each provider implements checkout() which initiates the payment flow.
+ * All providers redirect back with ?paid=1 on success.
+ *
+ * Every purchase is one file, one transaction. No bundles, no time passes.
+ * PIF collects 10% on every transaction (added to buyer cost).
+ * File price: $5.00. PIF 10%: $0.50. Buyer pays: $5.50.
+ */
+var PIF_PAYMENT = {
+  active: "stripe_connect",
+
+  providers: {
+    /* ── Stripe Connect (current) ── */
+    stripe_connect: {
+      name: "Stripe",
+      /* Replace with real Stripe Price ID from your Stripe dashboard */
+      priceId: "price_PLACEHOLDER_single_config",
+      checkout: function() {
+        if (this.priceId.indexOf("PLACEHOLDER") !== -1) {
+          alert("Stripe Connect is being configured.\nPrice ID is not yet set.\n\nSee MAINTENANCE.md for setup instructions.");
+          return;
+        }
+        var returnUrl = window.location.href.split("?")[0];
+        window.location.href = "https://checkout.stripe.com/pay/" + this.priceId
+          + "?success_url=" + encodeURIComponent(returnUrl + "?paid=1")
+          + "&cancel_url=" + encodeURIComponent(returnUrl);
+      }
+    },
+
+    /* ── Gumroad (fallback) ── */
+    gumroad: {
+      name: "Gumroad",
+      shortCode: "pif-single",
+      checkout: function() {
+        var url = "https://gum.co/" + this.shortCode + "?wanted=true";
+        if (window.GumroadOverlay) {
+          window.GumroadOverlay.show(url);
+        } else {
+          window.open(url, "_blank");
+        }
+      }
+    }
+
+    /* ── Future providers ──
+    paddle:        { name: "Paddle", checkout: function() { ... } },
+    lemonsqueezy:  { name: "LemonSqueezy", checkout: function() { ... } },
+    direct_ach:    { name: "Direct ACH", checkout: function() { ... } }
+    */
+  },
+
+  checkout: function() {
+    var provider = this.providers[this.active];
+    if (provider && provider.checkout) {
+      provider.checkout();
+    }
+  }
+};
+
+/* ── Purchase state ── */
+function loadPurchaseState() {
+  try {
+    var stored = localStorage.getItem(PAYWALL_KEY);
+    if (stored) {
+      var data = JSON.parse(stored);
+      if (data.purchased) { unlocked = true; return; }
+    }
+  } catch(e) {}
+  unlocked = false;
+}
+
+function savePurchaseState() {
+  var data = { purchased: true, date: new Date().toISOString(), provider: PIF_PAYMENT.active };
+  try { localStorage.setItem(PAYWALL_KEY, JSON.stringify(data)); } catch(e) {}
+  unlocked = true;
+  updateLockButtons();
+}
+
+function updateLockButtons() {
+  var dxf = document.getElementById("btnDXF");
+  var csv = document.getElementById("btnCSV");
+  if (unlocked) {
+    dxf.classList.remove("btn-locked");
+    dxf.classList.add("btn-unlocked");
+    csv.classList.remove("btn-locked");
+    csv.classList.add("btn-unlocked");
+  } else {
+    dxf.classList.add("btn-locked");
+    dxf.classList.remove("btn-unlocked");
+    csv.classList.add("btn-locked");
+    csv.classList.remove("btn-unlocked");
+  }
+}
+
+function showPricingModal() {
+  document.getElementById("pricingModal").classList.add("visible");
+}
+
+function hidePricingModal() {
+  document.getElementById("pricingModal").classList.remove("visible");
+}
+
+/* Handle post-purchase callback via URL parameter (works with any provider) */
+(function checkPurchaseReturn() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get("paid") === "1") {
+    savePurchaseState();
+    var cleanUrl = window.location.pathname + window.location.hash;
+    window.history.replaceState({}, document.title, cleanUrl);
+  }
+})();
+
+/* Initialize purchase state */
+loadPurchaseState();
+updateLockButtons();
+
+/* Modal event listeners */
+document.getElementById("modalClose").addEventListener("click", hidePricingModal);
+document.getElementById("pricingModal").addEventListener("click", function(e) {
+  if (e.target === this) hidePricingModal();
+});
+document.getElementById("purchaseBtn").addEventListener("click", function() {
+  PIF_PAYMENT.checkout();
+  hidePricingModal();
+});
+
+document.getElementById("btnExport").addEventListener("click", exportJSON);
+document.getElementById("btnPDF").addEventListener("click", function() {
+  withButtonFeedback("btnPDF", "PDF", generatePDF);
+});
+document.getElementById("btnDXF").addEventListener("click", function() {
+  if (!unlocked) { showPricingModal(); return; }
+  withButtonFeedback("btnDXF", "DXF", generateDXF);
+});
+document.getElementById("btnCSV").addEventListener("click", function() {
+  if (!unlocked) { showPricingModal(); return; }
+  withButtonFeedback("btnCSV", "BOM", generateCSV);
+});
+document.getElementById("btnReset").addEventListener("click", function() {
+  pushUndo();
+  resetDefaults();
+  currentPresetName = "Custom";
+  presetBaseState = null;
+  document.getElementById("presetSelect").value = "Custom";
+  resetHardwareDropdowns();
+  updateAll();
+});
+document.getElementById("presetSelect").addEventListener("change", function() {
+  applyPreset(this.value);
+});
+document.getElementById("controlsPanel").addEventListener("input", updateAll);
+
+/* Undo/Redo */
+document.getElementById("btnUndo").addEventListener("click", doUndo);
+document.getElementById("btnRedo").addEventListener("click", doRedo);
+document.addEventListener("keydown", function(e) {
+  if (e.ctrlKey && e.key === "z") { e.preventDefault(); doUndo(); }
+  if (e.ctrlKey && e.key === "y") { e.preventDefault(); doRedo(); }
+});
+
+/* ── Analytics (lightweight event tracking) ── */
+var PIF_ANALYTICS = {
+  events: [],
+  sessionId: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+
+  track: function(event, data) {
+    var entry = {
+      event: event,
+      data: data || {},
+      timestamp: new Date().toISOString(),
+      session: this.sessionId
+    };
+    this.events.push(entry);
+    /* Persist to localStorage (rolling last 200 events) */
+    try {
+      var stored = JSON.parse(localStorage.getItem("pif_analytics") || "[]");
+      stored.push(entry);
+      if (stored.length > 200) stored = stored.slice(-200);
+      localStorage.setItem("pif_analytics", JSON.stringify(stored));
+    } catch(e) {}
+  },
+
+  getSummary: function() {
+    try {
+      var stored = JSON.parse(localStorage.getItem("pif_analytics") || "[]");
+      var counts = {};
+      stored.forEach(function(e) { counts[e.event] = (counts[e.event] || 0) + 1; });
+      return { total: stored.length, events: counts };
+    } catch(e) { return { total: 0, events: {} }; }
+  }
+};
+
+/* Track key events */
+PIF_ANALYTICS.track("page_load", { page: "configurator" });
+
+/* Wrap existing listeners with analytics */
+(function() {
+  var origApplyPreset = applyPreset;
+  applyPreset = function(name) {
+    PIF_ANALYTICS.track("preset_load", { preset: name });
+    origApplyPreset(name);
+  };
+
+  var origApplyZonePreset = applyZonePreset;
+  applyZonePreset = function(idx) {
+    PIF_ANALYTICS.track("zone_preset", { preset: ZONE_LAYOUT_PRESETS[idx] ? ZONE_LAYOUT_PRESETS[idx].name : idx });
+    origApplyZonePreset(idx);
+  };
+
+  var origExportJSON = exportJSON;
+  exportJSON = function() {
+    PIF_ANALYTICS.track("export", { type: "json" });
+    origExportJSON();
+  };
+
+  var origGeneratePDF = generatePDF;
+  generatePDF = function() {
+    PIF_ANALYTICS.track("export", { type: "pdf" });
+    origGeneratePDF();
+  };
+
+  var origGenerateDXF = generateDXF;
+  generateDXF = function() {
+    PIF_ANALYTICS.track("export", { type: "dxf", unlocked: unlocked });
+    origGenerateDXF();
+  };
+
+  var origGenerateCSV = generateCSV;
+  generateCSV = function() {
+    PIF_ANALYTICS.track("export", { type: "csv", unlocked: unlocked });
+    origGenerateCSV();
+  };
+
+  var origShowPricingModal = showPricingModal;
+  showPricingModal = function() {
+    PIF_ANALYTICS.track("pricing_modal_shown");
+    origShowPricingModal();
+  };
+})();
+</script>
+
+</body>
+</html>

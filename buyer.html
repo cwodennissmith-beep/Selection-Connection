@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>I'm a Buyer | Selection-Connection</title>
+  <meta name="description" content="Want custom-built furniture without the shop? Selection-Connection connects you with local makers who use our parametric plans to build exactly what you need.">
+  <meta property="og:title" content="Custom Furniture, Built For You | Selection-Connection">
+  <meta property="og:description" content="Configure your dream cabinet online. We connect you with local makers who build it to spec.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://selection-connection.com/buyer.html">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0a;
+      color: #ffffff;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    a { color: inherit; text-decoration: none; }
+
+    /* ── Nav ── */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      height: 48px;
+      border-bottom: 1px solid #222;
+    }
+    .top-bar a { color: #888; font-size: 13px; letter-spacing: 1px; }
+    .top-bar a:hover { color: #fff; }
+    .top-bar .brand { font-size: 11px; color: #444; letter-spacing: 3px; text-transform: uppercase; }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 100px 24px 80px;
+      text-align: center;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .hero h1 {
+      font-size: 42px;
+      font-weight: 300;
+      letter-spacing: 2px;
+      margin-bottom: 16px;
+    }
+    .hero .subtitle {
+      font-size: 18px;
+      color: #888;
+      line-height: 1.6;
+      margin-bottom: 40px;
+    }
+
+    /* ── Section ── */
+    section {
+      padding: 80px 24px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .section-label {
+      font-size: 11px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: #555;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+    .section-title {
+      font-size: 28px;
+      font-weight: 300;
+      text-align: center;
+      margin-bottom: 48px;
+      letter-spacing: 1px;
+    }
+
+    /* ── Steps ── */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+      text-align: center;
+    }
+    .step-number {
+      font-size: 36px;
+      font-weight: 200;
+      color: #333;
+      margin-bottom: 12px;
+    }
+    .step-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .step-desc {
+      font-size: 13px;
+      color: #888;
+      line-height: 1.7;
+    }
+
+    /* ── Benefits Grid ── */
+    .benefits-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+    .benefit-card {
+      background: #111;
+      border: 1px solid #1a1a1a;
+      border-radius: 8px;
+      padding: 28px 24px;
+      transition: border-color 0.2s;
+    }
+    .benefit-card:hover { border-color: #333; }
+    .benefit-name {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .benefit-desc {
+      font-size: 13px;
+      color: #888;
+      line-height: 1.6;
+    }
+
+    /* ── FAQ ── */
+    .faq-list { max-width: 700px; margin: 0 auto; }
+    .faq-item {
+      border-bottom: 1px solid #1a1a1a;
+      padding: 20px 0;
+    }
+    .faq-q {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #ddd;
+    }
+    .faq-a {
+      font-size: 13px;
+      color: #888;
+      line-height: 1.7;
+    }
+
+    /* ── CTA ── */
+    .cta-section {
+      text-align: center;
+      padding: 100px 24px;
+    }
+    .cta-title {
+      font-size: 28px;
+      font-weight: 300;
+      margin-bottom: 12px;
+    }
+    .cta-sub {
+      font-size: 14px;
+      color: #888;
+      margin-bottom: 32px;
+    }
+    .btn {
+      padding: 16px 36px;
+      font-size: 14px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      border: none;
+      cursor: pointer;
+      display: inline-block;
+      transition: opacity 0.15s, transform 0.15s;
+    }
+    .btn:hover { opacity: 0.85; transform: translateY(-1px); }
+    .btn-primary { background: #fff; color: #000; }
+    .btn-secondary { background: transparent; color: #fff; border: 1px solid #444; }
+
+    /* ── Footer ── */
+    .site-footer {
+      border-top: 1px solid #1a1a1a;
+      padding: 32px 24px;
+      text-align: center;
+    }
+    .footer-brand { font-size: 11px; color: #333; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 8px; }
+    .footer-copy { font-size: 11px; color: #222; }
+
+    @media (max-width: 1024px) {
+      .benefits-grid { grid-template-columns: repeat(2, 1fr); }
+      section { padding: 60px 24px; }
+    }
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 28px; }
+      .steps, .benefits-grid { grid-template-columns: 1fr; }
+      .hero { padding: 60px 16px 48px; }
+      section { padding: 48px 16px; }
+    }
+    @media (max-width: 480px) {
+      .hero h1 { font-size: 24px; }
+      .hero .subtitle { font-size: 15px; }
+      .section-title { font-size: 22px; }
+      .btn { padding: 14px 28px; font-size: 12px; }
+    }
+  </style>
+  <!-- Supabase + SC Platform -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/sc-config.js"></script>
+  <script src="js/sc-auth.js"></script>
+  <script src="js/sc-api.js"></script>
+  <script src="js/sc-nav.js"></script>
+</head>
+<body>
+
+  <!-- Nav -->
+  <div class="top-bar">
+    <a href="index.html">Home</a>
+    <span class="brand">Selection-Connection</span>
+    <a href="configurator.html">Configurator</a>
+  </div>
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>Custom Furniture, Built For You</h1>
+    <div class="subtitle">
+      You design it online. A local maker builds it to your exact specifications.
+      No woodworking experience needed &mdash; just choose what you want.
+    </div>
+    <a href="configurator.html" class="btn btn-primary" style="margin-right: 16px;">Start Designing</a>
+    <a href="#how-it-works" class="btn btn-secondary">How It Works</a>
+  </div>
+
+  <!-- How It Works -->
+  <section id="how-it-works">
+    <div class="section-label">The process</div>
+    <div class="section-title">From screen to your home in 3 steps</div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-number">01</div>
+        <div class="step-title">Configure Online</div>
+        <div class="step-desc">Choose a furniture type &mdash; kitchen base, bookcase, vanity, pantry, nightstand, or any of our 17 templates. Adjust every dimension with sliders. See the cut list and cost estimate update live.</div>
+      </div>
+      <div class="step">
+        <div class="step-number">02</div>
+        <div class="step-title">Submit Your Design</div>
+        <div class="step-desc">Export your configuration as a JSON file. Submit it through our form (coming soon) or email it directly. We match you with a qualified maker in your area.</div>
+      </div>
+      <div class="step">
+        <div class="step-number">03</div>
+        <div class="step-title">Receive Your Furniture</div>
+        <div class="step-desc">Your maker builds from CNC-precise plans generated by PIF. Every joint, dado, and boring pattern is computed. You get furniture built exactly to spec &mdash; not close, exact.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Benefits -->
+  <section id="benefits">
+    <div class="section-label">Why this is different</div>
+    <div class="section-title">Better than off-the-shelf. Easier than DIY.</div>
+    <div class="benefits-grid">
+      <div class="benefit-card">
+        <div class="benefit-name">Your Exact Dimensions</div>
+        <div class="benefit-desc">No more "close enough." If your space is 28.5" wide and 34.25" tall, that's what you get. Every fraction of an inch is accounted for.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-name">Real Plywood, Real Joinery</div>
+        <div class="benefit-desc">Not particleboard with melamine. PIF plans specify dado joints, proper back panels, structural stretchers, and hardware-grade construction.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-name">Hardware You Choose</div>
+        <div class="benefit-desc">Pick from 67 hardware items across Blum, Hettich, Grass, Salice, Accuride, and more. Soft-close, full-extension, undermount &mdash; your call.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-name">Transparent Pricing</div>
+        <div class="benefit-desc">See the material cost before you commit. Sheet goods, hardware, edge banding &mdash; all itemized. No hidden markups on the design side.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-name">Local Makers</div>
+        <div class="benefit-desc">Your furniture is built by a woodworker near you. Shorter lead times, no shipping damage, and you support a local small business.</div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-name">Interior Zones</div>
+        <div class="benefit-desc">Divide your cabinet into compartments: doors below, drawers above, open shelving on top. 10 layout presets or fully custom arrangements.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq">
+    <div class="section-label">Questions</div>
+    <div class="section-title">Frequently Asked</div>
+    <div class="faq-list">
+      <div class="faq-item">
+        <div class="faq-q">How much does custom furniture cost?</div>
+        <div class="faq-a">Material costs for a typical base cabinet are $150&ndash;$300 depending on plywood grade and hardware selection. Maker labor is quoted separately and varies by region. The configurator shows you exact material costs before you submit.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Do I need to know anything about woodworking?</div>
+        <div class="faq-a">No. The configurator handles all the engineering &mdash; joinery, clearances, structural calculations. You just pick dimensions and style. The plans tell the maker exactly what to cut and how to assemble.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">How long does it take?</div>
+        <div class="faq-a">Configuration takes 5&ndash;10 minutes online. Build time depends on complexity: a simple bookcase might be 1&ndash;2 days, a full kitchen suite could be 2&ndash;4 weeks. Your maker provides the timeline.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">What furniture types are available?</div>
+        <div class="faq-a">17 templates: kitchen base, kitchen wall, bathroom vanity, bookcase, pantry tower, media console, wardrobe, filing cabinet, nightstand, mudroom locker, desk pedestal, shoe cabinet, wine cabinet, garage cabinet, linen cabinet, kitchen island, and floating vanity.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Can I add decorative elements?</div>
+        <div class="faq-a">Yes. Our LamiForm module creates turned legs, bun feet, corbels, and other 3D parts from flat CNC-cut slices. 18 profile presets with parametric control. These attach to any cabinet chassis.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Where is this available?</div>
+        <div class="faq-a">The configurator is available worldwide. Maker matching is currently being built &mdash; sign up to be notified when it launches in your area.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <div class="cta-section">
+    <div class="cta-title">Design yours now.</div>
+    <div class="cta-sub">Free to configure. Free PDF plans. Premium exports available.</div>
+    <a href="configurator.html" class="btn btn-primary">Open Configurator</a>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-brand">Selection-Connection &middot; Powered by PIF</div>
+    <div class="footer-copy">&copy; 2026 PIF Parametric Interaction Framework</div>
+  </footer>
+
+</body>
+</html>

@@ -1,0 +1,155 @@
+{
+  "schema_version": "1.0",
+  "source": "PIF_Chassis_Templates / Selection-Connection Configurator",
+  "description": "17 furniture chassis presets with parametric slider values. Used by both web configurator and GH definition.",
+  "presets": {
+    "Kitchen Base": {
+      "category": "Kitchen",
+      "Width": 36, "Height": 34.5, "Depth": 24,
+      "DoorCount": 2, "DrawerCount": 0, "ShelfCount": 1,
+      "ToeKickHeight": 4, "ToeKickDepth": 3,
+      "DoorOverlayLeft": 0.5, "DoorOverlayRight": 0.5,
+      "DoorOverlayTop": 0.5, "DoorOverlayBottom": 0.5,
+      "SideThickness": 0.75, "BottomThickness": 0.75,
+      "BackPanelThickness": 0.25
+    },
+    "Kitchen Base (ADA)": {
+      "category": "Kitchen",
+      "Width": 36, "Height": 31, "Depth": 24,
+      "DoorCount": 2, "DrawerCount": 0, "ShelfCount": 1,
+      "ToeKickHeight": 9, "ToeKickDepth": 6,
+      "SideThickness": 0.75, "BottomThickness": 0.75,
+      "BackPanelThickness": 0.25
+    },
+    "Wall / Upper Cabinet": {
+      "category": "Kitchen",
+      "Width": 36, "Height": 30, "Depth": 12,
+      "DoorCount": 2, "DrawerCount": 0, "ShelfCount": 2,
+      "ToeKickHeight": 0, "ToeKickDepth": 0,
+      "SideThickness": 0.75, "BottomThickness": 0.75,
+      "BackPanelThickness": 0.5
+    },
+    "Bathroom Vanity": {
+      "category": "Bathroom",
+      "Width": 36, "Height": 34.5, "Depth": 21,
+      "DoorCount": 2, "DrawerCount": 0, "ShelfCount": 1,
+      "ToeKickHeight": 4, "ToeKickDepth": 3,
+      "DoorOverlayLeft": 0.5, "DoorOverlayRight": 0.5,
+      "SideThickness": 0.75, "BottomThickness": 0.75,
+      "BackPanelThickness": 0.25
+    },
+    "Pantry Tower": {
+      "category": "Kitchen",
+      "Width": 24, "Height": 84, "Depth": 24,
+      "DoorCount": 2, "DrawerCount": 0, "ShelfCount": 5,
+      "ToeKickHeight": 4, "ToeKickDepth": 3,
+      "ShelfSetback": 0,
+      "SideThickness": 0.75, "BottomThickness": 0.75,
+      "BackPanelThickness": 0.5
+    },
+    "Bookcase": {
+      "category": "Living",
+      "Width": 36, "Height": 60, "Depth": 12,
+      "DoorCount": 0, "DrawerCount": 0, "ShelfCount": 4,
+      "ToeKickHeight": 3, "ToeKickDepth": 1,
+      "SideThickness": 0.75, "ShelfThickness": 0.75,
+      "BottomThickness": 0.75, "BackPanelThickness": 0.25
+    },
+    "Media Console": {
+      "category": "Living",
+      "Width": 66, "Height": 24, "Depth": 18,
+      "DoorCount": 4, "DrawerCount": 0, "ShelfCount": 2,
+      "ToeKickHeight": 0, "ToeKickDepth": 0,
+      "DoorOverlayLeft": 0.5, "DoorOverlayRight": 0.5,
+      "DoorOverlayTop": 0.5, "DoorOverlayBottom": 0.5,
+      "SideThickness": 0.75, "BottomThickness": 0.75,
+      "BackPanelThickness": 0.25
+    },
+    "Garage / Workshop": {
+      "category": "Utility",
+      "Width": 36, "Height": 72, "Depth": 24,
+      "DoorCount": 2, "DrawerCount": 0, "ShelfCount": 3,
+      "ToeKickHeight": 4, "ToeKickDepth": 3,
+      "SideThickness": 0.75, "ShelfThickness": 0.75,
+      "BottomThickness": 0.75, "BackPanelThickness": 0.5
+    },
+    "Linen Cabinet": {
+      "category": "Bathroom",
+      "Width": 24, "Height": 72, "Depth": 18,
+      "DoorCount": 2, "DrawerCount": 0, "ShelfCount": 5,
+      "ToeKickHeight": 4, "ToeKickDepth": 3,
+      "ShelfSetback": 0,
+      "SideThickness": 0.75, "BottomThickness": 0.75,
+      "BackPanelThickness": 0.25
+    },
+    "Wardrobe / Armoire": {
+      "category": "Bedroom",
+      "Width": 48, "Height": 78, "Depth": 24,
+      "DoorCount": 2, "DrawerCount": 2, "ShelfCount": 1,
+      "ToeKickHeight": 0, "ToeKickDepth": 0,
+      "SideThickness": 0.75, "BottomThickness": 0.75,
+      "BackPanelThickness": 0.5
+    },
+    "Filing Cabinet": {
+      "category": "Office",
+      "Width": 18, "Height": 29, "Depth": 24,
+      "DoorCount": 0, "DrawerCount": 2, "ShelfCount": 0,
+      "ToeKickHeight": 2, "ToeKickDepth": 2,
+      "SideThickness": 0.75, "BottomThickness": 0.75,
+      "DrawerBoxSideThickness": 0.5,
+      "DrawerHeight": 10, "DrawerBoxHeight": 9.5,
+      "DrawerClearance": 0.5
+    },
+    "Nightstand": {
+      "category": "Bedroom",
+      "Width": 22, "Height": 26, "Depth": 16,
+      "DoorCount": 0, "DrawerCount": 2, "ShelfCount": 1,
+      "ToeKickHeight": 0, "ToeKickDepth": 0,
+      "SideThickness": 0.75, "BottomThickness": 0.75,
+      "DrawerHeight": 4, "DrawerBoxHeight": 3.5,
+      "BackPanelThickness": 0.25
+    },
+    "Mudroom Locker": {
+      "category": "Utility",
+      "Width": 22, "Height": 78, "Depth": 15,
+      "DoorCount": 0, "DrawerCount": 0, "ShelfCount": 2,
+      "ToeKickHeight": 0, "ToeKickDepth": 0,
+      "SideThickness": 0.75, "ShelfThickness": 0.75,
+      "BottomThickness": 0.75, "BackPanelThickness": 0.25
+    },
+    "Desk Pedestal": {
+      "category": "Office",
+      "Width": 16, "Height": 26, "Depth": 22,
+      "DoorCount": 0, "DrawerCount": 3, "ShelfCount": 0,
+      "ToeKickHeight": 0, "ToeKickDepth": 0,
+      "SideThickness": 0.75, "BottomThickness": 0.75,
+      "DrawerHeight": 6, "DrawerBoxHeight": 5.5,
+      "DrawerBoxSideThickness": 0.5
+    },
+    "Shoe Cabinet": {
+      "category": "Utility",
+      "Width": 30, "Height": 42, "Depth": 14,
+      "DoorCount": 2, "DrawerCount": 0, "ShelfCount": 5,
+      "ToeKickHeight": 3, "ToeKickDepth": 1,
+      "SideThickness": 0.75, "ShelfThickness": 0.5,
+      "BottomThickness": 0.75, "BackPanelThickness": 0.25,
+      "ShelfSetback": 0
+    },
+    "Wine Storage": {
+      "category": "Kitchen",
+      "Width": 24, "Height": 60, "Depth": 16,
+      "DoorCount": 1, "DrawerCount": 0, "ShelfCount": 0,
+      "ToeKickHeight": 0, "ToeKickDepth": 0,
+      "SideThickness": 0.75, "BottomThickness": 0.75,
+      "BackPanelThickness": 0.25
+    },
+    "Laundry Cabinet": {
+      "category": "Utility",
+      "Width": 36, "Height": 34.5, "Depth": 24,
+      "DoorCount": 2, "DrawerCount": 0, "ShelfCount": 1,
+      "ToeKickHeight": 4, "ToeKickDepth": 3,
+      "SideThickness": 0.75, "BottomThickness": 0.75,
+      "BackPanelThickness": 0.25
+    }
+  }
+}
