@@ -517,6 +517,41 @@
       font-family: 'Consolas', monospace;
     }
 
+    /* ── Slider Link/Lock ── */
+    .link-bar {
+      display: flex;
+      align-items: center;
+      padding: 4px 16px;
+      background: #0d0d0d;
+      border-bottom: 1px solid #141414;
+      gap: 8px;
+    }
+    .link-btn {
+      background: none;
+      border: 1px solid #333;
+      color: #666;
+      font-size: 11px;
+      padding: 2px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s;
+      font-family: 'Segoe UI', sans-serif;
+      letter-spacing: 0.5px;
+    }
+    .link-btn:hover { border-color: #555; color: #999; }
+    .link-btn .link-icon { font-size: 13px; }
+    .link-btn.linked { border-color: #2980b9; color: #2980b9; }
+    .link-btn.linked:hover { border-color: #3a9ad9; color: #3a9ad9; }
+    .link-label {
+      font-size: 10px;
+      color: #444;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
     /* ── Validation Warnings ── */
     .slider-row.warning { background: rgba(217, 74, 74, 0.08); }
     .slider-row.warning .slider-label { color: #d94a4a; }
@@ -955,6 +990,143 @@ const SECTION_MAP = {
   "pulls":               "PullParameters",
   "tolerances":          "Tolerances"
 };
+
+/* ================================================================
+   LINKED SLIDER GROUPS — Lock related sliders together.
+   When linked, changing one slider updates all in the group.
+   Clicking the lock toggles. Auto-unlocks if values diverge.
+   ================================================================ */
+const LINKED_GROUPS = [
+  {
+    id: "door-overlay",
+    label: "Overlay",
+    keys: ["DoorOverlayLeft", "DoorOverlayRight", "DoorOverlayTop", "DoorOverlayBottom"],
+    groupId: "doors"
+  },
+  {
+    id: "hinge-inset",
+    label: "Inset",
+    keys: ["HingeInsetTop", "HingeInsetBottom"],
+    groupId: "hinges"
+  },
+  {
+    id: "stretcher-thickness",
+    label: "Thickness",
+    keys: ["FrontStretcherThickness", "BackStretcherThickness", "RearStretcherThickness"],
+    groupId: "stretchers-frame"
+  }
+];
+
+/* Track linked state: { "door-overlay": true, "hinge-inset": true, ... } */
+var linkedState = {};
+LINKED_GROUPS.forEach(function(lg) { linkedState[lg.id] = true; });
+
+/**
+ * Check if all keys in a linked group currently have the same value.
+ */
+function areLinkedValuesEqual(lg) {
+  var vals = lg.keys.map(function(k) { return state[k]; });
+  return vals.every(function(v) { return v === vals[0]; });
+}
+
+/**
+ * When a linked slider changes, propagate to siblings if linked.
+ */
+function onLinkedSliderChange(lgId, changedKey, newValue) {
+  var lg = LINKED_GROUPS.find(function(g) { return g.id === lgId; });
+  if (!lg || !linkedState[lgId]) return;
+
+  lg.keys.forEach(function(k) {
+    if (k === changedKey) return;
+    state[k] = newValue;
+    /* Update the DOM inputs for sibling sliders */
+    var row = document.querySelector('.slider-row[data-key="' + k + '"]');
+    if (row) {
+      var range = row.querySelector('input[type="range"]');
+      var num = row.querySelector('input[type="number"]');
+      if (range) range.value = newValue;
+      if (num) {
+        var sl = findSliderDef(k);
+        num.value = newValue.toFixed(sl ? sl.decimals : 3);
+      }
+    }
+  });
+}
+
+/**
+ * Toggle linked state for a group. If re-linking, snap all to first key's value.
+ */
+function toggleLinked(lgId) {
+  var lg = LINKED_GROUPS.find(function(g) { return g.id === lgId; });
+  if (!lg) return;
+
+  linkedState[lgId] = !linkedState[lgId];
+
+  if (linkedState[lgId]) {
+    /* Re-linking: snap all values to the first slider's current value */
+    var snapVal = state[lg.keys[0]];
+    lg.keys.forEach(function(k) {
+      state[k] = snapVal;
+      var row = document.querySelector('.slider-row[data-key="' + k + '"]');
+      if (row) {
+        var range = row.querySelector('input[type="range"]');
+        var num = row.querySelector('input[type="number"]');
+        if (range) range.value = snapVal;
+        if (num) {
+          var sl = findSliderDef(k);
+          num.value = snapVal.toFixed(sl ? sl.decimals : 3);
+        }
+      }
+    });
+    updateAll();
+  }
+
+  updateLinkButtons();
+}
+
+/**
+ * Update all link button visuals to match current state.
+ */
+function updateLinkButtons() {
+  LINKED_GROUPS.forEach(function(lg) {
+    var btn = document.getElementById("link-btn-" + lg.id);
+    if (!btn) return;
+
+    /* Auto-unlock if values diverge */
+    if (linkedState[lg.id] && !areLinkedValuesEqual(lg)) {
+      linkedState[lg.id] = false;
+    }
+
+    if (linkedState[lg.id]) {
+      btn.classList.add("linked");
+      btn.querySelector(".link-icon").textContent = "\uD83D\uDD17";
+      btn.title = "Linked — all " + lg.label.toLowerCase() + " values move together. Click to unlink.";
+    } else {
+      btn.classList.remove("linked");
+      btn.querySelector(".link-icon").textContent = "\u26D3";
+      btn.title = "Unlinked — each value is independent. Click to link (snaps to first value).";
+    }
+  });
+}
+
+/**
+ * Find the slider definition for a key.
+ */
+function findSliderDef(key) {
+  for (var g = 0; g < SLIDER_GROUPS.length; g++) {
+    for (var s = 0; s < SLIDER_GROUPS[g].sliders.length; s++) {
+      if (SLIDER_GROUPS[g].sliders[s].key === key) return SLIDER_GROUPS[g].sliders[s];
+    }
+  }
+  return null;
+}
+
+/**
+ * Get the linked group a slider key belongs to (if any).
+ */
+function getLinkedGroup(key) {
+  return LINKED_GROUPS.find(function(lg) { return lg.keys.indexOf(key) !== -1; });
+}
 
 /* ================================================================
    CHASSIS PRESETS — 17 furniture types with exact slider overrides.
@@ -2574,6 +2746,7 @@ function updateAll() {
   updateCostSummary();
   updateGroupVisibility();
   updatePresetLineage();
+  updateLinkButtons();
   renderZoneSVG();
   renderCabinetSVG();
 }
@@ -2619,8 +2792,30 @@ function renderGroups() {
       body.classList.toggle("expanded");
     });
 
+    /* Track which linked groups have had their bar inserted */
+    var insertedLinkBars = {};
+
     /* Slider rows */
     group.sliders.forEach(s => {
+      /* Insert link bar before the first slider of a linked group */
+      var lg = getLinkedGroup(s.key);
+      if (lg && lg.groupId === group.id && !insertedLinkBars[lg.id]) {
+        insertedLinkBars[lg.id] = true;
+        var linkBar = document.createElement("div");
+        linkBar.className = "link-bar";
+        var linkBtn = document.createElement("button");
+        linkBtn.type = "button";
+        linkBtn.className = "link-btn linked";
+        linkBtn.id = "link-btn-" + lg.id;
+        linkBtn.innerHTML = '<span class="link-icon">\uD83D\uDD17</span> Link ' + lg.label;
+        linkBtn.title = "Linked — all values move together. Click to unlink.";
+        linkBtn.addEventListener("click", (function(lgId) {
+          return function(e) { e.stopPropagation(); toggleLinked(lgId); };
+        })(lg.id));
+        linkBar.appendChild(linkBtn);
+        body.appendChild(linkBar);
+      }
+
       const row = document.createElement("div");
       row.className = "slider-row";
       row.setAttribute("data-key", s.key);
@@ -2653,21 +2848,25 @@ function renderGroups() {
       num.value = Number(s.default).toFixed(s.decimals);
       numWrap.appendChild(num);
 
-      /* Sync: range → number */
+      /* Sync: range → number (+ linked propagation) */
       range.addEventListener("input", function() {
         pushUndo();
         const v = parseFloat(range.value);
         state[s.key] = v;
         num.value = v.toFixed(s.decimals);
+        var slg = getLinkedGroup(s.key);
+        if (slg) onLinkedSliderChange(slg.id, s.key, v);
       });
 
-      /* Sync: number → range (on input for live update) */
+      /* Sync: number → range (+ linked propagation) */
       num.addEventListener("input", function() {
         pushUndo();
         const raw = parseFloat(num.value);
         if (!isNaN(raw)) {
           state[s.key] = raw;
           range.value = raw;
+          var slg = getLinkedGroup(s.key);
+          if (slg) onLinkedSliderChange(slg.id, s.key, raw);
         }
       });
 
@@ -2679,6 +2878,7 @@ function renderGroups() {
         state[s.key] = v;
         num.value = v.toFixed(s.decimals);
         range.value = v;
+        updateLinkButtons();
       });
 
       row.appendChild(label);
@@ -3287,6 +3487,7 @@ renderCutListContainer();
 renderCostContainer();
 updateZoneUI();
 updateAll();
+updateLinkButtons();
 
 /* ══════════════════════════════════════════════════════════════
    CONFIGURATOR PURCHASE SYSTEM
