@@ -28,7 +28,7 @@
     .top-bar {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      gap: 12px;
       padding: 0 24px;
       height: 48px;
       border-bottom: 1px solid #c4ad8c;
@@ -41,6 +41,14 @@
       letter-spacing: 1px;
     }
     .top-bar a:hover { color: #3b2a1a; }
+    /* Override sc-nav dark theme inside configurator */
+    .top-bar .sc-nav { background: none; border: none; height: auto; padding: 0; flex: 1; }
+    .top-bar .nav-link { color: #7a6652; }
+    .top-bar .nav-link:hover { color: #3b2a1a; }
+    .top-bar .nav-active { color: #3b2a1a; }
+    .top-bar .nav-brand { color: #3b2a1a; }
+    .top-bar .nav-register { background: #3b2a1a; color: #f5ede0; }
+    .top-bar .nav-tier { color: #7a6652; border-color: #b09872; }
     .top-bar .title {
       font-size: 14px;
       font-weight: 400;
@@ -61,18 +69,10 @@
       overflow: hidden;
     }
 
-    /* ── Controls Panel ── */
+    /* ── Controls Panel (legacy, hidden — sliders now use floating pills) ── */
     .controls-panel {
-      width: 30%;
-      min-width: 300px;
-      max-width: 380px;
-      overflow-y: auto;
-      border-right: 1px solid #c4ad8c;
-      flex-shrink: 0;
+      display: none;
     }
-    .controls-panel::-webkit-scrollbar { width: 6px; }
-    .controls-panel::-webkit-scrollbar-track { background: #f5ede0; }
-    .controls-panel::-webkit-scrollbar-thumb { background: #b09872; border-radius: 3px; }
 
     /* ── Slider Group ── */
     .group-header {
@@ -238,14 +238,16 @@
       background: #f5ede0;
       position: relative;
       min-width: 0;
+      min-height: 0;
     }
     .viewport-svg-wrap {
       flex: 1;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 24px;
+      padding: 40px 60px;
       overflow: auto;
+      min-height: 400px;
     }
     .viewport-svg-wrap svg { width: 100%; height: 100%; }
     .viewport-info {
@@ -259,21 +261,35 @@
     .viewport-dims {
       position: absolute;
       top: 12px;
-      left: 16px;
-      font-size: 11px;
-      color: #a89680;
+      left: 12px;
+      font-size: 12px;
+      color: #7a6652;
       letter-spacing: 1px;
+      font-weight: 500;
+      z-index: 5;
     }
 
     /* ── Viewport Toolbar ── */
     .viewport-toolbar {
       position: absolute;
       top: 12px;
-      right: 16px;
+      left: 50%;
+      transform: translateX(-50%);
       display: flex;
       align-items: center;
       gap: 4px;
-      z-index: 10;
+      z-index: 25;
+      background: rgba(55,65,75,0.88);
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid #556270;
+    }
+    .vp-group-label {
+      font-size: 8px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #a0aab4;
+      margin-right: 2px;
     }
     .vp-btn {
       background: #e3d5be;
@@ -291,11 +307,99 @@
     .vp-btn:hover { color: #3b2a1a; border-color: #8b6914; }
     .vp-btn.vp-active { color: #3b2a1a; background: #d4c4a8; border-color: #8b6914; }
     .vp-sep { width: 1px; height: 18px; background: #c4ad8c; margin: 0 4px; }
+    .vp-explode-range, .vp-orbit-range {
+      width: 60px;
+      height: 18px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: transparent;
+      outline: none;
+      cursor: pointer;
+      vertical-align: middle;
+    }
+    .vp-orbit-range { width: 50px; }
+    .vp-explode-range::-webkit-slider-runnable-track,
+    .vp-orbit-range::-webkit-slider-runnable-track {
+      height: 4px;
+      background: #556270;
+      border-radius: 2px;
+    }
+    .vp-explode-range::-moz-range-track,
+    .vp-orbit-range::-moz-range-track {
+      height: 4px;
+      background: #556270;
+      border-radius: 2px;
+    }
+    .vp-explode-range::-webkit-slider-thumb,
+    .vp-orbit-range::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: #e3d5be;
+      border: 1px solid #b09872;
+      cursor: pointer;
+      margin-top: -5px;
+    }
+    .vp-explode-range::-moz-range-thumb,
+    .vp-orbit-range::-moz-range-thumb {
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: #e3d5be;
+      border: 1px solid #b09872;
+      cursor: pointer;
+    }
     .vp-zoom-label {
       font-size: 10px;
       color: #a89680;
       letter-spacing: 1px;
       min-width: 28px;
+      text-align: center;
+    }
+
+    /* ── Pill Region Labels ── */
+    .pill-region-label {
+      position: absolute;
+      font-size: 8px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #b8a894;
+      z-index: 5;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .dim-pill {
+      position: absolute;
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      z-index: 15;
+      background: rgba(55,65,75,0.85);
+      border: 1px solid #556270;
+      border-radius: 10px;
+      padding: 1px 4px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .dim-pill-btn {
+      width: 16px; height: 16px;
+      border: none;
+      background: transparent;
+      color: #c0cad4;
+      font-size: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 0;
+      line-height: 16px;
+      text-align: center;
+      border-radius: 50%;
+    }
+    .dim-pill-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
+    .dim-pill-val {
+      font-size: 10px;
+      color: #a0aab4;
+      letter-spacing: 0.5px;
+      min-width: 32px;
       text-align: center;
     }
 
@@ -349,6 +453,16 @@
     .btn-csv {
       background: #3d8b4a;
       color: #f5ede0;
+    }
+    .btn-details {
+      background: #e3d5be;
+      color: #7a6652;
+      border: 1px solid #b09872;
+    }
+    .btn-details.active {
+      background: #d4c4a8;
+      color: #3b2a1a;
+      border-color: #8b6914;
     }
     .btn-locked { position: relative; opacity: 0.65; }
     .btn-locked::after {
@@ -504,6 +618,187 @@
       cursor: pointer;
     }
     .preset-section select:focus { border-color: #8b6914; color: #3b2a1a; }
+
+    /* ── Top Bar Preset (moved to header) ── */
+    .top-bar-preset {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      justify-content: center;
+      max-width: 320px;
+    }
+    .top-bar-preset label {
+      font-size: 9px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #7a6652;
+      white-space: nowrap;
+    }
+    .top-bar-preset select {
+      background: #e3d5be;
+      border: 1px solid #bda67e;
+      color: #4d3928;
+      font-family: 'Segoe UI', sans-serif;
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 3px;
+      outline: none;
+      cursor: pointer;
+      max-width: 180px;
+    }
+    .top-bar-preset select:focus { border-color: #8b6914; color: #3b2a1a; }
+    .top-bar-preset .preset-lineage {
+      font-size: 9px;
+      color: #a89680;
+      letter-spacing: 1px;
+      white-space: nowrap;
+      padding: 0;
+      background: none;
+    }
+    .top-bar-preset .preset-lineage .modified { color: #c47a2e; }
+
+    /* ── Floating Contextual Pills ── */
+    .ctx-pill {
+      position: absolute;
+      padding: 5px 14px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      background: #e3d5be;
+      border: 1.5px solid #b09872;
+      border-radius: 14px;
+      cursor: pointer;
+      z-index: 20;
+      white-space: nowrap;
+      color: #5a4633;
+      box-shadow: 0 2px 8px rgba(59,42,26,0.18);
+      transition: all 0.25s ease;
+      user-select: none;
+      display: inline-flex;
+      align-items: center;
+      overflow: hidden;
+    }
+    .ctx-pill .pill-label {
+      display: inline-block;
+      max-width: 120px;
+      opacity: 1;
+      transition: max-width 0.35s ease, opacity 0.25s ease, margin 0.35s ease;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    .ctx-pill.collapsed {
+      padding: 5px 7px;
+    }
+    .ctx-pill.collapsed .pill-label {
+      max-width: 0;
+      opacity: 0;
+      margin-left: 0;
+    }
+    .ctx-pill.collapsed:hover {
+      padding: 5px 14px;
+    }
+    .ctx-pill.collapsed:hover .pill-label {
+      max-width: 120px;
+      opacity: 1;
+    }
+    .ctx-pill:hover { background: #d4c4a8; border-color: #8b6914; color: #3b2a1a; box-shadow: 0 3px 12px rgba(59,42,26,0.25); }
+    .ctx-pill.expanded { background: #c9b896; border-color: #8b6914; color: #3b2a1a; box-shadow: 0 3px 12px rgba(59,42,26,0.25); }
+    .ctx-pill.pill-hidden { display: none; }
+
+    /* ── Customer Mode ── */
+    .slider-row.customer-hidden { display: none; }
+    .customer-badge {
+      font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+      padding: 4px 12px; background: #2e6b3e; color: #d4f0dc;
+      border-radius: 3px; margin-left: 12px; display: inline-block;
+    }
+    .pro-toggle {
+      font-size: 10px; letter-spacing: 1px; color: #888;
+      background: transparent; border: 1px solid #333;
+      padding: 4px 10px; border-radius: 3px; cursor: pointer;
+      margin-left: 8px; font-family: inherit; transition: all 0.15s;
+    }
+    .pro-toggle:hover { color: #fff; border-color: #555; }
+
+    /* ── Floating Slider Panels ── */
+    .ctx-panel {
+      position: absolute;
+      width: 280px;
+      max-height: 360px;
+      overflow-y: auto;
+      background: #efe6d6;
+      border: 1px solid #c4ad8c;
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(59,42,26,0.15);
+      z-index: 30;
+      padding: 8px 0;
+      display: none;
+    }
+    .ctx-panel.open { display: block; }
+    .ctx-panel .panel-title {
+      font-size: 9px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #7a6652;
+      padding: 4px 12px 6px;
+      border-bottom: 1px solid #d4c4a8;
+    }
+    .ctx-panel .slider-row {
+      padding: 5px 10px;
+    }
+    .ctx-panel .slider-label {
+      width: 36%;
+      font-size: 10px;
+    }
+    .ctx-panel .slider-range { width: 28%; }
+    .ctx-panel .slider-value { width: 36%; }
+    .ctx-panel::-webkit-scrollbar { width: 5px; }
+    .ctx-panel::-webkit-scrollbar-track { background: #f5ede0; }
+    .ctx-panel::-webkit-scrollbar-thumb { background: #b09872; border-radius: 3px; }
+
+    /* ── Footer Sections (cut list, validation, cost, hardware) ── */
+    .footer-sections {
+      position: fixed;
+      bottom: 52px;
+      left: 0;
+      right: 0;
+      max-height: 50vh;
+      overflow-y: auto;
+      background: #efe6d6;
+      border-top: 1px solid #c4ad8c;
+      z-index: 40;
+      display: none;
+    }
+    .footer-sections.open { display: block; }
+    .footer-sections::-webkit-scrollbar { width: 6px; }
+    .footer-sections::-webkit-scrollbar-track { background: #f5ede0; }
+    .footer-sections::-webkit-scrollbar-thumb { background: #b09872; border-radius: 3px; }
+
+    /* ── Validation Badge (floating) ── */
+    .validation-badge {
+      position: absolute;
+      top: 42px;
+      right: 16px;
+      padding: 3px 10px;
+      font-size: 9px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      background: rgba(181,69,46,0.12);
+      border: 1px solid #b5452e;
+      border-radius: 10px;
+      color: #b5452e;
+      cursor: pointer;
+      z-index: 25;
+      transition: all 0.15s;
+    }
+    .validation-badge:hover { background: rgba(181,69,46,0.20); }
+    .validation-badge.all-clear {
+      background: rgba(46,139,62,0.12);
+      border-color: #2e8b3e;
+      color: #2e8b3e;
+    }
 
     /* ── Cut List Panel ── */
     .cutlist-section { border-top: 1px solid #c4ad8c; }
@@ -836,37 +1131,27 @@
     .zone-hidden { display: none !important; }
 
     /* ── Responsive ── */
-    @media (min-width: 1600px) {
-      .controls-panel { max-width: 420px; }
-    }
-    @media (max-width: 1280px) {
-      .controls-panel { max-width: 360px; min-width: 280px; }
-    }
     @media (max-width: 900px) {
-      .app-layout { flex-direction: column; }
-      .controls-panel {
-        width: 100%;
-        min-width: unset;
-        max-width: unset;
-        max-height: 50vh;
-        border-right: none;
-        border-bottom: 1px solid #c4ad8c;
-      }
-      .viewport-panel { min-height: 30vh; }
+      .viewport-panel { min-height: 50vh; }
       .action-bar { flex-wrap: wrap; height: auto; padding: 8px 16px; gap: 8px; justify-content: center; }
       .action-bar .left-actions { flex-wrap: wrap; gap: 6px; justify-content: center; }
       .action-bar .param-count { width: 100%; text-align: center; order: -1; }
       .btn-action { padding: 8px 16px; font-size: 11px; }
+      .ctx-pill { font-size: 9px; padding: 3px 8px; }
+      .ctx-panel { width: 260px; max-height: 300px; }
+      .top-bar-preset { max-width: 200px; }
+      .top-bar-preset select { max-width: 130px; font-size: 10px; }
     }
     @media (max-width: 480px) {
       .top-bar { padding: 0 12px; }
       .top-bar .title { font-size: 12px; letter-spacing: 1px; }
       .top-bar .brand { display: none; }
-      .slider-row { padding: 8px 12px; }
-      .slider-label { font-size: 10px; min-width: 60px; }
+      .top-bar-preset { max-width: 150px; }
+      .top-bar-preset label { display: none; }
+      .ctx-pill { font-size: 8px; padding: 2px 6px; }
+      .ctx-panel { width: 240px; max-height: 280px; }
       .modal-card { padding: 24px 16px; }
       .btn-action { padding: 6px 12px; font-size: 10px; letter-spacing: 1px; }
-      .group-header .group-label { font-size: 10px; letter-spacing: 2px; }
     }
   </style>
   <!-- Supabase + SC Platform -->
@@ -879,8 +1164,11 @@
 <body>
 
   <header class="top-bar">
-    <a href="index.html">&larr; Back</a>
-    <span class="title">Cabinet Configurator</span>
+    <div id="sc-nav">
+      <a href="index.html">&larr; Back</a>
+      <span class="title">Cabinet Configurator</span>
+    </div>
+    <div class="top-bar-preset" id="topBarPreset"></div>
     <div class="undo-redo">
       <button id="btnUndo" title="Undo (Ctrl+Z)" disabled>&#8630;</button>
       <button id="btnRedo" title="Redo (Ctrl+Y)" disabled>&#8631;</button>
@@ -893,30 +1181,79 @@
   </header>
 
   <main class="app-layout">
-    <aside class="controls-panel" id="controlsPanel"></aside>
-
     <section class="viewport-panel" id="viewportPanel">
       <div class="viewport-svg-wrap" id="cabinetSvgWrap"></div>
+
+      <!-- View controls: top-right -->
       <div class="viewport-toolbar">
+        <span class="vp-group-label">View</span>
         <button class="vp-btn vp-active" data-view="iso" onclick="setView('iso')">ISO</button>
         <button class="vp-btn" data-view="front" onclick="setView('front')">FRONT</button>
         <button class="vp-btn" data-view="side" onclick="setView('side')">SIDE</button>
         <button class="vp-btn" data-view="top" onclick="setView('top')">TOP</button>
+        <button class="vp-btn" data-view="back" onclick="setView('back')">BACK</button>
         <div class="vp-sep"></div>
+        <span class="vp-group-label">Orbit</span>
+        <input type="range" id="orbitSlider" min="0" max="360" step="5" value="30" class="vp-orbit-range" oninput="viewState.orbit=+this.value;renderCabinetSVG()">
+        <span class="vp-group-label">Tilt</span>
+        <input type="range" id="tiltSlider" min="0" max="75" step="5" value="20" class="vp-orbit-range" oninput="viewState.tilt=+this.value;renderCabinetSVG()">
+        <div class="vp-sep"></div>
+        <span class="vp-group-label">Zoom</span>
         <button class="vp-btn" onclick="zoomView(-1)">&minus;</button>
         <span class="vp-zoom-label" id="zoomLabel">1&times;</span>
         <button class="vp-btn" onclick="zoomView(1)">&plus;</button>
+        <div class="vp-sep"></div>
+        <span class="vp-group-label">Explode</span>
+        <input type="range" id="explodeSlider" min="0" max="10" step="0.5" value="0" class="vp-explode-range">
+        <div class="vp-sep"></div>
+        <span class="vp-group-label">Color</span>
+        <button class="vp-btn vp-active" data-color="normal" onclick="setColorMode('normal')">OFF</button>
+        <button class="vp-btn" data-color="parts" onclick="setColorMode('parts')">PARTS</button>
+        <div class="vp-sep"></div>
+        <span class="vp-group-label">Doors</span>
+        <button class="vp-btn vp-active" data-doors="show" onclick="toggleDoors('show')">ON</button>
+        <button class="vp-btn" data-doors="hide" onclick="toggleDoors('hide')">OFF</button>
       </div>
+
+      <!-- Dimension adjustment pills -->
+      <div class="dim-pill" id="dimPillW" style="display:none;">
+        <button class="dim-pill-btn" onclick="adjustDim('Width',-1)">&minus;</button>
+        <span class="dim-pill-val" id="dimValW"></span>
+        <button class="dim-pill-btn" onclick="adjustDim('Width',1)">+</button>
+      </div>
+      <div class="dim-pill" id="dimPillH" style="display:none;">
+        <button class="dim-pill-btn" onclick="adjustDim('Height',-1)">&minus;</button>
+        <span class="dim-pill-val" id="dimValH"></span>
+        <button class="dim-pill-btn" onclick="adjustDim('Height',1)">+</button>
+      </div>
+      <div class="dim-pill" id="dimPillD" style="display:none;">
+        <button class="dim-pill-btn" onclick="adjustDim('Depth',-1)">&minus;</button>
+        <span class="dim-pill-val" id="dimValD"></span>
+        <button class="dim-pill-btn" onclick="adjustDim('Depth',1)">+</button>
+      </div>
+
+      <!-- Pill region labels -->
+      <div class="pill-region-label" style="top:6%;left:50%;transform:translateX(-50%);">Overall</div>
+      <div class="pill-region-label" style="top:12%;left:1%;">Structure</div>
+      <div class="pill-region-label" style="top:12%;right:1%;">Doors &amp; Hardware</div>
+      <div class="pill-region-label" style="bottom:14%;left:1%;">Material</div>
+      <div class="pill-region-label" style="bottom:1%;left:50%;transform:translateX(-50%);">Base</div>
+      <div class="pill-region-label" style="bottom:14%;right:1%;">Fit</div>
+
       <div class="viewport-dims" id="viewportDims"></div>
       <div class="viewport-info">SVG Preview &middot; Rhino.Compute for 3D</div>
     </section>
   </main>
+
+  <!-- Footer drawer for cut list, validation, cost, hardware, zones -->
+  <div class="footer-sections" id="footerSections"></div>
 
   <footer class="action-bar">
     <div class="left-actions">
       <button class="btn-action btn-reset" id="btnReset">Reset Defaults</button>
       <button class="btn-action btn-publish" id="btnPublish">Publish</button>
     </div>
+    <button class="btn-action btn-details" id="btnDetails" title="Cut list, cost, validation, hardware">Details</button>
     <span class="param-count" id="paramCount"></span>
     <div class="left-actions">
       <button class="btn-action btn-pdf" id="btnPDF">PDF</button>
@@ -1059,7 +1396,6 @@ const SLIDER_GROUPS = [
       { key: "Width",        default: 48,   min: 9,   max: 96,  step: 0.125, decimals: 3 },
       { key: "Height",       default: 36,   min: 6,   max: 96,  step: 0.125, decimals: 3 },
       { key: "Depth",        default: 24,   min: 6,   max: 48,  step: 0.125, decimals: 3 },
-      { key: "NominalWidth", default: 36,   min: 6,   max: 60,  step: 0.125, decimals: 3 },
     ]
   },
   {
@@ -1438,6 +1774,76 @@ const CHASSIS_PRESETS = {
 };
 
 /* ================================================================
+   CUSTOMER PROFILES — Category-based simplified views.
+   Each profile defines which pill groups and sliders are visible
+   when a customer opens the configurator from the library.
+   MTR (Pro mode) sees all controls; customers see only what matters.
+   ================================================================ */
+var CUSTOMER_PROFILES = {
+  "base": {
+    label: "Base Cabinet",
+    preset: "Kitchen Base",
+    visibleGroups: ["cabinet-dimensions", "doors", "shelves", "toe-kick"],
+    hiddenSliders: ["NominalWidth", "DoorThickness", "ShelfSetback", "SingleShelfZ"],
+    lockedDefaults: { ToeKickHeight: 4, ToeKickDepth: 3 }
+  },
+  "wall": {
+    label: "Wall / Upper",
+    preset: "Wall / Upper Cabinet",
+    visibleGroups: ["cabinet-dimensions", "doors", "shelves"],
+    hiddenSliders: ["NominalWidth", "DoorThickness", "ShelfSetback", "SingleShelfZ"],
+    lockedDefaults: { ToeKickHeight: 0, ToeKickDepth: 0 }
+  },
+  "tall": {
+    label: "Tall / Pantry",
+    preset: "Pantry Tower",
+    visibleGroups: ["cabinet-dimensions", "doors", "shelves"],
+    hiddenSliders: ["NominalWidth", "DoorThickness", "ShelfSetback", "SingleShelfZ"],
+    lockedDefaults: {}
+  },
+  "vanity": {
+    label: "Vanity / Bath",
+    preset: "Bathroom Vanity",
+    visibleGroups: ["cabinet-dimensions", "doors", "drawers", "shelves"],
+    hiddenSliders: ["NominalWidth", "DoorThickness", "ShelfSetback", "SingleShelfZ",
+                    "DrawerBoxSideThickness", "DrawerBottomThickness", "SlideTopClearance", "SlideBottomClearance"],
+    lockedDefaults: {}
+  },
+  "closet": {
+    label: "Closet",
+    preset: "Linen Cabinet",
+    visibleGroups: ["cabinet-dimensions", "shelves"],
+    hiddenSliders: ["NominalWidth", "ShelfSetback", "SingleShelfZ"],
+    lockedDefaults: {}
+  },
+  "garage": {
+    label: "Garage / Utility",
+    preset: "Garage / Workshop",
+    visibleGroups: ["cabinet-dimensions", "doors", "shelves"],
+    hiddenSliders: ["NominalWidth", "DoorThickness", "ShelfSetback", "SingleShelfZ"],
+    lockedDefaults: {}
+  },
+  "office": {
+    label: "Office / Desk",
+    preset: "Desk Pedestal",
+    visibleGroups: ["cabinet-dimensions", "drawers"],
+    hiddenSliders: ["NominalWidth", "DrawerBoxSideThickness", "DrawerBottomThickness",
+                    "SlideTopClearance", "SlideBottomClearance"],
+    lockedDefaults: {}
+  }
+};
+
+/* Map library categories to customer profile keys */
+var CATEGORY_TO_PROFILE = {
+  "Kitchen": "base",
+  "Bathroom": "vanity",
+  "Bedroom": "closet",
+  "Living": "base",
+  "Office": "office",
+  "Utility": "garage"
+};
+
+/* ================================================================
    HARDWARE LIBRARY — Verified specs from PIF_HardwareLibrary_Master.json
    Values in inches (converted from mm where noted).
    Each entry auto-fills related sliders when selected.
@@ -1793,10 +2199,14 @@ function computeCutList() {
     parts.push({ name: "FF Bottom Rail",  qty: 1, w: ffRailLen, h: ffRW, t: ffT });
   }
 
+  var ffOH = state.FaceFrameOverhang || 0;
   var dadoCount = Math.round(state.ZS_DadoCount || 0);
   var shelfW = Math.max(0, interiorW - 2 * DD);
   var shelfD = Math.max(0, D - BPT - state.ShelfSetback);
-  var totalDoorW = interiorW + state.DoorOverlayLeft + state.DoorOverlayRight;
+  /* Door width based on face frame opening (overlay measured from FF edge) */
+  var ffOpenW = ffSW > 0 ? (W - 2 * ffSW + 2 * ffOH) : interiorW;
+  var ffOpenH = ffRW > 0 ? (H - TK - 2 * ffRW) : (H - TK);
+  var totalDoorW = ffOpenW + state.DoorOverlayLeft + state.DoorOverlayRight;
   var dbW = Math.max(0, interiorW - 2 * state.DrawerClearance - 2 * state.DrawerBoxSideThickness);
   var dbD = Math.max(0, D - BPT - 1);
 
@@ -1818,7 +2228,8 @@ function computeCutList() {
       if (zone.type === 0) { /* Door compartment */
         var zDoorCount = 2;
         var zDoorH = Math.max(0, zone.height + state.DoorOverlayTop + state.DoorOverlayBottom);
-        var zDoorW = Math.max(0, (totalDoorW - (zDoorCount - 1) * state.DoorGap) / zDoorCount);
+        var zTotalDoorW = totalDoorW;
+        var zDoorW = Math.max(0, (zTotalDoorW - (zDoorCount - 1) * state.DoorGap) / zDoorCount);
         parts.push({ name: lbl + "Door", qty: zDoorCount, w: zDoorW, h: zDoorH, t: state.DoorThickness });
         parts.push({ name: lbl + "Adj. Shelf", qty: 1, w: shelfW, h: shelfD, t: ShT });
       }
@@ -1846,7 +2257,7 @@ function computeCutList() {
     if (state.DoorCount > 0) {
       var dc = Math.round(state.DoorCount);
       var doorW = Math.max(0, (totalDoorW - (dc - 1) * state.DoorGap) / dc);
-      var doorH = Math.max(0, H - TK + state.DoorOverlayTop + state.DoorOverlayBottom);
+      var doorH = Math.max(0, ffOpenH + state.DoorOverlayTop + state.DoorOverlayBottom);
       parts.push({ name: "Door", qty: dc, w: doorW, h: doorH, t: state.DoorThickness });
     }
 
@@ -1883,14 +2294,12 @@ function computeSheetGoods(parts) {
 
 /* ── Render: Preset Dropdown ── */
 function renderPresetDropdown() {
-  var container = document.getElementById("controlsPanel");
-  var section = document.createElement("div");
-  section.className = "preset-section";
+  var container = document.getElementById("topBarPreset");
+  if (!container) return;
   var options = Object.keys(CHASSIS_PRESETS).map(function(name) {
     return '<option value="' + name + '">' + name + '</option>';
   }).join("");
-  section.innerHTML = '<label>Chassis Preset</label><select id="presetSelect">' + options + '</select>';
-  container.appendChild(section);
+  container.innerHTML = '<label>Preset</label><select id="presetSelect">' + options + '</select>';
 }
 
 /* ── Hardware Schedule Computation ── */
@@ -2028,7 +2437,7 @@ function applyZonePreset(presetIdx) {
 var zoneElements = {};
 
 function renderZoneStackSection() {
-  var container = document.getElementById("controlsPanel");
+  var container = document.getElementById("footerSections");
 
   var header = document.createElement("div");
   header.className = "group-header";
@@ -2258,7 +2667,7 @@ function renderZoneSVG() {
 
 /* ── Render: Hardware Selection Group ── */
 function renderHardwareSection() {
-  var container = document.getElementById("controlsPanel");
+  var container = document.getElementById("footerSections");
 
   var header = document.createElement("div");
   header.className = "group-header";
@@ -2354,7 +2763,7 @@ function resetHardwareDropdowns() {
 
 /* ── Render: Cut List Container ── */
 function renderCutListContainer() {
-  var container = document.getElementById("controlsPanel");
+  var container = document.getElementById("footerSections");
   var section = document.createElement("div");
   section.className = "cutlist-section";
   section.innerHTML =
@@ -2372,7 +2781,7 @@ function renderCutListContainer() {
 
 /* ── Render: Cost Summary Container ── */
 function renderCostContainer() {
-  var container = document.getElementById("controlsPanel");
+  var container = document.getElementById("footerSections");
   var section = document.createElement("div");
   section.className = "cost-section";
   section.innerHTML =
@@ -2577,9 +2986,12 @@ function validateConfig() {
   }
 
   /* Clearance constraints — do parts fit? */
+  var ffOH = state.FaceFrameOverhang || 0;
+  var ffOpenW = ffSW > 0 ? (W - 2 * ffSW + 2 * ffOH) : interiorW;
+  var ffOpenH = ffRW > 0 ? (H - TK - 2 * ffRW) : (H - TK);
   if (state.DoorCount > 0) {
     var dc = Math.round(state.DoorCount);
-    var totalDoorW = interiorW + state.DoorOverlayLeft + state.DoorOverlayRight;
+    var totalDoorW = ffOpenW + state.DoorOverlayLeft + state.DoorOverlayRight;
     var doorW = (totalDoorW - (dc - 1) * state.DoorGap) / dc;
     if (doorW < 3) {
       warnings.push({ key: "DoorCount", msg: "Door width (" + doorW.toFixed(1) + "\") too narrow for " + dc + " doors at this cabinet width" });
@@ -2623,7 +3035,7 @@ function validateConfig() {
 
   /* Hinge constraints */
   if (state.DoorCount > 0 && state.HingeCount > 0) {
-    var doorH = H - TK + state.DoorOverlayTop + state.DoorOverlayBottom;
+    var doorH = ffOpenH + state.DoorOverlayTop + state.DoorOverlayBottom;
     var hingeSpread = state.HingeInsetTop + state.HingeInsetBottom;
     if (hingeSpread >= doorH && doorH > 0) {
       warnings.push({ key: "HingeInsetTop", msg: "Hinge insets (" + hingeSpread.toFixed(1) + "\") exceed door height (" + doorH.toFixed(1) + "\")" });
@@ -2677,7 +3089,7 @@ function validateConfig() {
 
 /* ── Validation Display ── */
 function renderValidationContainer() {
-  var container = document.getElementById("controlsPanel");
+  var container = document.getElementById("footerSections");
   var section = document.createElement("div");
   section.className = "validation-section";
   section.innerHTML =
@@ -2699,6 +3111,25 @@ function updateValidation() {
   var countEl = document.getElementById("validationCount");
   var bodyEl = document.getElementById("validationBody");
   var headerEl = document.getElementById("validationHeader");
+
+  /* Update floating validation badge on viewport */
+  var badge = document.getElementById("validationBadge");
+  if (!badge) {
+    badge = document.createElement("div");
+    badge.className = "validation-badge";
+    badge.id = "validationBadge";
+    badge.addEventListener("click", function() {
+      /* Toggle details drawer and validation section */
+      var drawer = document.getElementById("footerSections");
+      var isOpen = drawer.classList.toggle("open");
+      document.getElementById("btnDetails").classList.toggle("active", isOpen);
+      if (headerEl) { headerEl.classList.toggle("expanded", isOpen); }
+      if (bodyEl) { bodyEl.classList.toggle("expanded", isOpen); }
+    });
+    var vp = document.getElementById("viewportPanel");
+    if (vp) vp.appendChild(badge);
+  }
+
   if (!countEl || !bodyEl) return warnings;
 
   /* Clear previous row warnings */
@@ -2710,6 +3141,8 @@ function updateValidation() {
     countEl.textContent = "ALL CLEAR";
     headerEl.classList.add("all-clear");
     bodyEl.innerHTML = '<div class="validation-item pass">All constraints satisfied</div>';
+    badge.textContent = "\u2713 OK";
+    badge.classList.add("all-clear");
   } else {
     countEl.textContent = warnings.length + " WARNING" + (warnings.length > 1 ? "S" : "");
     headerEl.classList.remove("all-clear");
@@ -2721,6 +3154,8 @@ function updateValidation() {
       if (row) row.classList.add("warning");
     });
     bodyEl.innerHTML = html;
+    badge.textContent = warnings.length + " \u26A0";
+    badge.classList.remove("all-clear");
   }
   return warnings;
 }
@@ -2739,19 +3174,180 @@ var GROUP_VISIBILITY_RULES = {
 var groupElements = {};
 
 function updateGroupVisibility() {
+  var profile = customerMode ? CUSTOMER_PROFILES[customerCategory] : null;
+
   Object.keys(GROUP_VISIBILITY_RULES).forEach(function(groupId) {
     var els = groupElements[groupId];
     if (!els) return;
-    var visible = GROUP_VISIBILITY_RULES[groupId]();
-    /* Only hide the body — header stays visible so user can re-enable */
-    els.body.classList.toggle("group-hidden", !visible);
+
+    /* In customer mode, force-hide groups not in the profile's visibleGroups */
+    var customerVisible = !profile || profile.visibleGroups.indexOf(groupId) >= 0;
+    var stateVisible = GROUP_VISIBILITY_RULES[groupId]();
+    var visible = customerVisible && stateVisible;
+
+    /* Hide/show the pill — panel auto-closes if pill is hidden */
+    if (els.pill) {
+      els.pill.classList.toggle("pill-hidden", !visible);
+      if (!visible && els.panel) {
+        els.panel.classList.remove("open");
+        els.pill.classList.remove("expanded");
+      }
+    } else if (els.body) {
+      els.body.classList.toggle("group-hidden", !visible);
+    }
   });
+
+  /* Also hide groups that have no visibility rule but aren't in customer profile */
+  if (profile) {
+    SLIDER_GROUPS.forEach(function(group) {
+      if (GROUP_VISIBILITY_RULES[group.id]) return; /* Already handled above */
+      var pill = document.getElementById("pill-" + group.id);
+      if (!pill) return;
+      var visible = profile.visibleGroups.indexOf(group.id) >= 0;
+      pill.classList.toggle("pill-hidden", !visible);
+      if (!visible) {
+        var panel = document.getElementById("panel-" + group.id);
+        if (panel) panel.classList.remove("open");
+        pill.classList.remove("expanded");
+      }
+    });
+  }
 }
 
 /* ── Standard Product Tracking ── */
 var currentStandardProduct = null;
 var standardProductBaseState = null;
 var standardProductPricing = null; /* { markupFactor, customSurchargePercent } */
+
+/* ── Customer Mode ── */
+var customerMode = false;
+var customerCategory = null;
+
+function activateCustomerMode(cat) {
+  var profile = CUSTOMER_PROFILES[cat];
+  if (!profile) return;
+
+  customerMode = true;
+  customerCategory = cat;
+
+  /* Apply locked defaults */
+  if (profile.lockedDefaults) {
+    Object.keys(profile.lockedDefaults).forEach(function(key) {
+      if (key in state) state[key] = profile.lockedDefaults[key];
+    });
+  }
+
+  /* Hide groups not in visibleGroups */
+  SLIDER_GROUPS.forEach(function(group) {
+    var pill = document.getElementById("pill-" + group.id);
+    if (!pill) return;
+    var visible = profile.visibleGroups.indexOf(group.id) >= 0;
+    pill.classList.toggle("pill-hidden", !visible);
+    /* Also close panel if hidden */
+    if (!visible) {
+      var panel = document.getElementById("panel-" + group.id);
+      if (panel) panel.classList.remove("open");
+      pill.classList.remove("expanded");
+    }
+  });
+
+  /* Hide specific sliders within visible groups */
+  if (profile.hiddenSliders) {
+    profile.hiddenSliders.forEach(function(key) {
+      var row = document.querySelector('[data-key="' + key + '"]');
+      if (row) row.classList.add("customer-hidden");
+    });
+  }
+
+  /* Hide preset dropdown — customer uses category, not presets */
+  var presetContainer = document.getElementById("topBarPreset");
+  if (presetContainer) presetContainer.style.display = "none";
+
+  /* Hide Publish button — customers don't publish */
+  var pubBtn = document.getElementById("btnPublish");
+  if (pubBtn) pubBtn.style.display = "none";
+
+  /* Show customer badge + Pro Mode toggle in top bar */
+  updateCustomerBadge();
+
+  updateAll();
+}
+
+function deactivateCustomerMode() {
+  customerMode = false;
+  customerCategory = null;
+
+  /* Unhide all groups */
+  SLIDER_GROUPS.forEach(function(group) {
+    var pill = document.getElementById("pill-" + group.id);
+    if (pill) pill.classList.remove("pill-hidden");
+  });
+
+  /* Unhide all sliders */
+  document.querySelectorAll(".customer-hidden").forEach(function(el) {
+    el.classList.remove("customer-hidden");
+  });
+
+  /* Restore preset dropdown and publish button */
+  var presetContainer = document.getElementById("topBarPreset");
+  if (presetContainer) presetContainer.style.display = "";
+  var pubBtn = document.getElementById("btnPublish");
+  if (pubBtn) pubBtn.style.display = "";
+
+  updateCustomerBadge();
+  updateAll();
+}
+
+function updateCustomerBadge() {
+  var existing = document.getElementById("customerBadge");
+  var toggle = document.getElementById("proToggle");
+
+  if (!customerMode && !customerCategory) {
+    if (existing) existing.style.display = "none";
+    if (toggle) toggle.style.display = "none";
+    return;
+  }
+
+  /* Find or create the badge container in the top bar */
+  var topBar = document.querySelector(".top-bar");
+  if (!topBar) return;
+
+  if (!existing) {
+    existing = document.createElement("span");
+    existing.className = "customer-badge";
+    existing.id = "customerBadge";
+    /* Insert after the title */
+    var titleEl = topBar.querySelector(".title");
+    if (titleEl) titleEl.after(existing);
+    else topBar.appendChild(existing);
+  }
+
+  if (!toggle) {
+    toggle = document.createElement("button");
+    toggle.className = "pro-toggle";
+    toggle.id = "proToggle";
+    toggle.addEventListener("click", function() {
+      if (customerMode) {
+        deactivateCustomerMode();
+      } else if (customerCategory) {
+        activateCustomerMode(customerCategory);
+      }
+    });
+    existing.after(toggle);
+  }
+
+  if (customerMode) {
+    var profile = CUSTOMER_PROFILES[customerCategory];
+    existing.textContent = profile ? profile.label : customerCategory;
+    existing.style.display = "";
+    toggle.textContent = "Show All Controls";
+    toggle.style.display = "";
+  } else {
+    existing.style.display = "none";
+    toggle.textContent = "Simplified View";
+    toggle.style.display = "";
+  }
+}
 
 /* ── Preset Lineage Tracking ── */
 var currentPresetName = "Custom";
@@ -2896,12 +3492,67 @@ function updateUndoButtons() {
 }
 
 /* ── Viewport state (zoom + view mode) ── */
-var viewState = { zoom: 1, view: 'iso' };
+var viewState = { zoom: 1, orbit: 30, tilt: 20, explode: 0, colorMode: 'normal', hideDoors: false };
+
+/* Part color palette — distinct colors per component */
+var PART_COLORS = {
+  leftSide:    { fill: 'rgba(70,130,180,0.25)',  stroke: '#4682B4' },  /* Steel blue */
+  rightSide:   { fill: 'rgba(70,130,180,0.25)',  stroke: '#4682B4' },
+  top:         { fill: 'rgba(160,82,45,0.25)',   stroke: '#A0522D' },  /* Sienna */
+  bottom:      { fill: 'rgba(188,143,143,0.20)', stroke: '#BC8F8F' },  /* Rosy brown */
+  front:       { fill: 'rgba(210,180,140,0.20)', stroke: '#D2B48C' },  /* Tan */
+  back:        { fill: 'rgba(128,128,0,0.18)',   stroke: '#808000' },  /* Olive */
+  toeKick:     { fill: 'rgba(139,69,19,0.22)',   stroke: '#8B4513' },  /* Saddle brown */
+  faceFrame:   { fill: 'rgba(184,134,11,0.20)',  stroke: '#B8860B' },  /* Dark goldenrod */
+  door:        { fill: 'rgba(46,110,138,0.20)',  stroke: '#2E6E8A' },  /* Teal */
+  drawer:      { fill: 'rgba(61,139,74,0.18)',   stroke: '#3D8B4A' },  /* Green */
+  shelf:       { fill: 'rgba(153,50,204,0.15)',  stroke: '#9932CC' },  /* Purple */
+  stretcher:   { fill: 'rgba(255,140,0,0.18)',   stroke: '#FF8C00' },  /* Dark orange */
+  toeKickRet:  { fill: 'rgba(139,69,19,0.15)',   stroke: '#8B4513' }
+};
+
+/* View presets: each sets orbit + tilt angles */
+var VIEW_PRESETS = {
+  front: { orbit: 0,   tilt: 0 },
+  side:  { orbit: 90,  tilt: 0 },
+  top:   { orbit: 15,  tilt: 80 },
+  iso:   { orbit: 30,  tilt: 20 },
+  back:  { orbit: 180, tilt: 10 },
+  left:  { orbit: 270, tilt: 10 },
+  iso2:  { orbit: 330, tilt: 20 },
+  iso3:  { orbit: 150, tilt: 20 },
+  iso4:  { orbit: 210, tilt: 20 }
+};
 
 function setView(mode) {
-  viewState.view = mode;
+  var preset = VIEW_PRESETS[mode];
+  if (preset) {
+    viewState.orbit = preset.orbit;
+    viewState.tilt = preset.tilt;
+    /* Sync sliders */
+    var os = document.getElementById("orbitSlider");
+    var ts = document.getElementById("tiltSlider");
+    if (os) os.value = preset.orbit;
+    if (ts) ts.value = preset.tilt;
+  }
   document.querySelectorAll('.vp-btn[data-view]').forEach(function(btn) {
     btn.classList.toggle('vp-active', btn.dataset.view === mode);
+  });
+  renderCabinetSVG();
+}
+
+function setColorMode(mode) {
+  viewState.colorMode = mode;
+  document.querySelectorAll('.vp-btn[data-color]').forEach(function(btn) {
+    btn.classList.toggle('vp-active', btn.dataset.color === mode);
+  });
+  renderCabinetSVG();
+}
+
+function toggleDoors(mode) {
+  viewState.hideDoors = (mode === 'hide');
+  document.querySelectorAll('.vp-btn[data-doors]').forEach(function(btn) {
+    btn.classList.toggle('vp-active', btn.dataset.doors === mode);
   });
   renderCabinetSVG();
 }
@@ -2913,8 +3564,98 @@ function zoomView(dir) {
   renderCabinetSVG();
 }
 
+/* Dimension pill adjustment */
+function adjustDim(key, dir) {
+  var step = 1; /* 1 inch per click */
+  var s = SLIDER_GROUPS[0].sliders.find(function(sl) { return sl.key === key; });
+  if (!s) return;
+  var val = Math.max(s.min, Math.min(s.max, (state[key] || s.default) + dir * step));
+  state[key] = val;
+  /* Sync slider DOM */
+  var row = document.querySelector('[data-key="' + key + '"]');
+  if (row) {
+    row.querySelector('input[type="range"]').value = val;
+    row.querySelector('input[type="number"]').value = val.toFixed(s.decimals);
+  }
+  updateAll();
+}
+
+/* Position dimension pills near the SVG dimension annotations */
+function updateDimPills() {
+  var wrap = document.getElementById("cabinetSvgWrap");
+  var pillW = document.getElementById("dimPillW");
+  var pillH = document.getElementById("dimPillH");
+  var pillD = document.getElementById("dimPillD");
+  if (!wrap || !pillW) return;
+
+  var svgEl = wrap.querySelector("svg");
+  if (!svgEl) return;
+
+  var wrapRect = wrap.getBoundingClientRect();
+  var svgRect = svgEl.getBoundingClientRect();
+
+  /* Find dimension text elements by content pattern */
+  var texts = svgEl.querySelectorAll("text");
+  var wText = null, hText = null, dText = null;
+  var wVal = (state.Width || 36).toFixed(1) + '"';
+  var hVal = (state.Height || 34.5).toFixed(1) + '"';
+  var dVal = (state.Depth || 24).toFixed(1) + '"';
+
+  texts.forEach(function(t) {
+    var c = t.textContent.trim();
+    if (c === wVal && !wText) wText = t;
+    else if (c === hVal && !hText) hText = t;
+    else if (c === dVal && !dText) dText = t;
+  });
+
+  function placePill(pill, textEl, valStr) {
+    if (!textEl) { pill.style.display = "none"; return; }
+    var bbox = textEl.getBoundingClientRect();
+    var x = bbox.left + bbox.width / 2 - wrapRect.left;
+    var y = bbox.top + bbox.height + 4 - wrapRect.top;
+    pill.style.left = x + "px";
+    pill.style.top = y + "px";
+    pill.style.transform = "translateX(-50%)";
+    pill.style.display = "inline-flex";
+    pill.querySelector(".dim-pill-val").textContent = valStr;
+  }
+
+  placePill(pillW, wText, wVal);
+  placePill(pillH, hText, hVal);
+  placePill(pillD, dText, dVal);
+}
+
+/* Orbit / Tilt slider handlers */
+var orbitEl = document.getElementById("orbitSlider");
+var tiltEl = document.getElementById("tiltSlider");
+if (orbitEl) {
+  orbitEl.addEventListener("input", function() {
+    viewState.orbit = parseFloat(this.value) || 0;
+    /* Deactivate preset buttons when user drags freely */
+    document.querySelectorAll('.vp-btn[data-view]').forEach(function(btn) { btn.classList.remove('vp-active'); });
+    renderCabinetSVG();
+  });
+}
+if (tiltEl) {
+  tiltEl.addEventListener("input", function() {
+    viewState.tilt = parseFloat(this.value) || 0;
+    document.querySelectorAll('.vp-btn[data-view]').forEach(function(btn) { btn.classList.remove('vp-active'); });
+    renderCabinetSVG();
+  });
+}
+
+/* Explode slider handler */
+var explodeEl = document.getElementById("explodeSlider");
+if (explodeEl) {
+  explodeEl.addEventListener("input", function() {
+    viewState.explode = parseFloat(this.value) || 0;
+    renderCabinetSVG();
+  });
+}
+
 /* ── Cabinet SVG Preview (multi-view wireframe) ── */
 function renderCabinetSVG() {
+  try {
   var W = state.Width || 36;
   var H = state.Height || 34.5;
   var D = state.Depth || 24;
@@ -2923,133 +3664,195 @@ function renderCabinetSVG() {
   var BT = state.BottomThickness || 0.75;
   var BPT = state.BackPanelThickness || 0.25;
 
-  /* View mode + zoom */
-  var viewMode = viewState.view;
+  /* Orbit / Tilt 3D rotation */
   var zoom = viewState.zoom;
+  var exAmt = viewState.explode || 0;
+  var theta = (viewState.orbit || 0) * Math.PI / 180;
+  var elev  = (viewState.tilt  || 0) * Math.PI / 180;
+  var cosT = Math.cos(theta), sinT = Math.sin(theta);
+  var cosE = Math.cos(elev),  sinE = Math.sin(elev);
 
-  /* Effective dimensions depend on view */
-  var effW, effH;
-  if (viewMode === 'front') { effW = W; effH = H; }
-  else if (viewMode === 'side') { effW = D; effH = H; }
-  else if (viewMode === 'top') { effW = W; effH = D; }
-  else { effW = W + D * 0.45; effH = H + D * 0.35; }
+  /* Bounding box: project 8 cabinet corners with proper 3D orthographic projection.
+     screen_x = x*cosT + z*sinT
+     screen_y = y*cosE - x*sinT*sinE + z*cosT*sinE */
+  var corners = [[0,0,0],[W,0,0],[0,H,0],[W,H,0],[0,0,D],[W,0,D],[0,H,D],[W,H,D]];
+  var minSx = Infinity, maxSx = -Infinity, minSy = Infinity, maxSy = -Infinity;
+  for (var ci = 0; ci < corners.length; ci++) {
+    var cx = corners[ci][0], cy = corners[ci][1], cz = corners[ci][2];
+    var sx = cx * cosT + cz * sinT;
+    var sy = cy * cosE - cx * sinT * sinE + cz * cosT * sinE;
+    if (sx < minSx) minSx = sx; if (sx > maxSx) maxSx = sx;
+    if (sy < minSy) minSy = sy; if (sy > maxSy) maxSy = sy;
+  }
+  var effW = maxSx - minSx || 1;
+  var effH = maxSy - minSy || 1;
+  /* Expand for exploded parts */
+  if (exAmt > 0) { effW += exAmt * 3; effH += exAmt * 2.5; }
 
   /* Scale to fit viewport */
-  var svgW = 800, svgH = 650;
+  var svgW = 1100, svgH = 850;
   var margin = 80;
   var scale = Math.min((svgW - 2 * margin) / effW, (svgH - 2 * margin) / effH);
 
-  /* Origin: bottom-left-front of cabinet */
-  var ox = margin + 20;
-  var oy = svgH - margin;
+  /* Origin: center the projected cabinet in the SVG canvas */
+  var centerSx = (minSx + maxSx) / 2;
+  var centerSy = (minSy + maxSy) / 2;
+  var ox = svgW / 2 - centerSx * scale;
+  var oy = svgH / 2 + centerSy * scale;
 
-  /* View-dependent projection */
-  var px, py;
-  if (viewMode === 'front') {
-    px = function(x, z) { return ox + x * scale; };
-    py = function(y, z) { return oy - y * scale; };
-  } else if (viewMode === 'side') {
-    px = function(x, z) { return ox + z * scale; };
-    py = function(y, z) { return oy - y * scale; };
-  } else if (viewMode === 'top') {
-    px = function(x, z) { return ox + x * scale; };
-    py = function(y, z) { return oy - z * scale; };
-  } else {
-    var ax = 0.45, ay = -0.35;
-    px = function(x, z) { return ox + (x + z * ax) * scale; };
-    py = function(y, z) { return oy - (y + z * ay) * scale; };
-  }
+  /* Projection functions: proper 3D orthographic (orbit around Y, then tilt around X) */
+  var px = function(x, z) { return ox + (x * cosT + z * sinT) * scale; };
+  var py = function(x, y, z) { return oy - (y * cosE - x * sinT * sinE + z * cosT * sinE) * scale; };
+
+  /* Face visibility based on orbit angle (for culling hidden faces) */
+  var showFront = cosT > -0.1;    /* camera can see front face */
+  var showBack  = cosT < 0.1;     /* camera can see back face */
+  var showRight = sinT > -0.1;    /* camera can see right side */
+  var showLeft  = sinT < 0.1;     /* camera can see left side */
 
   var lines = [];
   var fills = [];
 
   function addLine(x1, y1, z1, x2, y2, z2, color, width, dash) {
-    lines.push('<line x1="' + px(x1, z1) + '" y1="' + py(y1, z1) + '" x2="' + px(x2, z2) + '" y2="' + py(y2, z2) + '" stroke="' + (color || '#9a8268') + '" stroke-width="' + (width || 0.8) + '"' + (dash ? ' stroke-dasharray="' + dash + '"' : '') + '/>');
+    lines.push('<line x1="' + px(x1, z1) + '" y1="' + py(x1, y1, z1) + '" x2="' + px(x2, z2) + '" y2="' + py(x2, y2, z2) + '" stroke="' + (color || '#9a8268') + '" stroke-width="' + (width || 0.8) + '"' + (dash ? ' stroke-dasharray="' + dash + '"' : '') + '/>');
   }
 
   function addPoly(pts, fill, stroke) {
-    var d = pts.map(function(p, i) { return (i === 0 ? 'M' : 'L') + px(p[0], p[2]) + ',' + py(p[1], p[2]); }).join(' ') + ' Z';
-    fills.push('<path d="' + d + '" fill="' + (fill || 'none') + '" stroke="' + (stroke || '#9a8268') + '" stroke-width="0.6"/>');
+    var d = pts.map(function(p, i) {
+      return (i === 0 ? 'M' : 'L') + px(p[0], p[2]) + ',' + py(p[0], p[1], p[2]);
+    }).join(' ') + ' Z';
+    /* Depth for painter's algorithm sorting (camera-relative Z after orbit rotation) */
+    var depth = 0;
+    for (var j = 0; j < pts.length; j++) { depth += (-pts[j][0] * sinT + pts[j][2] * cosT); }
+    depth /= pts.length;
+    fills.push({ s: '<path d="' + d + '" fill="' + (fill || 'none') + '" stroke="' + (stroke || '#9a8268') + '" stroke-width="0.6"/>', d: depth });
   }
 
   function addText(x, y, z, text, color, size) {
-    lines.push('<text x="' + px(x, z) + '" y="' + py(y, z) + '" fill="' + (color || '#8b7355') + '" font-size="' + (size || 9) + '" text-anchor="middle" dominant-baseline="middle">' + text + '</text>');
+    lines.push('<text x="' + px(x, z) + '" y="' + py(x, y, z) + '" fill="' + (color || '#8b7355') + '" font-size="' + (size || 12) + '" font-family="Segoe UI, sans-serif" text-anchor="middle" dominant-baseline="middle">' + text + '</text>');
+  }
+
+  /* ── Explode offset ── */
+  var ex = viewState.explode || 0;
+  var oX, oY, oZ; /* per-component offsets, set before each section */
+
+  /* Color mode helper: returns [fill, stroke] for a part */
+  var cm = viewState.colorMode === 'parts';
+  function pc(part, defaultFill, defaultStroke) {
+    if (!cm) return [defaultFill, defaultStroke];
+    var c = PART_COLORS[part];
+    return c ? [c.fill, c.stroke] : [defaultFill, defaultStroke];
   }
 
   /* ── Cabinet body ── */
   var tkd = (TK > 0) ? (state.ToeKickDepth || 3) : 0;
 
-  /* Front face */
-  addPoly([[0,TK,0],[W,TK,0],[W,H,0],[0,H,0]], '#ece2d0', '#9a8268');
   /* Top face */
-  addPoly([[0,H,0],[W,H,0],[W,H,D],[0,H,D]], '#e3d5be', '#9a8268');
+  oX = 0; oY = ex; oZ = 0;
+  var cTop = pc('top', '#e3d5be', '#9a8268');
+  addPoly([[0+oX,H+oY,0+oZ],[W+oX,H+oY,0+oZ],[W+oX,H+oY,D+oZ],[0+oX,H+oY,D+oZ]], cTop[0], cTop[1]);
+  if (ex > 1 || cm) addText(W/2+oX, H+oY+2, D/2+oZ, 'Top', cm ? cTop[1] : '#7a6652', 14);
+
+  /* Front face */
+  oX = 0; oY = 0; oZ = -ex * 0.3;
+  var cFront = pc('front', '#ece2d0', '#9a8268');
+  addPoly([[0+oX,TK+oY,0+oZ],[W+oX,TK+oY,0+oZ],[W+oX,H+oY,0+oZ],[0+oX,H+oY,0+oZ]], cFront[0], cFront[1]);
+
   /* Right side face — L-shaped with toe kick notch */
+  oX = ex; oY = 0; oZ = 0;
+  var cRS = pc('rightSide', '#e8dcc8', '#9a8268');
   if (TK > 0 && tkd > 0) {
-    addPoly([[W,0,tkd],[W,0,D],[W,H,D],[W,H,0],[W,TK,0],[W,TK,tkd]], '#e8dcc8', '#9a8268');
+    addPoly([[W+oX,0+oY,tkd+oZ],[W+oX,0+oY,D+oZ],[W+oX,H+oY,D+oZ],[W+oX,H+oY,0+oZ],[W+oX,TK+oY,0+oZ],[W+oX,TK+oY,tkd+oZ]], cRS[0], cRS[1]);
   } else {
-    addPoly([[W,0,0],[W,0,D],[W,H,D],[W,H,0]], '#e8dcc8', '#9a8268');
+    addPoly([[W+oX,0+oY,0+oZ],[W+oX,0+oY,D+oZ],[W+oX,H+oY,D+oZ],[W+oX,H+oY,0+oZ]], cRS[0], cRS[1]);
+  }
+  if (ex > 1 || cm) addText(W+oX+2, H/2+oY, D/2+oZ, 'Right Side', cm ? cRS[1] : '#7a6652', 14);
+
+  /* Left side panel (visible when camera faces it, or explode/color mode) */
+  oX = -ex; oY = 0; oZ = 0;
+  var cLS = pc('leftSide', '#e8dcc8', '#9a8268');
+  if (showLeft || ex > 0.5 || cm) {
+    if (TK > 0 && tkd > 0) {
+      addPoly([[0+oX,0+oY,tkd+oZ],[0+oX,0+oY,D+oZ],[0+oX,H+oY,D+oZ],[0+oX,H+oY,0+oZ],[0+oX,TK+oY,0+oZ],[0+oX,TK+oY,tkd+oZ]], cLS[0], cLS[1]);
+    } else {
+      addPoly([[0+oX,0+oY,0+oZ],[0+oX,0+oY,D+oZ],[0+oX,H+oY,D+oZ],[0+oX,H+oY,0+oZ]], cLS[0], cLS[1]);
+    }
+    if (ex > 1 || cm) addText(0+oX-2, H/2+oY, D/2+oZ, 'Left Side', cm ? cLS[1] : '#7a6652', 14);
+  }
+
+  /* Back panel (visible when camera faces it, or explode/color mode) */
+  oX = 0; oY = 0; oZ = ex;
+  var cBack = pc('back', 'rgba(180,160,130,0.15)', '#b8a894');
+  if (showBack || ex > 0.5 || cm) {
+    addPoly([[ST+oX, TK+BT+oY, D+oZ], [W-ST+oX, TK+BT+oY, D+oZ], [W-ST+oX, H+oY, D+oZ], [ST+oX, H+oY, D+oZ]], cBack[0], cBack[1]);
+    if (ex > 1 || cm) addText(W/2+oX, H/2+oY, D+oZ+2, 'Back Panel', cm ? cBack[1] : '#7a6652', 14);
+  }
+
+  /* Bottom panel (visible in explode or color mode) */
+  oX = 0; oY = -ex * 0.3; oZ = 0;
+  var cBot = pc('bottom', 'rgba(200,180,150,0.12)', '#b8a894');
+  if (ex > 0.5 || cm) {
+    addPoly([[ST+oX, TK+oY, 0+oZ], [W-ST+oX, TK+oY, 0+oZ], [W-ST+oX, TK+oY, D+oZ], [ST+oX, TK+oY, D+oZ]], cBot[0], cBot[1]);
+    if (ex > 1 || cm) addText(W/2+oX, TK+oY-2, D/2+oZ, 'Bottom', cm ? cBot[1] : '#7a6652', 14);
   }
 
   /* ── Toe kick recess ── */
+  oX = 0; oY = -ex * 0.6; oZ = 0;
+  var cTK = pc('toeKick', '#f0e7d5', '#b8a894');
+  var cTKR = pc('toeKickRet', '#f2e9d9', '#b8a894');
   if (TK > 0) {
-    /* Front toe kick face (recessed) */
-    addPoly([[ST, 0, tkd], [W - ST, 0, tkd], [W - ST, TK, tkd], [ST, TK, tkd]], '#f0e7d5', '#b8a894');
-    /* Left toe kick return */
-    addPoly([[ST, 0, 0], [ST, 0, tkd], [ST, TK, tkd], [ST, TK, 0]], '#f2e9d9', '#b8a894');
-    /* Right toe kick return */
-    addPoly([[W - ST, 0, 0], [W - ST, 0, tkd], [W - ST, TK, tkd], [W - ST, TK, 0]], '#f2e9d9', '#b8a894');
-    /* Right side panel — front strip below toe kick (visible between outer edge and return) */
-    addPoly([[W - ST, 0, 0], [W, 0, 0], [W, TK, 0], [W - ST, TK, 0]], '#ece2d0', '#b8a894');
-    /* Right side panel — bottom strip below toe kick (top of notch) */
-    addPoly([[W, 0, tkd], [W, TK, tkd], [W - ST, TK, tkd], [W - ST, 0, tkd]], '#f2e9d9', '#b8a894');
-    /* Left side panel — front strip below toe kick */
-    addPoly([[0, 0, 0], [ST, 0, 0], [ST, TK, 0], [0, TK, 0]], '#ece2d0', '#b8a894');
+    addPoly([[ST+oX, 0+oY, tkd+oZ], [W-ST+oX, 0+oY, tkd+oZ], [W-ST+oX, TK+oY, tkd+oZ], [ST+oX, TK+oY, tkd+oZ]], cTK[0], cTK[1]);
+    addPoly([[ST+oX, 0+oY, 0+oZ], [ST+oX, 0+oY, tkd+oZ], [ST+oX, TK+oY, tkd+oZ], [ST+oX, TK+oY, 0+oZ]], cTKR[0], cTKR[1]);
+    addPoly([[W-ST+oX, 0+oY, 0+oZ], [W-ST+oX, 0+oY, tkd+oZ], [W-ST+oX, TK+oY, tkd+oZ], [W-ST+oX, TK+oY, 0+oZ]], cTKR[0], cTKR[1]);
+    addPoly([[W-ST+oX, 0+oY, 0+oZ], [W+oX, 0+oY, 0+oZ], [W+oX, TK+oY, 0+oZ], [W-ST+oX, TK+oY, 0+oZ]], cRS[0], cRS[1]);
+    addPoly([[W+oX, 0+oY, tkd+oZ], [W+oX, TK+oY, tkd+oZ], [W-ST+oX, TK+oY, tkd+oZ], [W-ST+oX, 0+oY, tkd+oZ]], cTKR[0], cTKR[1]);
+    addPoly([[0+oX, 0+oY, 0+oZ], [ST+oX, 0+oY, 0+oZ], [ST+oX, TK+oY, 0+oZ], [0+oX, TK+oY, 0+oZ]], cLS[0], cLS[1]);
+    if (ex > 1 || cm) addText(W/2+oX, TK/2+oY, 0+oZ, 'Toe Kick', cm ? cTK[1] : '#7a6652', 14);
   }
 
   /* ── Side panels (edges visible) ── */
+  /* Left side edges */
+  var lsX = -ex; /* left side offset */
   if (TK > 0 && tkd > 0) {
-    /* Left front edge — full height */
-    addLine(0, 0, 0, 0, H, 0, '#8b7355', 1.2);
-    /* Right front edge — full height */
-    addLine(W, 0, 0, W, TK, 0, '#8b7355', 1.2);
-    addLine(W, TK, 0, W, H, 0, '#8b7355', 1.2);
-    /* Left back edge — full height */
-    addLine(0, 0, D, 0, H, D, '#9a8268', 0.6);
+    addLine(0+lsX, 0, 0, 0+lsX, H, 0, '#8b7355', 1.2);
+    /* Right side edges */
+    addLine(W+ex, 0, 0, W+ex, TK, 0, '#8b7355', 1.2);
+    addLine(W+ex, TK, 0, W+ex, H, 0, '#8b7355', 1.2);
+    addLine(0+lsX, 0, D, 0+lsX, H, D, '#9a8268', 0.6);
     /* Toe kick notch edges on right side */
-    addLine(W, 0, 0, W, 0, tkd, '#8b7355', 0.8);
-    addLine(W, 0, tkd, W, TK, tkd, '#8b7355', 0.8);
-    addLine(W, TK, tkd, W, TK, 0, '#8b7355', 0.8);
-    /* Bottom edge of right side behind toe kick */
-    addLine(W, 0, tkd, W, 0, D, '#9a8268', 0.6);
+    addLine(W+ex, 0, 0, W+ex, 0, tkd, '#8b7355', 0.8);
+    addLine(W+ex, 0, tkd, W+ex, TK, tkd, '#8b7355', 0.8);
+    addLine(W+ex, TK, tkd, W+ex, TK, 0, '#8b7355', 0.8);
+    addLine(W+ex, 0, tkd, W+ex, 0, D, '#9a8268', 0.6);
   } else {
-    addLine(0, 0, 0, 0, H, 0, '#8b7355', 1.2);
-    addLine(W, 0, 0, W, H, 0, '#8b7355', 1.2);
-    addLine(0, 0, D, 0, H, D, '#9a8268', 0.6);
+    addLine(0+lsX, 0, 0, 0+lsX, H, 0, '#8b7355', 1.2);
+    addLine(W+ex, 0, 0, W+ex, H, 0, '#8b7355', 1.2);
+    addLine(0+lsX, 0, D, 0+lsX, H, D, '#9a8268', 0.6);
   }
 
-  /* ── Face Frame ── */
+  /* ── Face Frame (drawn before doors so doors layer on top) ── */
   var ffSW = state.FaceFrameStileWidth || 0;
   var ffRW = state.FaceFrameRailWidth || 0;
   var ffOH = state.FaceFrameOverhang || 0;
-  var fz = -0.1; /* slightly in front of box */
-  var ffColor = '#8B6914';
-  var ffFill = 'rgba(139,105,20,0.18)';
+  var fz = -0.05; /* just in front of cabinet face */
+  var cFF = pc('faceFrame', 'rgba(139,105,20,0.08)', '#8B6914');
+  var ffColor = cFF[1];
+  var ffFill = cFF[0];
 
+  oX = 0; oY = 0; oZ = -ex * 0.8;
   if (ffSW > 0) {
-    /* Left stile */
-    addPoly([[-ffOH, TK, fz], [ffSW - ffOH, TK, fz], [ffSW - ffOH, H, fz], [-ffOH, H, fz]], ffFill, ffColor);
-    /* Right stile */
-    addPoly([[W - ffSW + ffOH, TK, fz], [W + ffOH, TK, fz], [W + ffOH, H, fz], [W - ffSW + ffOH, H, fz]], ffFill, ffColor);
-    /* Top rail */
-    addPoly([[ffSW - ffOH, H - ffRW, fz], [W - ffSW + ffOH, H - ffRW, fz], [W - ffSW + ffOH, H, fz], [ffSW - ffOH, H, fz]], ffFill, ffColor);
-    /* Bottom rail */
-    addPoly([[ffSW - ffOH, TK, fz], [W - ffSW + ffOH, TK, fz], [W - ffSW + ffOH, TK + ffRW, fz], [ffSW - ffOH, TK + ffRW, fz]], ffFill, ffColor);
+    var ffz = fz + oZ;
+    addPoly([[-ffOH+oX, TK+oY, ffz], [ffSW-ffOH+oX, TK+oY, ffz], [ffSW-ffOH+oX, H+oY, ffz], [-ffOH+oX, H+oY, ffz]], ffFill, ffColor);
+    addPoly([[W-ffSW+ffOH+oX, TK+oY, ffz], [W+ffOH+oX, TK+oY, ffz], [W+ffOH+oX, H+oY, ffz], [W-ffSW+ffOH+oX, H+oY, ffz]], ffFill, ffColor);
+    addPoly([[ffSW-ffOH+oX, H-ffRW+oY, ffz], [W-ffSW+ffOH+oX, H-ffRW+oY, ffz], [W-ffSW+ffOH+oX, H+oY, ffz], [ffSW-ffOH+oX, H+oY, ffz]], ffFill, ffColor);
+    addPoly([[ffSW-ffOH+oX, TK+oY, ffz], [W-ffSW+ffOH+oX, TK+oY, ffz], [W-ffSW+ffOH+oX, TK+ffRW+oY, ffz], [ffSW-ffOH+oX, TK+ffRW+oY, ffz]], ffFill, ffColor);
+    if (ex > 1 || cm) addText(W/2+oX, H/2+oY, ffz, 'Face Frame', ffColor, 14);
 
     /* Mid rails at dado shelf positions */
     var ffDadoCount = Math.round(state.ZS_DadoCount || 0);
     for (var fi = 0; fi < ffDadoCount; fi++) {
       var ffDadoY = TK + BT + (state['ZS_Dado' + (fi + 1) + 'Z'] || 18);
-      addPoly([[ffSW - ffOH, ffDadoY - ffRW / 2, fz], [W - ffSW + ffOH, ffDadoY - ffRW / 2, fz], [W - ffSW + ffOH, ffDadoY + ffRW / 2, fz], [ffSW - ffOH, ffDadoY + ffRW / 2, fz]], ffFill, ffColor);
+      addPoly([[ffSW-ffOH+oX, ffDadoY-ffRW/2+oY, ffz], [W-ffSW+ffOH+oX, ffDadoY-ffRW/2+oY, ffz], [W-ffSW+ffOH+oX, ffDadoY+ffRW/2+oY, ffz], [ffSW-ffOH+oX, ffDadoY+ffRW/2+oY, ffz]], ffFill, ffColor);
     }
   }
 
@@ -3078,33 +3881,44 @@ function renderCabinetSVG() {
       var zTop = zone.topZ;
       var zMid = (zBot + zTop) / 2;
 
-      if (zone.type === 0) {
+      if (zone.type === 0 && !viewState.hideDoors) {
         /* Door compartment — draw door rectangles */
+        oX = 0; oY = 0; oZ = -ex * 1.2;
         var gap = state.DoorGap || 0.125;
         var olL = state.DoorOverlayLeft || 0.5;
         var olR = state.DoorOverlayRight || 0.5;
         var olT = state.DoorOverlayTop || 0.5;
         var olB = state.DoorOverlayBottom || 0.5;
-        var doorW = (W + olL + olR - gap) / 2;
-        /* Left door */
-        addPoly([[-olL, zBot - olB, -0.3], [doorW - olL, zBot - olB, -0.3], [doorW - olL, zTop + olT, -0.3], [-olL, zTop + olT, -0.3]], 'rgba(46,110,138,0.10)', '#2e6e8a');
-        /* Right door */
-        addPoly([[doorW - olL + gap, zBot - olB, -0.3], [W + olR, zBot - olB, -0.3], [W + olR, zTop + olT, -0.3], [doorW - olL + gap, zTop + olT, -0.3]], 'rgba(46,110,138,0.10)', '#2e6e8a');
-        /* Door knobs */
-        addText(doorW - olL - 1.5, zMid, -0.3, '\u25CF', '#2e6e8a', 6);
-        addText(doorW - olL + gap + 1.5, zMid, -0.3, '\u25CF', '#2e6e8a', 6);
+        var zFFOpenL = ffSW > 0 ? ffSW - ffOH : 0;
+        var zFFOpenR = ffSW > 0 ? W - ffSW + ffOH : W;
+        var zFFOpenW = zFFOpenR - zFFOpenL;
+        var zDoorFaceW = zFFOpenW + olL + olR;
+        var zSingleDoorW = (zDoorFaceW - gap) / 2;
+        var zDoorL = zFFOpenL - olL;
+        var dz = -0.3 + oZ;
+        var cDoor = pc('door', 'rgba(46,110,138,0.10)', '#2e6e8a');
+        addPoly([[zDoorL+oX, zBot-olB+oY, dz], [zDoorL+zSingleDoorW+oX, zBot-olB+oY, dz], [zDoorL+zSingleDoorW+oX, zTop+olT+oY, dz], [zDoorL+oX, zTop+olT+oY, dz]], cDoor[0], cDoor[1]);
+        var zDoorR = zDoorL + zSingleDoorW + gap;
+        addPoly([[zDoorR+oX, zBot-olB+oY, dz], [zDoorR+zSingleDoorW+oX, zBot-olB+oY, dz], [zDoorR+zSingleDoorW+oX, zTop+olT+oY, dz], [zDoorR+oX, zTop+olT+oY, dz]], cDoor[0], cDoor[1]);
+        addText(zDoorL+zSingleDoorW-1.5+oX, zMid+oY, dz, '\u25CF', cDoor[1], 6);
+        addText(zDoorR+1.5+oX, zMid+oY, dz, '\u25CF', cDoor[1], 6);
+        if (ex > 1 || cm) addText(W/2+oX, zMid+oY, dz, 'Door', cDoor[1], 14);
       }
 
-      if (zone.type === 1) {
+      if (zone.type === 1 && !viewState.hideDoors) {
         /* Drawer compartment — draw stacked drawer fronts */
+        oX = 0; oY = 0; oZ = -ex * 1.5;
         var drc = 3;
         var dfH = zone.height / drc;
+        var drz = -0.3 + oZ;
+        var cDrw = pc('drawer', 'rgba(61,139,74,0.08)', '#3d8b4a');
         for (var di = 0; di < drc; di++) {
           var dfBot = zBot + di * dfH;
           var dfTop = dfBot + dfH - 0.25;
-          addPoly([[0, dfBot, -0.3], [W, dfBot, -0.3], [W, dfTop, -0.3], [0, dfTop, -0.3]], 'rgba(61,139,74,0.08)', '#3d8b4a');
-          addText(W / 2, (dfBot + dfTop) / 2, -0.3, '\u2501', '#3d8b4a', 8);
+          addPoly([[0+oX, dfBot+oY, drz], [W+oX, dfBot+oY, drz], [W+oX, dfTop+oY, drz], [0+oX, dfTop+oY, drz]], cDrw[0], cDrw[1]);
+          addText(W/2+oX, (dfBot+dfTop)/2+oY, drz, '\u2501', cDrw[1], 8);
         }
+        if (ex > 1 || cm) addText(W/2+oX, zMid+oY, drz, 'Drawer', cDrw[1], 14);
       }
 
       if (zone.type === 2) {
@@ -3120,99 +3934,148 @@ function renderCabinetSVG() {
     var dc = Math.round(state.DoorCount || 0);
     var drc = Math.round(state.DrawerCount || 0);
 
-    if (dc > 0) {
-      var olL = state.DoorOverlayLeft || 0.5;
-      var olR = state.DoorOverlayRight || 0.5;
-      var olT = state.DoorOverlayTop || 0.5;
-      var olB = state.DoorOverlayBottom || 0.5;
-      var gap = state.DoorGap || 0.125;
-      var doorFaceW = W + olL + olR;
-      var singleDoorW = (doorFaceW - (dc - 1) * gap) / dc;
-      var doorBot = TK - olB;
-      var doorTop = H + olT;
+    /* Doors */
+    if (!viewState.hideDoors) {
+      oX = 0; oY = 0; oZ = -ex * 1.2;
+      if (dc > 0) {
+        var olL = state.DoorOverlayLeft || 0.5;
+        var olR = state.DoorOverlayRight || 0.5;
+        var olT = state.DoorOverlayTop || 0.5;
+        var olB = state.DoorOverlayBottom || 0.5;
+        var gap = state.DoorGap || 0.125;
+        var ffOpenL = ffSW > 0 ? ffSW - ffOH : 0;
+        var ffOpenR = ffSW > 0 ? W - ffSW + ffOH : W;
+        var ffOpenBot = ffRW > 0 ? TK + ffRW : TK;
+        var ffOpenTop = ffRW > 0 ? H - ffRW : H;
+        var ffOpenW = ffOpenR - ffOpenL;
+        var doorFaceW = ffOpenW + olL + olR;
+        var singleDoorW = (doorFaceW - (dc - 1) * gap) / dc;
+        var doorBot = ffOpenBot - olB;
+        var doorTop = ffOpenTop + olT;
+        var dz = -0.3 + oZ;
+        var cDoor = pc('door', 'rgba(46,110,138,0.10)', '#2e6e8a');
 
-      for (var di = 0; di < dc; di++) {
-        var dx = -olL + di * (singleDoorW + gap);
-        addPoly([[dx, doorBot, -0.3], [dx + singleDoorW, doorBot, -0.3], [dx + singleDoorW, doorTop, -0.3], [dx, doorTop, -0.3]], 'rgba(46,110,138,0.10)', '#2e6e8a');
+        for (var di = 0; di < dc; di++) {
+          var dx = ffOpenL - olL + di * (singleDoorW + gap);
+          addPoly([[dx+oX, doorBot+oY, dz], [dx+singleDoorW+oX, doorBot+oY, dz], [dx+singleDoorW+oX, doorTop+oY, dz], [dx+oX, doorTop+oY, dz]], cDoor[0], cDoor[1]);
+        }
+        if (ex > 1 || cm) addText(W/2+oX, (doorBot+doorTop)/2+oY, dz, 'Door', cDoor[1], 14);
       }
     }
 
-    if (drc > 0) {
-      var drH = state.DrawerHeight || 6;
-      for (var dri = 0; dri < Math.min(drc, 6); dri++) {
-        var drBot = botY + dri * (drH + 0.5);
-        var drTop = drBot + drH - 0.5;
-        if (drTop > H) break;
-        addPoly([[0, drBot, -0.3], [W, drBot, -0.3], [W, drTop, -0.3], [0, drTop, -0.3]], 'rgba(61,139,74,0.08)', '#3d8b4a');
-        addText(W / 2, (drBot + drTop) / 2, -0.3, '\u2501', '#3d8b4a', 8);
+    /* Drawers */
+    if (!viewState.hideDoors) {
+      oX = 0; oY = 0; oZ = -ex * 1.5;
+      if (drc > 0) {
+        var drH = state.DrawerHeight || 6;
+        var drz = -0.3 + oZ;
+        var cDrw = pc('drawer', 'rgba(61,139,74,0.08)', '#3d8b4a');
+        for (var dri = 0; dri < Math.min(drc, 6); dri++) {
+          var drBot = botY + dri * (drH + 0.5);
+          var drTop = drBot + drH - 0.5;
+          if (drTop > H) break;
+          addPoly([[0+oX, drBot+oY, drz], [W+oX, drBot+oY, drz], [W+oX, drTop+oY, drz], [0+oX, drTop+oY, drz]], cDrw[0], cDrw[1]);
+          addText(W/2+oX, (drBot+drTop)/2+oY, drz, '\u2501', cDrw[1], 8);
+        }
+        if (ex > 1 || cm) addText(W/2+oX, botY+oY, drz, 'Drawer', cDrw[1], 14);
       }
     }
 
-    /* Adjustable shelves */
+    /* Adjustable shelves — solid filled polygons, spread vertically when exploded */
+    oX = 0; oZ = 0;
     var sc = Math.round(state.ShelfCount || 0);
+    var ShT = state.ShelfThickness || 0.75;
+    var shSetback = state.ShelfSetback || 0;
     if (sc > 0) {
       var shelfSpace = interiorH / (sc + 1);
       for (var si = 1; si <= sc; si++) {
         var shY = botY + si * shelfSpace;
-        addLine(ST + 0.5, shY, BPT, W - ST - 0.5, shY, BPT, '#8b7355', 0.5, '2,4');
+        var shSpread = ex * 0.3 * (si - (sc + 1) / 2); /* spread from center */
+        var cShelf = pc('shelf', 'rgba(139,115,85,0.18)', '#8b7355');
+        var sL = ST;         /* left edge */
+        var sR = W - ST;     /* right edge */
+        var sB = shY + shSpread;       /* bottom of shelf */
+        var sT = sB + ShT;             /* top of shelf */
+        var sFront = BPT;              /* front edge Z */
+        var sBack = D - shSetback;     /* back edge Z */
+        /* Front face of shelf */
+        addPoly([[sL, sB, sFront], [sR, sB, sFront], [sR, sT, sFront], [sL, sT, sFront]], cShelf[0], cShelf[1]);
+        /* Top face of shelf (visible in iso/top views) */
+        addPoly([[sL, sT, sFront], [sR, sT, sFront], [sR, sT, sBack], [sL, sT, sBack]], cShelf[0], cShelf[1]);
+        if ((ex > 1 || cm) && si === 1) addText(W/2, sT + 1.5, sFront, 'Shelf', cShelf[1], 14);
       }
     }
   }
 
-  /* ── Dimension annotations (view-specific) ── */
-  if (viewMode === 'side') {
-    /* Depth (bottom) */
-    var dimOff = TK > 0 ? -4 : TK - 4;
-    addLine(0, dimOff, 0, 0, dimOff, D, '#9a8268', 0.5);
-    addLine(0, dimOff - 1, 0, 0, dimOff + 1, 0, '#9a8268', 0.5);
-    addLine(0, dimOff - 1, D, 0, dimOff + 1, D, '#9a8268', 0.5);
-    addText(0, dimOff - 3, D / 2, D.toFixed(1) + '"', '#7a6652', 9);
-    /* Height (left) */
-    addLine(0, TK > 0 ? 0 : TK, -4, 0, H, -4, '#9a8268', 0.5);
-    addLine(0, TK > 0 ? 0 : TK, -5, 0, TK > 0 ? 0 : TK, -3, '#9a8268', 0.5);
-    addLine(0, H, -5, 0, H, -3, '#9a8268', 0.5);
-    addText(0, H / 2, -10, H.toFixed(1) + '"', '#7a6652', 9);
-  } else if (viewMode === 'top') {
-    /* Width (bottom — front edge) */
-    addLine(0, 0, -4, W, 0, -4, '#9a8268', 0.5);
-    addLine(0, 0, -5, 0, 0, -3, '#9a8268', 0.5);
-    addLine(W, 0, -5, W, 0, -3, '#9a8268', 0.5);
-    addText(W / 2, 0, -7, W.toFixed(1) + '"', '#7a6652', 9);
-    /* Depth (left) */
-    addLine(-4, 0, 0, -4, 0, D, '#9a8268', 0.5);
-    addLine(-5, 0, 0, -3, 0, 0, '#9a8268', 0.5);
-    addLine(-5, 0, D, -3, 0, D, '#9a8268', 0.5);
-    addText(-10, 0, D / 2, D.toFixed(1) + '"', '#7a6652', 9);
-  } else {
-    /* Front + ISO: Width (bottom) + Height (left) */
-    var dimY = TK > 0 ? -4 : TK - 4;
-    addLine(0, dimY, 0, W, dimY, 0, '#9a8268', 0.5);
-    addLine(0, dimY - 1, 0, 0, dimY + 1, 0, '#9a8268', 0.5);
-    addLine(W, dimY - 1, 0, W, dimY + 1, 0, '#9a8268', 0.5);
-    addText(W / 2, dimY - 3, 0, W.toFixed(1) + '"', '#7a6652', 9);
-    addLine(-4, TK > 0 ? 0 : TK, 0, -4, H, 0, '#9a8268', 0.5);
-    addLine(-5, TK > 0 ? 0 : TK, 0, -3, TK > 0 ? 0 : TK, 0, '#9a8268', 0.5);
-    addLine(-5, H, 0, -3, H, 0, '#9a8268', 0.5);
-    addText(-10, H / 2, 0, H.toFixed(1) + '"', '#7a6652', 9);
-    if (viewMode === 'iso') {
-      addLine(W + 2, H, 0, W + 2, H, D, '#9a8268', 0.5);
-      addText(W + 2, H, D / 2, D.toFixed(1) + '"', '#7a6652', 9);
-    }
+  /* ── Dimension annotations (universal — works for any orbit/tilt) ── */
+  var dimY = TK > 0 ? -4 : TK - 4;
+  /* Width line (along bottom front edge) */
+  addLine(0, dimY, 0, W, dimY, 0, '#9a8268', 0.5);
+  addLine(0, dimY - 1, 0, 0, dimY + 1, 0, '#9a8268', 0.5);
+  addLine(W, dimY - 1, 0, W, dimY + 1, 0, '#9a8268', 0.5);
+  addText(W / 2, dimY - 3, 0, W.toFixed(1) + '"', '#7a6652', 16);
+  /* Height line (along front-left vertical edge) */
+  addLine(-4, TK > 0 ? 0 : TK, 0, -4, H, 0, '#9a8268', 0.5);
+  addLine(-5, TK > 0 ? 0 : TK, 0, -3, TK > 0 ? 0 : TK, 0, '#9a8268', 0.5);
+  addLine(-5, H, 0, -3, H, 0, '#9a8268', 0.5);
+  addText(-10, H / 2, 0, H.toFixed(1) + '"', '#7a6652', 16);
+  /* Depth line (along top edge, visible when tilted) */
+  if (elev > 0.08) {
+    var depthSide = sinT >= 0 ? W + 2 : -2; /* place on the visible side */
+    addLine(depthSide, H, 0, depthSide, H, D, '#9a8268', 0.5);
+    addText(depthSide, H, D / 2, D.toFixed(1) + '"', '#7a6652', 16);
   }
+
+  /* ── Callout lines from pill positions to cabinet parts ── */
+  var callouts = [];
+  /* Pill edge positions (% of SVG canvas) → cabinet anchor points (3D→2D projected) */
+  /* Helper: callout py shorthand (same as py but clearer intent) */
+  function cpy(x, y, z) { return py(x, y, z); }
+  var calloutDefs = [
+    { id: "cabinet-dimensions", fromX: svgW * 0.50, fromY: svgH * 0.08, toX: px(W/2, 0), toY: cpy(W/2, H, 0) },
+    { id: "face-frame",         fromX: svgW * 0.06, fromY: svgH * 0.15, toX: px(0, 0),   toY: cpy(0, H/2, 0) },
+    { id: "shelves",            fromX: svgW * 0.04, fromY: svgH * 0.32, toX: px(ST, BPT), toY: cpy(ST, (TK+BT+H)/2, BPT) },
+    { id: "pulls",              fromX: svgW * 0.04, fromY: svgH * 0.52, toX: px(W*0.3, -0.3), toY: cpy(W*0.3, H*0.5, -0.3) },
+    { id: "drawers",            fromX: svgW * 0.04, fromY: svgH * 0.68, toX: px(0, -0.3), toY: cpy(0, TK+BT+3, -0.3) },
+    { id: "material-thickness", fromX: svgW * 0.06, fromY: svgH * 0.90, toX: px(ST/2, D/2), toY: cpy(ST/2, H/2, D/2) },
+    { id: "toe-kick",           fromX: svgW * 0.50, fromY: svgH * 0.96, toX: px(W/2, 0), toY: cpy(W/2, TK/2, 0) },
+    { id: "tolerances",         fromX: svgW * 0.94, fromY: svgH * 0.90, toX: px(W, D),    toY: cpy(W, 0, D) },
+    { id: "doors",              fromX: svgW * 0.96, fromY: svgH * 0.25, toX: px(W, -0.3), toY: cpy(W, H*0.6, -0.3) },
+    { id: "hinges",             fromX: svgW * 0.96, fromY: svgH * 0.42, toX: px(W, -0.1), toY: cpy(W, H*0.4, -0.1) },
+    { id: "stretchers-frame",   fromX: svgW * 0.96, fromY: svgH * 0.60, toX: px(W, 0),    toY: cpy(W, H - 1, 0) }
+  ];
+  calloutDefs.forEach(function(c) {
+    /* Only draw if pill is visible */
+    var pillEl = document.getElementById("pill-" + c.id);
+    if (!pillEl || pillEl.classList.contains("pill-hidden")) return;
+    callouts.push('<line x1="' + c.fromX + '" y1="' + c.fromY + '" x2="' + c.toX + '" y2="' + c.toY + '" stroke="#c4ad8c" stroke-width="0.5" stroke-dasharray="3,3" opacity="0.5"/>');
+    callouts.push('<circle cx="' + c.toX + '" cy="' + c.toY + '" r="2.5" fill="#c4ad8c" opacity="0.5"/>');
+  });
 
   /* Build SVG (zoom adjusts viewBox) */
   var vbW = svgW / zoom, vbH = svgH / zoom;
   var vbX = (svgW - vbW) / 2, vbY = (svgH - vbH) / 2;
   var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + vbX + ' ' + vbY + ' ' + vbW + ' ' + vbH + '" preserveAspectRatio="xMidYMid meet">';
-  svg += fills.join('');
+  /* Sort fills by depth (painter's algorithm: far first, near last) */
+  fills.sort(function(a, b) { return b.d - a.d; });
+  svg += fills.map(function(f) { return f.s; }).join('');
+  svg += callouts.join('');
   svg += lines.join('');
   svg += '</svg>';
 
   document.getElementById("cabinetSvgWrap").innerHTML = svg;
 
+  /* Position dimension adjustment pills near annotations */
+  setTimeout(updateDimPills, 0);
+
   /* Update dimension readout */
   var preset = currentPresetName || "Custom";
   document.getElementById("viewportDims").textContent = preset + ' \u00B7 ' + W + '" W \u00D7 ' + H + '" H \u00D7 ' + D + '" D';
+  } catch(e) {
+    console.error('renderCabinetSVG error:', e);
+    var wrap = document.getElementById("cabinetSvgWrap");
+    if (wrap) wrap.innerHTML = '<div style="color:#ff6b6b;background:#2a1a1a;padding:20px;font-size:13px;border-radius:8px;margin:20px;font-family:monospace;white-space:pre-wrap;">RENDER ERROR: ' + e.message + '\n\nStack: ' + (e.stack || 'N/A') + '</div>';
+  }
 }
 
 /* ── Master Update (validation + cut list + cost + visibility + lineage + zones) ── */
@@ -3248,36 +4111,97 @@ function initState() {
   document.getElementById("paramCount").textContent = totalParams + " parameters";
 }
 
-/* ── Rendering ── */
+/* ── Pill Position Map ── */
+var PILL_POSITIONS = {
+  "cabinet-dimensions": { top: "8%",  left: "50%", transform: "translateX(-50%)", panelDir: "below" },
+  "face-frame":         { top: "15%", left: "12%",  panelDir: "right" },
+  "shelves":            { top: "32%", left: "12%",  panelDir: "right" },
+  "pulls":              { top: "55%", left: "12%",  panelDir: "right" },
+  "drawers":            { top: "68%", left: "12%",  panelDir: "right" },
+  "material-thickness": { bottom: "10%", left: "12%", panelDir: "above" },
+  "toe-kick":           { bottom: "4%", left: "50%", transform: "translateX(-50%)", panelDir: "above" },
+  "tolerances":         { bottom: "10%", right: "6%", panelDir: "above" },
+  "doors":              { top: "25%", right: "4%", panelDir: "left" },
+  "hinges":             { top: "42%", right: "4%", panelDir: "left" },
+  "stretchers-frame":   { top: "60%", right: "4%", panelDir: "left" }
+};
+
+/* Short pill labels for compact display */
+var PILL_LABELS = {
+  "cabinet-dimensions": "Dimensions",
+  "face-frame":         "Frame",
+  "shelves":            "Shelves",
+  "pulls":              "Pulls",
+  "drawers":            "Drawers",
+  "material-thickness": "Material",
+  "toe-kick":           "Toe Kick",
+  "tolerances":         "Precision",
+  "doors":              "Doors",
+  "hinges":             "Hinges",
+  "stretchers-frame":   "Stretchers"
+};
+
+/* Inline SVG icons for pills (12×12 viewBox) */
+var PILL_ICONS = {
+  "cabinet-dimensions": '<svg width="12" height="12" viewBox="0 0 12 12" style="vertical-align:-1px;margin-right:3px;"><line x1="1" y1="10" x2="11" y2="10" stroke="currentColor" stroke-width="1.2"/><line x1="1" y1="10" x2="1" y2="1" stroke="currentColor" stroke-width="1.2"/><line x1="1" y1="1" x2="3" y2="3" stroke="currentColor" stroke-width="0.8"/><line x1="11" y1="10" x2="9" y2="8" stroke="currentColor" stroke-width="0.8"/><text x="6" y="8" fill="currentColor" font-size="5" text-anchor="middle">W</text></svg>',
+  "face-frame":         '<svg width="12" height="12" viewBox="0 0 12 12" style="vertical-align:-1px;margin-right:3px;"><rect x="1" y="1" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.2"/><rect x="3" y="3" width="6" height="6" fill="none" stroke="currentColor" stroke-width="0.7"/></svg>',
+  "shelves":            '<svg width="12" height="12" viewBox="0 0 12 12" style="vertical-align:-1px;margin-right:3px;"><rect x="1" y="1" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1"/><line x1="2" y1="5" x2="10" y2="5" stroke="currentColor" stroke-width="0.8"/><line x1="2" y1="8" x2="10" y2="8" stroke="currentColor" stroke-width="0.8"/></svg>',
+  "pulls":              '<svg width="12" height="12" viewBox="0 0 12 12" style="vertical-align:-1px;margin-right:3px;"><circle cx="6" cy="4" r="1.5" fill="currentColor"/><line x1="6" y1="5.5" x2="6" y2="10" stroke="currentColor" stroke-width="1.2"/></svg>',
+  "drawers":            '<svg width="12" height="12" viewBox="0 0 12 12" style="vertical-align:-1px;margin-right:3px;"><rect x="1" y="1" width="10" height="3" rx="0.5" fill="none" stroke="currentColor" stroke-width="0.8"/><rect x="1" y="5" width="10" height="3" rx="0.5" fill="none" stroke="currentColor" stroke-width="0.8"/><rect x="1" y="9" width="10" height="2.5" rx="0.5" fill="none" stroke="currentColor" stroke-width="0.8"/><circle cx="6" cy="2.5" r="0.6" fill="currentColor"/><circle cx="6" cy="6.5" r="0.6" fill="currentColor"/><circle cx="6" cy="10.2" r="0.6" fill="currentColor"/></svg>',
+  "material-thickness": '<svg width="12" height="12" viewBox="0 0 12 12" style="vertical-align:-1px;margin-right:3px;"><rect x="2" y="2" width="8" height="8" fill="none" stroke="currentColor" stroke-width="0.8"/><rect x="3" y="3" width="6" height="6" fill="none" stroke="currentColor" stroke-width="0.5" stroke-dasharray="1,1"/><line x1="2" y1="6" x2="3" y2="6" stroke="currentColor" stroke-width="0.8"/><text x="7" y="8" fill="currentColor" font-size="4" text-anchor="middle">T</text></svg>',
+  "toe-kick":           '<svg width="12" height="12" viewBox="0 0 12 12" style="vertical-align:-1px;margin-right:3px;"><path d="M1,11 L1,4 L11,4 L11,11" fill="none" stroke="currentColor" stroke-width="1"/><path d="M3,11 L3,8 L9,8 L9,11" fill="none" stroke="currentColor" stroke-width="0.7"/></svg>',
+  "tolerances":         '<svg width="12" height="12" viewBox="0 0 12 12" style="vertical-align:-1px;margin-right:3px;"><circle cx="6" cy="6" r="4.5" fill="none" stroke="currentColor" stroke-width="0.8"/><line x1="6" y1="1.5" x2="6" y2="4" stroke="currentColor" stroke-width="0.8"/><circle cx="6" cy="6" r="0.8" fill="currentColor"/></svg>',
+  "doors":              '<svg width="12" height="12" viewBox="0 0 12 12" style="vertical-align:-1px;margin-right:3px;"><rect x="1" y="1" width="4.5" height="10" rx="0.5" fill="none" stroke="currentColor" stroke-width="0.8"/><rect x="6.5" y="1" width="4.5" height="10" rx="0.5" fill="none" stroke="currentColor" stroke-width="0.8"/><circle cx="5" cy="6" r="0.6" fill="currentColor"/><circle cx="7" cy="6" r="0.6" fill="currentColor"/></svg>',
+  "hinges":             '<svg width="12" height="12" viewBox="0 0 12 12" style="vertical-align:-1px;margin-right:3px;"><rect x="1" y="2" width="4" height="8" fill="none" stroke="currentColor" stroke-width="0.7"/><circle cx="5" cy="4" r="1" fill="currentColor"/><circle cx="5" cy="8" r="1" fill="currentColor"/><line x1="6" y1="2" x2="6" y2="10" stroke="currentColor" stroke-width="0.8"/></svg>',
+  "stretchers-frame":   '<svg width="12" height="12" viewBox="0 0 12 12" style="vertical-align:-1px;margin-right:3px;"><line x1="1" y1="3" x2="11" y2="3" stroke="currentColor" stroke-width="1.2"/><line x1="1" y1="6" x2="11" y2="6" stroke="currentColor" stroke-width="1.2"/><line x1="1" y1="9" x2="11" y2="9" stroke="currentColor" stroke-width="1.2"/></svg>'
+};
+
+/* Currently open panel ID (only one open at a time) */
+var openPanelId = null;
+
+/* ── Rendering: Floating Contextual Groups ── */
 function renderGroups() {
-  const container = document.getElementById("controlsPanel");
+  var viewport = document.getElementById("viewportPanel");
 
-  SLIDER_GROUPS.forEach(group => {
-    /* Group header */
-    const header = document.createElement("div");
-    header.className = "group-header" + (group.collapsed ? "" : " expanded");
-    header.innerHTML =
-      '<span class="arrow">&#9654;</span>' +
-      '<span class="group-label">' + group.label + '</span>' +
-      '<span class="group-count">' + group.sliders.length + '</span>';
+  SLIDER_GROUPS.forEach(function(group) {
+    var pos = PILL_POSITIONS[group.id];
+    if (!pos) return;
 
-    /* Group body */
-    const body = document.createElement("div");
-    body.className = "group-body" + (group.collapsed ? "" : " expanded");
+    /* ── Pill ── */
+    var pill = document.createElement("div");
+    pill.className = "ctx-pill";
+    pill.id = "pill-" + group.id;
+    var icon = PILL_ICONS[group.id] || '';
+    var labelText = PILL_LABELS[group.id] || group.label;
+    pill.innerHTML = icon + '<span class="pill-label">' + labelText + '</span>';
+    pill.title = group.label + " (" + group.sliders.length + " controls)";
 
-    /* Toggle */
-    header.addEventListener("click", function() {
-      header.classList.toggle("expanded");
-      body.classList.toggle("expanded");
-      /* If group was rule-hidden, user click overrides to show it */
-      body.classList.remove("group-hidden");
-    });
+    /* Apply position */
+    if (pos.top) pill.style.top = pos.top;
+    if (pos.bottom) pill.style.bottom = pos.bottom;
+    if (pos.left) pill.style.left = pos.left;
+    if (pos.right) pill.style.right = pos.right;
+    if (pos.transform) pill.style.transform = pos.transform;
+
+    /* ── Panel ── */
+    var panel = document.createElement("div");
+    panel.className = "ctx-panel";
+    panel.id = "panel-" + group.id;
+
+    /* Panel title */
+    var title = document.createElement("div");
+    title.className = "panel-title";
+    title.textContent = group.label;
+    panel.appendChild(title);
+
+    /* Position panel relative to pill based on panelDir */
+    positionPanel(panel, pos);
 
     /* Track which linked groups have had their bar inserted */
     var insertedLinkBars = {};
 
     /* Slider rows */
-    group.sliders.forEach(s => {
+    group.sliders.forEach(function(s) {
       /* Insert link bar before the first slider of a linked group */
       var lg = getLinkedGroup(s.key);
       if (lg && lg.groupId === group.id && !insertedLinkBars[lg.id]) {
@@ -3289,28 +4213,28 @@ function renderGroups() {
         linkBtn.className = "link-btn linked";
         linkBtn.id = "link-btn-" + lg.id;
         linkBtn.innerHTML = '<span class="link-icon">\uD83D\uDD17</span> Link ' + lg.label;
-        linkBtn.title = "Linked — all values move together. Click to unlink.";
+        linkBtn.title = "Linked \u2014 all values move together. Click to unlink.";
         linkBtn.addEventListener("click", (function(lgId) {
           return function(e) { e.stopPropagation(); toggleLinked(lgId); };
         })(lg.id));
         linkBar.appendChild(linkBtn);
-        body.appendChild(linkBar);
+        panel.appendChild(linkBar);
       }
 
-      const row = document.createElement("div");
+      var row = document.createElement("div");
       row.className = "slider-row";
       row.setAttribute("data-key", s.key);
 
       /* Label */
-      const label = document.createElement("span");
+      var label = document.createElement("span");
       label.className = "slider-label";
       label.textContent = formatLabel(s.key);
       label.title = s.key;
 
       /* Range */
-      const rangeWrap = document.createElement("div");
+      var rangeWrap = document.createElement("div");
       rangeWrap.className = "slider-range";
-      const range = document.createElement("input");
+      var range = document.createElement("input");
       range.type = "range";
       range.min = s.min;
       range.max = s.max;
@@ -3319,26 +4243,26 @@ function renderGroups() {
       rangeWrap.appendChild(range);
 
       /* Number + Steppers */
-      const numWrap = document.createElement("div");
+      var numWrap = document.createElement("div");
       numWrap.className = "slider-value";
 
-      const stepperWrap = document.createElement("div");
+      var stepperWrap = document.createElement("div");
       stepperWrap.className = "stepper-wrap";
 
-      const stepDown = document.createElement("button");
+      var stepDown = document.createElement("button");
       stepDown.type = "button";
       stepDown.className = "step-btn";
       stepDown.textContent = "\u2212";
       stepDown.title = "Decrease by " + s.step;
 
-      const num = document.createElement("input");
+      var num = document.createElement("input");
       num.type = "number";
       num.min = s.min;
       num.max = s.max;
       num.step = s.step;
       num.value = Number(s.default).toFixed(s.decimals);
 
-      const stepUp = document.createElement("button");
+      var stepUp = document.createElement("button");
       stepUp.type = "button";
       stepUp.className = "step-btn";
       stepUp.textContent = "+";
@@ -3386,28 +4310,30 @@ function renderGroups() {
       /* Sync: range → number (+ linked propagation) */
       range.addEventListener("input", function() {
         pushUndo();
-        const v = parseFloat(range.value);
+        var v = parseFloat(range.value);
         state[s.key] = v;
         num.value = v.toFixed(s.decimals);
         var slg = getLinkedGroup(s.key);
         if (slg) onLinkedSliderChange(slg.id, s.key, v);
+        updateAll();
       });
 
       /* Sync: number → range (+ linked propagation) */
       num.addEventListener("input", function() {
         pushUndo();
-        const raw = parseFloat(num.value);
+        var raw = parseFloat(num.value);
         if (!isNaN(raw)) {
           state[s.key] = raw;
           range.value = raw;
           var slg = getLinkedGroup(s.key);
           if (slg) onLinkedSliderChange(slg.id, s.key, raw);
+          updateAll();
         }
       });
 
       /* Clamp on blur */
       num.addEventListener("blur", function() {
-        let v = parseFloat(num.value);
+        var v = parseFloat(num.value);
         if (isNaN(v)) v = s.default;
         v = Math.min(s.max, Math.max(s.min, v));
         state[s.key] = v;
@@ -3419,16 +4345,90 @@ function renderGroups() {
       row.appendChild(label);
       row.appendChild(rangeWrap);
       row.appendChild(numWrap);
-      body.appendChild(row);
+      panel.appendChild(row);
     });
 
-    container.appendChild(header);
-    container.appendChild(body);
+    /* Pill click: toggle this panel, close others */
+    pill.addEventListener("click", function(e) {
+      e.stopPropagation();
+      var wasOpen = panel.classList.contains("open");
+      closeAllPanels();
+      if (!wasOpen) {
+        panel.classList.add("open");
+        pill.classList.add("expanded");
+        pill.classList.remove("collapsed");
+        openPanelId = group.id;
+        resetPanelAutoClose();
+        resetPillCollapseTimer();
+      }
+    });
+
+    /* Prevent clicks inside panel from closing it, reset timer on interaction */
+    panel.addEventListener("click", function(e) { e.stopPropagation(); resetPanelAutoClose(); resetPillCollapseTimer(); });
+    panel.addEventListener("input", function() { resetPanelAutoClose(); resetPillCollapseTimer(); });
+
+    viewport.appendChild(pill);
+    viewport.appendChild(panel);
 
     /* Store reference for smart show/hide */
-    groupElements[group.id] = { header: header, body: body };
+    groupElements[group.id] = { pill: pill, panel: panel };
   });
+
+  /* Click outside closes all panels */
+  document.addEventListener("click", function() { closeAllPanels(); });
 }
+
+/* Position the panel relative to its pill's direction */
+function positionPanel(panel, pos) {
+  if (pos.panelDir === "below") {
+    if (pos.top) panel.style.top = "calc(" + pos.top + " + 28px)";
+    if (pos.left) { panel.style.left = pos.left; panel.style.transform = "translateX(-50%)"; }
+    if (pos.right) panel.style.right = pos.right;
+  } else if (pos.panelDir === "above") {
+    if (pos.bottom) panel.style.bottom = "calc(" + pos.bottom + " + 28px)";
+    if (pos.left) panel.style.left = pos.left;
+    if (pos.right) panel.style.right = pos.right;
+    if (pos.transform) panel.style.transform = pos.transform;
+  } else if (pos.panelDir === "right") {
+    if (pos.top) panel.style.top = pos.top;
+    if (pos.bottom) panel.style.bottom = pos.bottom;
+    panel.style.left = "calc(" + (pos.left || "4%") + " + 80px)";
+  } else if (pos.panelDir === "left") {
+    if (pos.top) panel.style.top = pos.top;
+    if (pos.bottom) panel.style.bottom = pos.bottom;
+    panel.style.right = "calc(" + (pos.right || "4%") + " + 80px)";
+  }
+}
+
+/* Auto-close timer for panels (closes after 4 seconds of inactivity) */
+var panelAutoCloseTimer = null;
+function resetPanelAutoClose() {
+  if (panelAutoCloseTimer) clearTimeout(panelAutoCloseTimer);
+  panelAutoCloseTimer = setTimeout(function() { closeAllPanels(); }, 4000);
+}
+
+/* Close all open panels */
+function closeAllPanels() {
+  if (panelAutoCloseTimer) { clearTimeout(panelAutoCloseTimer); panelAutoCloseTimer = null; }
+  document.querySelectorAll(".ctx-panel.open").forEach(function(p) { p.classList.remove("open"); });
+  document.querySelectorAll(".ctx-pill.expanded").forEach(function(p) { p.classList.remove("expanded"); });
+  openPanelId = null;
+  resetPillCollapseTimer();
+}
+
+/* Pill collapse timer — shrink to icon-only after 3 seconds of inactivity */
+var pillCollapseTimer = null;
+function resetPillCollapseTimer() {
+  if (pillCollapseTimer) clearTimeout(pillCollapseTimer);
+  /* Expand all pills immediately */
+  document.querySelectorAll(".ctx-pill.collapsed").forEach(function(p) { p.classList.remove("collapsed"); });
+  pillCollapseTimer = setTimeout(function() {
+    document.querySelectorAll(".ctx-pill").forEach(function(p) {
+      if (!p.classList.contains("expanded")) p.classList.add("collapsed");
+    });
+  }, 3000);
+}
+/* Initial pill collapse timer is started after renderGroups() */
 
 /* CamelCase key → readable label: "DoorOverlayLeft" → "Door Overlay Left" */
 function formatLabel(key) {
@@ -3955,26 +4955,29 @@ function csvEscape(str) {
 initState();
 renderPresetDropdown();
 
-/* Add lineage indicator after preset dropdown */
+/* Add lineage indicator after preset dropdown in header */
 (function() {
-  var presetSection = document.querySelector(".preset-section");
-  if (presetSection) {
+  var presetBar = document.getElementById("topBarPreset");
+  if (presetBar) {
     var lineage = document.createElement("div");
     lineage.className = "preset-lineage";
     lineage.id = "presetLineage";
-    presetSection.appendChild(lineage);
-
-    /* Standard product pricing indicator */
+    presetBar.appendChild(lineage);
+  }
+  /* Standard product pricing indicator — append to footer */
+  var footer = document.querySelector(".action-bar");
+  if (footer) {
     var indicator = document.createElement("div");
     indicator.className = "pricing-indicator";
     indicator.id = "pricingIndicator";
-    presetSection.appendChild(indicator);
+    footer.appendChild(indicator);
   }
 })();
 
 renderHardwareSection();
 renderZoneStackSection();
 renderGroups();
+resetPillCollapseTimer(); /* Start initial pill collapse countdown */
 renderValidationContainer();
 renderCutListContainer();
 renderCostContainer();
@@ -4116,10 +5119,13 @@ function hidePricingModal() {
 loadPurchaseState();
 updateLockButtons();
 
-/* Handle ?product=<sku> URL parameter — load standard product from library */
-(function checkProductParam() {
+/* Handle ?product=<sku>&mode=customer&cat=<category> URL parameters */
+(function checkProductAndModeParams() {
   var params = new URLSearchParams(window.location.search);
   var productId = params.get("product");
+  var mode = params.get("mode");
+  var cat = params.get("cat");
+
   if (productId) {
     fetch("StandardProducts.json")
       .then(function(r) { return r.json(); })
@@ -4127,10 +5133,24 @@ updateLockButtons();
         var product = data.products[productId];
         if (product) {
           loadStandardProduct({ product: product, pricing: data.pricing });
+          /* Activate customer mode after product loads */
+          if (mode === "customer") {
+            var profileKey = cat || CATEGORY_TO_PROFILE[product.category] || "base";
+            if (CUSTOMER_PROFILES[profileKey]) {
+              activateCustomerMode(profileKey);
+            }
+          }
         }
       })
       .catch(function(err) { console.warn("Could not load standard product:", err); });
-    /* Clean URL */
+  } else if (mode === "customer" && cat && CUSTOMER_PROFILES[cat]) {
+    /* No product — just activate customer mode with category preset */
+    applyPreset(CUSTOMER_PROFILES[cat].preset);
+    activateCustomerMode(cat);
+  }
+
+  /* Clean URL */
+  if (productId || mode) {
     var cleanUrl = window.location.pathname + window.location.hash;
     window.history.replaceState({}, document.title, cleanUrl);
   }
@@ -4251,14 +5271,18 @@ document.getElementById("btnReset").addEventListener("click", function() {
   presetBaseState = null;
   currentStandardProduct = null;
   standardProductBaseState = null;
-  document.getElementById("presetSelect").value = "Custom";
+  var ps = document.getElementById("presetSelect");
+  if (ps) ps.value = "Custom";
   resetHardwareDropdowns();
   updateAll();
 });
-document.getElementById("presetSelect").addEventListener("change", function() {
-  applyPreset(this.value);
-});
-document.getElementById("controlsPanel").addEventListener("input", updateAll);
+var presetSelectEl = document.getElementById("presetSelect");
+if (presetSelectEl) {
+  presetSelectEl.addEventListener("change", function() {
+    applyPreset(this.value);
+  });
+}
+/* Floating panels use individual event listeners — no global controlsPanel input needed */
 
 /* Undo/Redo */
 document.getElementById("btnUndo").addEventListener("click", doUndo);
@@ -4266,6 +5290,13 @@ document.getElementById("btnRedo").addEventListener("click", doRedo);
 document.addEventListener("keydown", function(e) {
   if (e.ctrlKey && e.key === "z") { e.preventDefault(); doUndo(); }
   if (e.ctrlKey && e.key === "y") { e.preventDefault(); doRedo(); }
+});
+
+/* Details drawer toggle */
+document.getElementById("btnDetails").addEventListener("click", function() {
+  var drawer = document.getElementById("footerSections");
+  var isOpen = drawer.classList.toggle("open");
+  this.classList.toggle("active", isOpen);
 });
 
 /* ── Analytics (lightweight event tracking) ── */

@@ -364,6 +364,16 @@ var allProducts = [];
 var activeCategory = "all";
 var searchQuery = "";
 
+/* Map library categories to customer profile keys */
+var CATEGORY_TO_PROFILE = {
+  "Kitchen": "base",
+  "Bathroom": "vanity",
+  "Bedroom": "closet",
+  "Living": "base",
+  "Office": "office",
+  "Utility": "garage"
+};
+
 /* ── Load catalog ── */
 fetch("StandardProducts.json")
   .then(function(r) { return r.json(); })
@@ -474,7 +484,7 @@ function renderProducts() {
               '<span class="product-price">$' + p.standardPrice.toFixed(2) + '</span>' +
               '<span class="product-material-cost">Material: $' + p.materialCost.toFixed(2) + '</span>' +
             '</div>' +
-            '<a href="configurator.html?product=' + p.sku + '" class="product-configure-btn">Configure</a>' +
+            '<a href="configurator.html?product=' + p.sku + '&mode=customer&cat=' + (CATEGORY_TO_PROFILE[p.category] || 'base') + '" class="product-configure-btn">Configure</a>' +
           '</div>' +
         '</div>' +
       '</div>';
