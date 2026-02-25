@@ -1622,8 +1622,10 @@ function computeCutList() {
   var interiorW = Math.max(0, W - 2 * ST);
   var parts = [];
 
-  parts.push({ name: "Left Side",  qty: 1, w: D, h: H, t: ST });
-  parts.push({ name: "Right Side", qty: 1, w: D, h: H, t: ST });
+  var tkd = (TK > 0) ? (state.ToeKickDepth || 3) : 0;
+  var sideNotch = (TK > 0 && tkd > 0) ? { w: tkd, h: TK } : null;
+  parts.push({ name: "Left Side",  qty: 1, w: D, h: H, t: ST, notch: sideNotch });
+  parts.push({ name: "Right Side", qty: 1, w: D, h: H, t: ST, notch: sideNotch });
   parts.push({ name: "Bottom",     qty: 1, w: interiorW, h: D, t: BT });
 
   var backH = Math.max(0, H - TK - BT);
@@ -2356,7 +2358,11 @@ function updateCutList() {
     '<tr><th>Part</th><th>Qty</th><th>W</th><th>H</th><th>T</th><th>Material</th></tr>';
 
   parts.forEach(function(p) {
-    html += '<tr><td class="part-name">' + p.name + '</td>' +
+    var nameCol = p.name;
+    if (p.notch) {
+      nameCol += ' <span style="color:#e67e22;font-size:10px">(notch ' + p.notch.w.toFixed(2) + '"\u00D7' + p.notch.h.toFixed(2) + '")</span>';
+    }
+    html += '<tr><td class="part-name">' + nameCol + '</td>' +
       '<td>' + p.qty + '</td>' +
       '<td>' + p.w.toFixed(3) + '"</td>' +
       '<td>' + p.h.toFixed(3) + '"</td>' +
@@ -2783,28 +2789,55 @@ function renderCabinetSVG() {
   }
 
   /* ── Cabinet body ── */
+  var tkd = (TK > 0) ? (state.ToeKickDepth || 3) : 0;
+
   /* Front face */
   addPoly([[0,TK,0],[W,TK,0],[W,H,0],[0,H,0]], '#0d0d0d', '#444');
   /* Top face */
   addPoly([[0,H,0],[W,H,0],[W,H,D],[0,H,D]], '#141414', '#444');
-  /* Right side face */
-  addPoly([[W,TK,0],[W,TK,D],[W,H,D],[W,H,0]], '#111', '#444');
+  /* Right side face — L-shaped with toe kick notch */
+  if (TK > 0 && tkd > 0) {
+    addPoly([[W,0,tkd],[W,0,D],[W,H,D],[W,H,0],[W,TK,0],[W,TK,tkd]], '#111', '#444');
+  } else {
+    addPoly([[W,0,0],[W,0,D],[W,H,D],[W,H,0]], '#111', '#444');
+  }
 
   /* ── Toe kick recess ── */
   if (TK > 0) {
-    var tkd = state.ToeKickDepth || 3;
-    /* Front toe kick face */
+    /* Front toe kick face (recessed) */
     addPoly([[ST, 0, tkd], [W - ST, 0, tkd], [W - ST, TK, tkd], [ST, TK, tkd]], '#080808', '#2a2a2a');
     /* Left toe kick return */
     addPoly([[ST, 0, 0], [ST, 0, tkd], [ST, TK, tkd], [ST, TK, 0]], '#0a0a0a', '#2a2a2a');
     /* Right toe kick return */
     addPoly([[W - ST, 0, 0], [W - ST, 0, tkd], [W - ST, TK, tkd], [W - ST, TK, 0]], '#0a0a0a', '#2a2a2a');
+    /* Right side panel — front strip below toe kick (visible between outer edge and return) */
+    addPoly([[W - ST, 0, 0], [W, 0, 0], [W, TK, 0], [W - ST, TK, 0]], '#0d0d0d', '#2a2a2a');
+    /* Right side panel — bottom strip below toe kick (top of notch) */
+    addPoly([[W, 0, tkd], [W, TK, tkd], [W - ST, TK, tkd], [W - ST, 0, tkd]], '#0a0a0a', '#2a2a2a');
+    /* Left side panel — front strip below toe kick */
+    addPoly([[0, 0, 0], [ST, 0, 0], [ST, TK, 0], [0, TK, 0]], '#0d0d0d', '#2a2a2a');
   }
 
   /* ── Side panels (edges visible) ── */
-  addLine(0, TK, 0, 0, H, 0, '#555', 1.2);
-  addLine(W, TK, 0, W, H, 0, '#555', 1.2);
-  addLine(0, TK, D, 0, H, D, '#444', 0.6);
+  if (TK > 0 && tkd > 0) {
+    /* Left front edge — full height */
+    addLine(0, 0, 0, 0, H, 0, '#555', 1.2);
+    /* Right front edge — full height */
+    addLine(W, 0, 0, W, TK, 0, '#555', 1.2);
+    addLine(W, TK, 0, W, H, 0, '#555', 1.2);
+    /* Left back edge — full height */
+    addLine(0, 0, D, 0, H, D, '#444', 0.6);
+    /* Toe kick notch edges on right side */
+    addLine(W, 0, 0, W, 0, tkd, '#555', 0.8);
+    addLine(W, 0, tkd, W, TK, tkd, '#555', 0.8);
+    addLine(W, TK, tkd, W, TK, 0, '#555', 0.8);
+    /* Bottom edge of right side behind toe kick */
+    addLine(W, 0, tkd, W, 0, D, '#444', 0.6);
+  } else {
+    addLine(0, 0, 0, 0, H, 0, '#555', 1.2);
+    addLine(W, 0, 0, W, H, 0, '#555', 1.2);
+    addLine(0, 0, D, 0, H, D, '#444', 0.6);
+  }
 
   /* ── Face Frame ── */
   var ffSW = state.FaceFrameStileWidth || 0;
@@ -3572,7 +3605,7 @@ function generateDXF() {
     var k = p.t.toFixed(3);
     if (!byThick[k]) byThick[k] = [];
     for (var i = 0; i < p.qty; i++) {
-      byThick[k].push({ name: p.name + (p.qty > 1 ? '_' + (i + 1) : ''), w: p.w, h: p.h });
+      byThick[k].push({ name: p.name + (p.qty > 1 ? '_' + (i + 1) : ''), w: p.w, h: p.h, notch: p.notch || null });
     }
   });
 
@@ -3598,7 +3631,11 @@ function generateDXF() {
       }
 
       /* Part outline on CUT layer */
-      addRect(lines, curX, curY, part.w, part.h, 'CUT');
+      if (part.notch) {
+        addLShape(lines, curX, curY, part.w, part.h, part.notch.w, part.notch.h, 'CUT');
+      } else {
+        addRect(lines, curX, curY, part.w, part.h, 'CUT');
+      }
 
       /* Part label on ENGRAVE layer */
       addText(lines, part.name, curX + 0.25, curY + 0.5, 'ENGRAVE', 0.75);
@@ -3644,6 +3681,19 @@ function addRect(lines, x, y, w, h, layer) {
   lines.push('10', String(x),       '20', String(y + h));
 }
 
+/* L-shaped polyline: rectangle with notch cut from bottom-left corner.
+   Notch: nw wide × nh tall. Part oriented: width=depth, height=height.
+   Bottom-left = front-bottom of side panel. */
+function addLShape(lines, x, y, w, h, nw, nh, layer) {
+  lines.push('0', 'LWPOLYLINE', '8', layer, '90', '6', '70', '1');
+  lines.push('10', String(x),       '20', String(y + nh));  /* above notch */
+  lines.push('10', String(x + nw),  '20', String(y + nh));  /* notch inner corner */
+  lines.push('10', String(x + nw),  '20', String(y));        /* notch bottom */
+  lines.push('10', String(x + w),   '20', String(y));        /* bottom-right */
+  lines.push('10', String(x + w),   '20', String(y + h));    /* top-right */
+  lines.push('10', String(x),       '20', String(y + h));    /* top-left */
+}
+
 function addText(lines, text, x, y, layer, height) {
   lines.push('0', 'TEXT', '8', layer);
   lines.push('10', String(x), '20', String(y), '30', '0');
@@ -3664,9 +3714,10 @@ function generateCSV() {
 
   /* Panel schedule */
   rows.push('PANEL SCHEDULE');
-  rows.push('Part_Name,Qty,Width_in,Height_in,Thickness_in,Material');
+  rows.push('Part_Name,Qty,Width_in,Height_in,Thickness_in,Material,Notch');
   parts.forEach(function(p) {
-    rows.push(csvEscape(p.name) + ',' + p.qty + ',' + p.w.toFixed(3) + ',' + p.h.toFixed(3) + ',' + p.t.toFixed(3) + ',' + csvEscape(thicknessLabel(p.t) + ' Plywood'));
+    var notchStr = p.notch ? p.notch.w.toFixed(3) + 'x' + p.notch.h.toFixed(3) : '';
+    rows.push(csvEscape(p.name) + ',' + p.qty + ',' + p.w.toFixed(3) + ',' + p.h.toFixed(3) + ',' + p.t.toFixed(3) + ',' + csvEscape(thicknessLabel(p.t) + ' Plywood') + ',' + notchStr);
   });
   rows.push('');
 
