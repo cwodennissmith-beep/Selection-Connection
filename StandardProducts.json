@@ -115,7 +115,7 @@
     "SP-006": {
       "name": "Pantry Tower 24x84",
       "sku": "SP-006",
-      "category": "Kitchen",
+      "category": "Pantry",
       "description": "Tall 84\" pantry tower. 24\" wide, 5 shelves. Ideal for dry goods storage.",
       "dimensions": { "Width": 24, "Height": 84, "Depth": 24 },
       "chassisPreset": "Pantry Tower",
@@ -320,6 +320,106 @@
       "dateAdded": "2026-02-25",
       "active": true,
       "tags": ["desk", "pedestal", "office", "drawers"]
+    },
+    "SP-016": {
+      "name": "Pantry 18x84",
+      "sku": "SP-016",
+      "category": "Pantry",
+      "description": "Narrow 18\" pantry tower. 84\" tall, 5 shelves. Fits tight kitchen layouts.",
+      "dimensions": { "Width": 18, "Height": 84, "Depth": 24 },
+      "chassisPreset": "Pantry Tower",
+      "hardware": { "hinge": "manual", "slide": "manual", "pull": "manual" },
+      "state": {
+        "Width": 18, "Height": 84, "Depth": 24, "NominalWidth": 18,
+        "DoorCount": 2, "DrawerCount": 0, "ShelfCount": 5,
+        "ToeKickHeight": 4, "ToeKickDepth": 3, "ShelfSetback": 0,
+        "SideThickness": 0.75, "BottomThickness": 0.75, "BackPanelThickness": 0.5
+      },
+      "materialCost": 195.00,
+      "standardPrice": 263.25,
+      "dateAdded": "2026-02-25",
+      "active": true,
+      "tags": ["pantry", "narrow", "tall", "kitchen"]
+    },
+    "SP-017": {
+      "name": "Pantry 24x90",
+      "sku": "SP-017",
+      "category": "Pantry",
+      "description": "Standard 24\" pantry tower. 90\" tall, 6 shelves. Full-height kitchen storage.",
+      "dimensions": { "Width": 24, "Height": 90, "Depth": 24 },
+      "chassisPreset": "Pantry Tower",
+      "hardware": { "hinge": "manual", "slide": "manual", "pull": "manual" },
+      "state": {
+        "Width": 24, "Height": 90, "Depth": 24, "NominalWidth": 24,
+        "DoorCount": 2, "DrawerCount": 0, "ShelfCount": 6,
+        "ToeKickHeight": 4, "ToeKickDepth": 3, "ShelfSetback": 0,
+        "SideThickness": 0.75, "BottomThickness": 0.75, "BackPanelThickness": 0.5
+      },
+      "materialCost": 238.00,
+      "standardPrice": 321.30,
+      "dateAdded": "2026-02-25",
+      "active": true,
+      "tags": ["pantry", "tall", "full-height", "kitchen"]
+    },
+    "SP-018": {
+      "name": "Pantry 30x84",
+      "sku": "SP-018",
+      "category": "Pantry",
+      "description": "Wide 30\" pantry tower. 84\" tall, 5 shelves. Extra storage width.",
+      "dimensions": { "Width": 30, "Height": 84, "Depth": 24 },
+      "chassisPreset": "Pantry Tower",
+      "hardware": { "hinge": "manual", "slide": "manual", "pull": "manual" },
+      "state": {
+        "Width": 30, "Height": 84, "Depth": 24, "NominalWidth": 30,
+        "DoorCount": 2, "DrawerCount": 0, "ShelfCount": 5,
+        "ToeKickHeight": 4, "ToeKickDepth": 3, "ShelfSetback": 0,
+        "SideThickness": 0.75, "BottomThickness": 0.75, "BackPanelThickness": 0.5
+      },
+      "materialCost": 245.00,
+      "standardPrice": 330.75,
+      "dateAdded": "2026-02-25",
+      "active": true,
+      "tags": ["pantry", "wide", "tall", "kitchen"]
+    },
+    "SP-019": {
+      "name": "Pantry 36x84",
+      "sku": "SP-019",
+      "category": "Pantry",
+      "description": "Extra-wide 36\" pantry tower. 84\" tall, 5 shelves. Maximum pantry storage.",
+      "dimensions": { "Width": 36, "Height": 84, "Depth": 24 },
+      "chassisPreset": "Pantry Tower",
+      "hardware": { "hinge": "manual", "slide": "manual", "pull": "manual" },
+      "state": {
+        "Width": 36, "Height": 84, "Depth": 24, "NominalWidth": 36,
+        "DoorCount": 2, "DrawerCount": 0, "ShelfCount": 5,
+        "ToeKickHeight": 4, "ToeKickDepth": 3, "ShelfSetback": 0,
+        "SideThickness": 0.75, "BottomThickness": 0.75, "BackPanelThickness": 0.5
+      },
+      "materialCost": 268.00,
+      "standardPrice": 361.80,
+      "dateAdded": "2026-02-25",
+      "active": true,
+      "tags": ["pantry", "extra-wide", "tall", "kitchen"]
+    },
+    "SP-020": {
+      "name": "Pantry 24x72",
+      "sku": "SP-020",
+      "category": "Pantry",
+      "description": "Short pantry cabinet. 24\" wide, 72\" tall, 4 shelves. Fits under soffits.",
+      "dimensions": { "Width": 24, "Height": 72, "Depth": 24 },
+      "chassisPreset": "Pantry Tower",
+      "hardware": { "hinge": "manual", "slide": "manual", "pull": "manual" },
+      "state": {
+        "Width": 24, "Height": 72, "Depth": 24, "NominalWidth": 24,
+        "DoorCount": 2, "DrawerCount": 0, "ShelfCount": 4,
+        "ToeKickHeight": 4, "ToeKickDepth": 3, "ShelfSetback": 0,
+        "SideThickness": 0.75, "BottomThickness": 0.75, "BackPanelThickness": 0.5
+      },
+      "materialCost": 205.00,
+      "standardPrice": 276.75,
+      "dateAdded": "2026-02-25",
+      "active": true,
+      "tags": ["pantry", "short", "soffit", "kitchen"]
     }
   }
 }

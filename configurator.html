@@ -309,45 +309,11 @@
     .vp-sep { width: 1px; height: 18px; background: #c4ad8c; margin: 0 4px; }
     .vp-explode-range, .vp-orbit-range {
       width: 60px;
-      height: 18px;
-      -webkit-appearance: none;
-      appearance: none;
-      background: transparent;
-      outline: none;
       cursor: pointer;
       vertical-align: middle;
+      accent-color: #b09872;
     }
     .vp-orbit-range { width: 50px; }
-    .vp-explode-range::-webkit-slider-runnable-track,
-    .vp-orbit-range::-webkit-slider-runnable-track {
-      height: 4px;
-      background: #556270;
-      border-radius: 2px;
-    }
-    .vp-explode-range::-moz-range-track,
-    .vp-orbit-range::-moz-range-track {
-      height: 4px;
-      background: #556270;
-      border-radius: 2px;
-    }
-    .vp-explode-range::-webkit-slider-thumb,
-    .vp-orbit-range::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 14px; height: 14px;
-      border-radius: 50%;
-      background: #e3d5be;
-      border: 1px solid #b09872;
-      cursor: pointer;
-      margin-top: -5px;
-    }
-    .vp-explode-range::-moz-range-thumb,
-    .vp-orbit-range::-moz-range-thumb {
-      width: 14px; height: 14px;
-      border-radius: 50%;
-      background: #e3d5be;
-      border: 1px solid #b09872;
-      cursor: pointer;
-    }
     .vp-zoom-label {
       font-size: 10px;
       color: #a89680;
@@ -1177,6 +1143,7 @@
       <a href="library.html" style="margin-right:16px;color:#7a6652;text-decoration:none;font-size:13px;letter-spacing:1px;">Library</a>
       <a href="lamiform.html" style="margin-right:16px;color:#7a6652;text-decoration:none;font-size:13px;letter-spacing:1px;">LamiForm</a>
       <span class="brand">Powered by PIF</span>
+      <span class="brand" style="margin-left:12px;opacity:0.5;">v1.0</span>
     </div>
   </header>
 
@@ -1334,6 +1301,8 @@
   </div>
 
 <script>
+const APP_VERSION = '1.0';
+
 /* ── Fraction utilities for woodworking dimensions ── */
 
 /**
@@ -1836,6 +1805,7 @@ var CUSTOMER_PROFILES = {
 /* Map library categories to customer profile keys */
 var CATEGORY_TO_PROFILE = {
   "Kitchen": "base",
+  "Pantry": "tall",
   "Bathroom": "vanity",
   "Bedroom": "closet",
   "Living": "base",
@@ -2171,20 +2141,20 @@ function computeCutList() {
 
   var tkd = (TK > 0) ? (state.ToeKickDepth || 3) : 0;
   var sideNotch = (TK > 0 && tkd > 0) ? { w: tkd, h: TK } : null;
-  parts.push({ name: "Left Side",  qty: 1, w: D, h: H, t: ST, notch: sideNotch });
-  parts.push({ name: "Right Side", qty: 1, w: D, h: H, t: ST, notch: sideNotch });
-  parts.push({ name: "Bottom",     qty: 1, w: interiorW, h: D, t: BT });
+  parts.push({ name: "Left Side",  qty: 1, w: D, h: H, t: ST, notch: sideNotch, type: "side", grainLock: true, material: "sheet" });
+  parts.push({ name: "Right Side", qty: 1, w: D, h: H, t: ST, notch: sideNotch, type: "side", grainLock: true, material: "sheet" });
+  parts.push({ name: "Bottom",     qty: 1, w: interiorW, h: D, t: BT, type: "bottom", grainLock: false, material: "sheet" });
 
   var backH = Math.max(0, H - TK - BT);
-  parts.push({ name: "Back Panel", qty: 1, w: interiorW, h: backH, t: BPT });
+  parts.push({ name: "Back Panel", qty: 1, w: interiorW, h: backH, t: BPT, type: "back", grainLock: false, material: "sheet" });
 
   if (TK > 0) {
-    parts.push({ name: "Toe Kick Board", qty: 1, w: interiorW, h: TK, t: ST });
+    parts.push({ name: "Toe Kick Board", qty: 1, w: interiorW, h: TK, t: ST, type: "stretcher", grainLock: false, material: "lumber" });
   }
 
-  parts.push({ name: "Front Stretcher", qty: 1, w: interiorW, h: state.FrontStretcherWidth, t: state.FrontStretcherThickness });
-  parts.push({ name: "Back Stretcher",  qty: 1, w: interiorW, h: state.BackStretcherWidth,  t: state.BackStretcherThickness });
-  parts.push({ name: "Rear Stretcher",  qty: 1, w: interiorW, h: state.RearStretcherWidth,  t: state.RearStretcherThickness });
+  parts.push({ name: "Front Stretcher", qty: 1, w: interiorW, h: state.FrontStretcherWidth, t: state.FrontStretcherThickness, type: "stretcher", grainLock: false, material: "lumber" });
+  parts.push({ name: "Back Stretcher",  qty: 1, w: interiorW, h: state.BackStretcherWidth,  t: state.BackStretcherThickness, type: "stretcher", grainLock: false, material: "lumber" });
+  parts.push({ name: "Rear Stretcher",  qty: 1, w: interiorW, h: state.RearStretcherWidth,  t: state.RearStretcherThickness, type: "stretcher", grainLock: false, material: "lumber" });
 
   /* ── Face Frame ── */
   var ffSW = state.FaceFrameStileWidth || 0;
@@ -2193,10 +2163,10 @@ function computeCutList() {
   if (ffSW > 0) {
     var ffH = Math.max(0, H - TK);
     var ffRailLen = Math.max(0, W - 2 * ffSW);
-    parts.push({ name: "FF Left Stile",   qty: 1, w: ffSW, h: ffH, t: ffT });
-    parts.push({ name: "FF Right Stile",  qty: 1, w: ffSW, h: ffH, t: ffT });
-    parts.push({ name: "FF Top Rail",     qty: 1, w: ffRailLen, h: ffRW, t: ffT });
-    parts.push({ name: "FF Bottom Rail",  qty: 1, w: ffRailLen, h: ffRW, t: ffT });
+    parts.push({ name: "FF Left Stile",   qty: 1, w: ffSW, h: ffH, t: ffT, type: "frame", grainLock: true, material: "lumber" });
+    parts.push({ name: "FF Right Stile",  qty: 1, w: ffSW, h: ffH, t: ffT, type: "frame", grainLock: true, material: "lumber" });
+    parts.push({ name: "FF Top Rail",     qty: 1, w: ffRailLen, h: ffRW, t: ffT, type: "frame", grainLock: false, material: "lumber" });
+    parts.push({ name: "FF Bottom Rail",  qty: 1, w: ffRailLen, h: ffRW, t: ffT, type: "frame", grainLock: false, material: "lumber" });
   }
 
   var ffOH = state.FaceFrameOverhang || 0;
@@ -2212,13 +2182,13 @@ function computeCutList() {
 
   /* Face frame mid-rails at dado shelf divisions */
   if (ffSW > 0 && dadoCount > 0) {
-    parts.push({ name: "FF Mid Rail", qty: dadoCount, w: Math.max(0, W - 2 * ffSW), h: ffRW, t: ffT });
+    parts.push({ name: "FF Mid Rail", qty: dadoCount, w: Math.max(0, W - 2 * ffSW), h: ffRW, t: ffT, type: "frame", grainLock: false, material: "lumber" });
   }
 
   if (dadoCount > 0) {
     /* ── Zone Stack Mode ── */
     /* Dado shelves */
-    parts.push({ name: "Dado Shelf", qty: dadoCount, w: shelfW, h: Math.max(0, D - BPT), t: state.ZS_DadoThickness });
+    parts.push({ name: "Dado Shelf", qty: dadoCount, w: shelfW, h: Math.max(0, D - BPT), t: state.ZS_DadoThickness, type: "shelf", grainLock: false, material: "sheet" });
 
     /* Per-compartment parts */
     var zones = computeZoneStack();
@@ -2230,43 +2200,43 @@ function computeCutList() {
         var zDoorH = Math.max(0, zone.height + state.DoorOverlayTop + state.DoorOverlayBottom);
         var zTotalDoorW = totalDoorW;
         var zDoorW = Math.max(0, (zTotalDoorW - (zDoorCount - 1) * state.DoorGap) / zDoorCount);
-        parts.push({ name: lbl + "Door", qty: zDoorCount, w: zDoorW, h: zDoorH, t: state.DoorThickness });
-        parts.push({ name: lbl + "Adj. Shelf", qty: 1, w: shelfW, h: shelfD, t: ShT });
+        parts.push({ name: lbl + "Door", qty: zDoorCount, w: zDoorW, h: zDoorH, t: state.DoorThickness, type: "door", grainLock: true, material: "sheet" });
+        parts.push({ name: lbl + "Adj. Shelf", qty: 1, w: shelfW, h: shelfD, t: ShT, type: "shelf", grainLock: false, material: "sheet" });
       }
 
       if (zone.type === 1) { /* Drawer compartment */
         var zDrawerCount = 3;
         var zFrontH = Math.max(3, zone.height / zDrawerCount);
-        parts.push({ name: lbl + "Drawer Front", qty: zDrawerCount, w: totalDoorW, h: zFrontH, t: state.DoorThickness });
-        parts.push({ name: lbl + "Drawer Side", qty: zDrawerCount * 2, w: dbD, h: state.DrawerBoxHeight, t: state.DrawerBoxSideThickness });
-        parts.push({ name: lbl + "Drawer F/B",  qty: zDrawerCount * 2, w: dbW, h: state.DrawerBoxHeight, t: state.DrawerBoxSideThickness });
-        parts.push({ name: lbl + "Drawer Bottom", qty: zDrawerCount, w: dbW, h: dbD, t: state.DrawerBottomThickness });
+        parts.push({ name: lbl + "Drawer Front", qty: zDrawerCount, w: totalDoorW, h: zFrontH, t: state.DoorThickness, type: "drawer-front", grainLock: true, material: "sheet" });
+        parts.push({ name: lbl + "Drawer Side", qty: zDrawerCount * 2, w: dbD, h: state.DrawerBoxHeight, t: state.DrawerBoxSideThickness, type: "drawer-box", grainLock: false, material: "sheet" });
+        parts.push({ name: lbl + "Drawer F/B",  qty: zDrawerCount * 2, w: dbW, h: state.DrawerBoxHeight, t: state.DrawerBoxSideThickness, type: "drawer-box", grainLock: false, material: "sheet" });
+        parts.push({ name: lbl + "Drawer Bottom", qty: zDrawerCount, w: dbW, h: dbD, t: state.DrawerBottomThickness, type: "drawer-box", grainLock: false, material: "sheet" });
       }
 
       if (zone.type === 2) { /* Open compartment */
-        parts.push({ name: lbl + "Adj. Shelf", qty: 2, w: shelfW, h: shelfD, t: ShT });
+        parts.push({ name: lbl + "Adj. Shelf", qty: 2, w: shelfW, h: shelfD, t: ShT, type: "shelf", grainLock: false, material: "sheet" });
       }
     });
 
   } else {
     /* ── Standard Mode (no zones) ── */
     if (state.ShelfCount > 0) {
-      parts.push({ name: "Adj. Shelf", qty: Math.round(state.ShelfCount), w: shelfW, h: shelfD, t: ShT });
+      parts.push({ name: "Adj. Shelf", qty: Math.round(state.ShelfCount), w: shelfW, h: shelfD, t: ShT, type: "shelf", grainLock: false, material: "sheet" });
     }
 
     if (state.DoorCount > 0) {
       var dc = Math.round(state.DoorCount);
       var doorW = Math.max(0, (totalDoorW - (dc - 1) * state.DoorGap) / dc);
       var doorH = Math.max(0, ffOpenH + state.DoorOverlayTop + state.DoorOverlayBottom);
-      parts.push({ name: "Door", qty: dc, w: doorW, h: doorH, t: state.DoorThickness });
+      parts.push({ name: "Door", qty: dc, w: doorW, h: doorH, t: state.DoorThickness, type: "door", grainLock: true, material: "sheet" });
     }
 
     if (state.DrawerCount > 0) {
       var drc = Math.round(state.DrawerCount);
-      parts.push({ name: "Drawer Front", qty: drc, w: totalDoorW, h: state.DrawerHeight, t: state.DoorThickness });
-      parts.push({ name: "Drawer Box Side", qty: drc * 2, w: dbD,  h: state.DrawerBoxHeight, t: state.DrawerBoxSideThickness });
-      parts.push({ name: "Drawer Box F/B",  qty: drc * 2, w: dbW,  h: state.DrawerBoxHeight, t: state.DrawerBoxSideThickness });
-      parts.push({ name: "Drawer Bottom",   qty: drc,     w: dbW,  h: dbD,                   t: state.DrawerBottomThickness });
+      parts.push({ name: "Drawer Front", qty: drc, w: totalDoorW, h: state.DrawerHeight, t: state.DoorThickness, type: "drawer-front", grainLock: true, material: "sheet" });
+      parts.push({ name: "Drawer Box Side", qty: drc * 2, w: dbD,  h: state.DrawerBoxHeight, t: state.DrawerBoxSideThickness, type: "drawer-box", grainLock: false, material: "sheet" });
+      parts.push({ name: "Drawer Box F/B",  qty: drc * 2, w: dbW,  h: state.DrawerBoxHeight, t: state.DrawerBoxSideThickness, type: "drawer-box", grainLock: false, material: "sheet" });
+      parts.push({ name: "Drawer Bottom",   qty: drc,     w: dbW,  h: dbD,                   t: state.DrawerBottomThickness, type: "drawer-box", grainLock: false, material: "sheet" });
     }
   }
 
@@ -2290,6 +2260,151 @@ function computeSheetGoods(parts) {
     sheets.push({ thickness: parseFloat(k), count: Math.ceil((byThickness[k] * WASTE) / SHEET_AREA) });
   });
   return sheets;
+}
+
+/* ── Shelf-Pack 2D Bin Nesting ── */
+var KERF = 0.125; /* 1/8" saw kerf between parts */
+
+function shelfPackNest(parts, sheetW, sheetH) {
+  /* Expand qty into individual placement items */
+  var items = [];
+  parts.forEach(function(p) {
+    for (var q = 0; q < p.qty; q++) {
+      var pw = p.w, ph = p.h;
+      var rotated = false;
+      /* If not grain-locked, try rotating so wider dimension goes along sheet length */
+      if (!p.grainLock && ph > pw) {
+        var tmp = pw; pw = ph; ph = tmp;
+        rotated = true;
+      }
+      items.push({ name: p.name, w: pw, h: ph, origW: p.w, origH: p.h,
+                    type: p.type || 'other', rotated: rotated, notch: p.notch });
+    }
+  });
+
+  /* Sort by height descending (tallest first for shelf packing) */
+  items.sort(function(a, b) { return b.h - a.h || b.w - a.w; });
+
+  var sheets = [];
+  var remaining = items.slice();
+
+  while (remaining.length > 0) {
+    var sheet = { w: sheetW, h: sheetH, placements: [], shelves: [] };
+    var shelfY = 0;
+
+    /* Keep starting new shelves until sheet is full or items exhausted */
+    while (remaining.length > 0 && shelfY < sheetH) {
+      /* First item in remaining sets the shelf height */
+      var first = remaining[0];
+      if (shelfY + first.h > sheetH) break; /* doesn't fit vertically */
+
+      var shelfHeight = first.h;
+      var curX = 0;
+      var placed = [];
+
+      /* Scan remaining items, place any that fit in this shelf */
+      for (var i = 0; i < remaining.length; i++) {
+        var item = remaining[i];
+        if (item.h > shelfHeight) continue; /* too tall for this shelf */
+        if (curX + item.w > sheetW) continue; /* too wide for remaining space */
+
+        sheet.placements.push({
+          name: item.name, x: curX, y: shelfY,
+          w: item.w, h: item.h, type: item.type,
+          rotated: item.rotated, notch: item.notch
+        });
+        curX += item.w + KERF;
+        placed.push(i);
+      }
+
+      /* Remove placed items (iterate backwards to preserve indices) */
+      for (var j = placed.length - 1; j >= 0; j--) {
+        remaining.splice(placed[j], 1);
+      }
+
+      if (placed.length === 0) break; /* nothing fit, avoid infinite loop */
+      sheet.shelves.push({ y: shelfY, height: shelfHeight });
+      shelfY += shelfHeight + KERF;
+    }
+
+    sheets.push(sheet);
+    if (sheets.length > 20) break; /* safety valve */
+  }
+
+  return sheets;
+}
+
+/* ── Dimensional Lumber Nesting ── */
+var LUMBER_WIDTHS = [1.5, 2.5, 3.5, 5.5, 7.25, 9.25, 11.25];
+var LUMBER_LABELS = ['1x2', '1x3', '1x4', '1x6', '1x8', '1x10', '1x12'];
+var LUMBER_LENGTHS = [72, 96, 120, 144];
+var LUMBER_LENGTH_LABELS = ["6'", "8'", "10'", "12'"];
+
+function nestLumber(parts, stockLength) {
+  if (!stockLength) stockLength = 96;
+  var kerfVal = (typeof KERF !== 'undefined') ? KERF : 0.125;
+
+  var items = [];
+  parts.forEach(function(p) {
+    for (var q = 0; q < p.qty; q++) {
+      var narrow = Math.min(p.w, p.h);
+      var long   = Math.max(p.w, p.h);
+      items.push({ name: p.name, narrow: narrow, long: long, type: p.type || 'frame' });
+    }
+  });
+
+  var byWidth = {};
+  items.forEach(function(item) {
+    var widthIdx = -1;
+    for (var i = 0; i < LUMBER_WIDTHS.length; i++) {
+      if (LUMBER_WIDTHS[i] >= item.narrow) { widthIdx = i; break; }
+    }
+    if (widthIdx < 0) widthIdx = LUMBER_WIDTHS.length - 1;
+    var key = widthIdx;
+    if (!byWidth[key]) byWidth[key] = [];
+    byWidth[key].push(item);
+  });
+
+  var boards = [];
+  Object.keys(byWidth).forEach(function(widthIdxStr) {
+    var widthIdx = parseInt(widthIdxStr);
+    var group = byWidth[widthIdx];
+    group.sort(function(a, b) { return b.long - a.long; });
+
+    var boardList = [];
+
+    group.forEach(function(item) {
+      var placed = false;
+      for (var b = 0; b < boardList.length; b++) {
+        if (boardList[b].remaining >= item.long + kerfVal) {
+          var start = stockLength - boardList[b].remaining;
+          boardList[b].parts.push({ name: item.name, start: start, length: item.long, type: item.type });
+          boardList[b].remaining -= (item.long + kerfVal);
+          placed = true;
+          break;
+        }
+      }
+      if (!placed) {
+        boardList.push({
+          remaining: stockLength - item.long - kerfVal,
+          parts: [{ name: item.name, start: 0, length: item.long, type: item.type }]
+        });
+      }
+    });
+
+    boardList.forEach(function(board) {
+      boards.push({
+        widthIdx: widthIdx,
+        widthLabel: LUMBER_LABELS[widthIdx],
+        actualWidth: LUMBER_WIDTHS[widthIdx],
+        stockLength: stockLength,
+        parts: board.parts,
+        waste: board.remaining
+      });
+    });
+  });
+
+  return boards;
 }
 
 /* ── Render: Preset Dropdown ── */
