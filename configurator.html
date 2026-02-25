@@ -2596,7 +2596,7 @@ function updateGroupVisibility() {
     var els = groupElements[groupId];
     if (!els) return;
     var visible = GROUP_VISIBILITY_RULES[groupId]();
-    els.header.classList.toggle("group-hidden", !visible);
+    /* Only hide the body — header stays visible so user can re-enable */
     els.body.classList.toggle("group-hidden", !visible);
   });
 }
@@ -3047,6 +3047,8 @@ function renderGroups() {
     header.addEventListener("click", function() {
       header.classList.toggle("expanded");
       body.classList.toggle("expanded");
+      /* If group was rule-hidden, user click overrides to show it */
+      body.classList.remove("group-hidden");
     });
 
     /* Track which linked groups have had their bar inserted */
