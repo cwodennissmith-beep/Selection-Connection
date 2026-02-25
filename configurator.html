@@ -135,14 +135,20 @@
       text-overflow: ellipsis;
     }
     .slider-range {
-      width: 38%;
+      width: 25%;
       padding: 0 8px;
     }
     .slider-value {
-      width: 22%;
+      width: 35%;
+    }
+    .stepper-wrap {
+      display: flex;
+      align-items: center;
+      gap: 2px;
     }
     .slider-value input {
-      width: 100%;
+      flex: 1;
+      min-width: 0;
       background: #1a1a1a;
       border: 1px solid #2a2a2a;
       color: #ddd;
@@ -156,6 +162,34 @@
     .slider-value input:focus {
       border-color: #555;
       color: #fff;
+    }
+    .step-btn {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      color: #555;
+      font-size: 13px;
+      width: 22px;
+      height: 24px;
+      cursor: pointer;
+      border-radius: 2px;
+      line-height: 1;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-family: inherit;
+    }
+    .step-btn:hover { color: #fff; border-color: #555; }
+    .step-btn:active { background: #333; }
+    .frac-hint {
+      display: block;
+      font-size: 10px;
+      color: #666;
+      text-align: right;
+      margin-top: 2px;
+      font-family: 'Consolas', 'Segoe UI', monospace;
+      letter-spacing: 0.5px;
     }
 
     /* ── Range Input Styling ── */
@@ -231,6 +265,40 @@
       letter-spacing: 1px;
     }
 
+    /* ── Viewport Toolbar ── */
+    .viewport-toolbar {
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      z-index: 10;
+    }
+    .vp-btn {
+      background: #1a1a1a;
+      color: #888;
+      border: 1px solid #333;
+      padding: 4px 8px;
+      font-size: 10px;
+      letter-spacing: 1px;
+      cursor: pointer;
+      border-radius: 3px;
+      font-family: inherit;
+      transition: all 0.15s;
+      line-height: 1;
+    }
+    .vp-btn:hover { color: #fff; border-color: #555; }
+    .vp-btn.vp-active { color: #fff; background: #333; border-color: #555; }
+    .vp-sep { width: 1px; height: 18px; background: #333; margin: 0 4px; }
+    .vp-zoom-label {
+      font-size: 10px;
+      color: #555;
+      letter-spacing: 1px;
+      min-width: 28px;
+      text-align: center;
+    }
+
     /* ── Footer ── */
     .action-bar {
       display: flex;
@@ -265,10 +333,6 @@
       background: transparent;
       color: #888;
       border: 1px solid #333;
-    }
-    .btn-export {
-      background: #ffffff;
-      color: #000000;
     }
     .btn-pdf {
       background: #c0392b;
@@ -811,6 +875,16 @@
 
     <section class="viewport-panel" id="viewportPanel">
       <div class="viewport-svg-wrap" id="cabinetSvgWrap"></div>
+      <div class="viewport-toolbar">
+        <button class="vp-btn vp-active" data-view="iso" onclick="setView('iso')">ISO</button>
+        <button class="vp-btn" data-view="front" onclick="setView('front')">FRONT</button>
+        <button class="vp-btn" data-view="side" onclick="setView('side')">SIDE</button>
+        <button class="vp-btn" data-view="top" onclick="setView('top')">TOP</button>
+        <div class="vp-sep"></div>
+        <button class="vp-btn" onclick="zoomView(-1)">&minus;</button>
+        <span class="vp-zoom-label" id="zoomLabel">1&times;</span>
+        <button class="vp-btn" onclick="zoomView(1)">&plus;</button>
+      </div>
       <div class="viewport-dims" id="viewportDims"></div>
       <div class="viewport-info">SVG Preview &middot; Rhino.Compute for 3D</div>
     </section>
@@ -822,7 +896,6 @@
     </div>
     <span class="param-count" id="paramCount"></span>
     <div class="left-actions">
-      <button class="btn-action btn-export" id="btnExport">Export JSON</button>
       <button class="btn-action btn-pdf" id="btnPDF">PDF</button>
       <button class="btn-action btn-dxf btn-locked" id="btnDXF">DXF</button>
       <button class="btn-action btn-csv btn-locked" id="btnCSV">BOM</button>
@@ -851,6 +924,55 @@
   </div>
 
 <script>
+/* ── Fraction utilities for woodworking dimensions ── */
+
+/**
+ * Get the fraction denominator from a step value.
+ * Returns 0 if the step doesn't map to a power-of-2 fraction.
+ */
+function getFractionDenom(step) {
+  if (step >= 1) return 0;
+  var recip = Math.round(1 / step);
+  if (Math.abs(recip - 1 / step) > 0.001) return 0;
+  if ((recip & (recip - 1)) !== 0) return 0;
+  return recip;
+}
+
+/**
+ * Convert a decimal inch value to fractional notation.
+ * e.g., toFraction(23.625, 8) → '23-5/8"'
+ */
+function toFraction(value, denom) {
+  if (!denom || denom < 2) return value + '"';
+  var neg = value < 0;
+  var abs = Math.abs(value);
+  var whole = Math.floor(abs);
+  var remainder = abs - whole;
+  var numerator = Math.round(remainder * denom);
+  if (numerator === denom) { whole++; numerator = 0; }
+  if (numerator === 0) return (neg ? '-' : '') + whole + '"';
+  var g = function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); };
+  var d = g(numerator, denom);
+  numerator /= d;
+  var reduced = denom / d;
+  var prefix = (neg ? '-' : '') + (whole > 0 ? whole + '-' : '');
+  return prefix + numerator + '/' + reduced + '"';
+}
+
+/**
+ * Sweep all fraction hints and update their text from current state.
+ */
+function updateFractionHints() {
+  document.querySelectorAll('.frac-hint').forEach(function(el) {
+    var key = el.dataset.key;
+    if (!key || state[key] === undefined) return;
+    var sd = findSliderDef(key);
+    if (!sd) return;
+    var denom = getFractionDenom(sd.step);
+    if (denom > 0) el.textContent = toFraction(state[key], denom);
+  });
+}
+
 /* ================================================================
    SLIDER DATA — edit this array to add/remove/reorder parameters.
    All values from GH definition: PIF Cabinet Generator V1.0
@@ -2534,7 +2656,25 @@ function updateUndoButtons() {
   if (btnRedo) btnRedo.disabled = redoStack.length === 0;
 }
 
-/* ── Cabinet SVG Preview (3/4 isometric wireframe) ── */
+/* ── Viewport state (zoom + view mode) ── */
+var viewState = { zoom: 1, view: 'iso' };
+
+function setView(mode) {
+  viewState.view = mode;
+  document.querySelectorAll('.vp-btn[data-view]').forEach(function(btn) {
+    btn.classList.toggle('vp-active', btn.dataset.view === mode);
+  });
+  renderCabinetSVG();
+}
+
+function zoomView(dir) {
+  viewState.zoom = Math.max(0.5, Math.min(3, +(viewState.zoom + dir * 0.25).toFixed(2)));
+  var z = viewState.zoom;
+  document.getElementById('zoomLabel').textContent = (z % 1 === 0 ? z.toFixed(0) : z.toFixed(1)) + '\u00D7';
+  renderCabinetSVG();
+}
+
+/* ── Cabinet SVG Preview (multi-view wireframe) ── */
 function renderCabinetSVG() {
   var W = state.Width || 36;
   var H = state.Height || 34.5;
@@ -2544,22 +2684,42 @@ function renderCabinetSVG() {
   var BT = state.BottomThickness || 0.75;
   var BPT = state.BackPanelThickness || 0.25;
 
-  /* Isometric projection angles */
-  var ax = 0.45;  /* depth skew X */
-  var ay = -0.35; /* depth skew Y */
+  /* View mode + zoom */
+  var viewMode = viewState.view;
+  var zoom = viewState.zoom;
 
-  /* Scale to fit viewport — extra margin for dimension annotations */
-  var maxDim = Math.max(W + D * ax, H + D * Math.abs(ay));
+  /* Effective dimensions depend on view */
+  var effW, effH;
+  if (viewMode === 'front') { effW = W; effH = H; }
+  else if (viewMode === 'side') { effW = D; effH = H; }
+  else if (viewMode === 'top') { effW = W; effH = D; }
+  else { effW = W + D * 0.45; effH = H + D * 0.35; }
+
+  /* Scale to fit viewport */
   var svgW = 600, svgH = 500;
   var margin = 80;
-  var scale = Math.min((svgW - 2 * margin) / (W + D * ax), (svgH - 2 * margin) / (H + D * Math.abs(ay)));
+  var scale = Math.min((svgW - 2 * margin) / effW, (svgH - 2 * margin) / effH);
 
-  /* Origin: bottom-left-front of cabinet (offset for dimension labels) */
+  /* Origin: bottom-left-front of cabinet */
   var ox = margin + 20;
   var oy = svgH - margin;
 
-  function px(x, z) { return ox + (x + z * ax) * scale; }
-  function py(y, z) { return oy - (y + z * ay) * scale; }
+  /* View-dependent projection */
+  var px, py;
+  if (viewMode === 'front') {
+    px = function(x, z) { return ox + x * scale; };
+    py = function(y, z) { return oy - y * scale; };
+  } else if (viewMode === 'side') {
+    px = function(x, z) { return ox + z * scale; };
+    py = function(y, z) { return oy - y * scale; };
+  } else if (viewMode === 'top') {
+    px = function(x, z) { return ox + x * scale; };
+    py = function(y, z) { return oy - z * scale; };
+  } else {
+    var ax = 0.45, ay = -0.35;
+    px = function(x, z) { return ox + (x + z * ax) * scale; };
+    py = function(y, z) { return oy - (y + z * ay) * scale; };
+  }
 
   var lines = [];
   var fills = [];
@@ -2707,26 +2867,51 @@ function renderCabinetSVG() {
     }
   }
 
-  /* ── Dimension annotations ── */
-  /* Width dimension (bottom) */
-  var dimY = TK > 0 ? -4 : TK - 4;
-  addLine(0, dimY, 0, W, dimY, 0, '#444', 0.5);
-  addLine(0, dimY - 1, 0, 0, dimY + 1, 0, '#444', 0.5);
-  addLine(W, dimY - 1, 0, W, dimY + 1, 0, '#444', 0.5);
-  addText(W / 2, dimY - 3, 0, W.toFixed(1) + '"', '#666', 9);
+  /* ── Dimension annotations (view-specific) ── */
+  if (viewMode === 'side') {
+    /* Depth (bottom) */
+    var dimOff = TK > 0 ? -4 : TK - 4;
+    addLine(0, dimOff, 0, 0, dimOff, D, '#444', 0.5);
+    addLine(0, dimOff - 1, 0, 0, dimOff + 1, 0, '#444', 0.5);
+    addLine(0, dimOff - 1, D, 0, dimOff + 1, D, '#444', 0.5);
+    addText(0, dimOff - 3, D / 2, D.toFixed(1) + '"', '#666', 9);
+    /* Height (left) */
+    addLine(0, TK > 0 ? 0 : TK, -4, 0, H, -4, '#444', 0.5);
+    addLine(0, TK > 0 ? 0 : TK, -5, 0, TK > 0 ? 0 : TK, -3, '#444', 0.5);
+    addLine(0, H, -5, 0, H, -3, '#444', 0.5);
+    addText(0, H / 2, -10, H.toFixed(1) + '"', '#666', 9);
+  } else if (viewMode === 'top') {
+    /* Width (bottom — front edge) */
+    addLine(0, 0, -4, W, 0, -4, '#444', 0.5);
+    addLine(0, 0, -5, 0, 0, -3, '#444', 0.5);
+    addLine(W, 0, -5, W, 0, -3, '#444', 0.5);
+    addText(W / 2, 0, -7, W.toFixed(1) + '"', '#666', 9);
+    /* Depth (left) */
+    addLine(-4, 0, 0, -4, 0, D, '#444', 0.5);
+    addLine(-5, 0, 0, -3, 0, 0, '#444', 0.5);
+    addLine(-5, 0, D, -3, 0, D, '#444', 0.5);
+    addText(-10, 0, D / 2, D.toFixed(1) + '"', '#666', 9);
+  } else {
+    /* Front + ISO: Width (bottom) + Height (left) */
+    var dimY = TK > 0 ? -4 : TK - 4;
+    addLine(0, dimY, 0, W, dimY, 0, '#444', 0.5);
+    addLine(0, dimY - 1, 0, 0, dimY + 1, 0, '#444', 0.5);
+    addLine(W, dimY - 1, 0, W, dimY + 1, 0, '#444', 0.5);
+    addText(W / 2, dimY - 3, 0, W.toFixed(1) + '"', '#666', 9);
+    addLine(-4, TK > 0 ? 0 : TK, 0, -4, H, 0, '#444', 0.5);
+    addLine(-5, TK > 0 ? 0 : TK, 0, -3, TK > 0 ? 0 : TK, 0, '#444', 0.5);
+    addLine(-5, H, 0, -3, H, 0, '#444', 0.5);
+    addText(-10, H / 2, 0, H.toFixed(1) + '"', '#666', 9);
+    if (viewMode === 'iso') {
+      addLine(W + 2, H, 0, W + 2, H, D, '#444', 0.5);
+      addText(W + 2, H, D / 2, D.toFixed(1) + '"', '#666', 9);
+    }
+  }
 
-  /* Height dimension (left) */
-  addLine(-4, TK > 0 ? 0 : TK, 0, -4, H, 0, '#444', 0.5);
-  addLine(-5, TK > 0 ? 0 : TK, 0, -3, TK > 0 ? 0 : TK, 0, '#444', 0.5);
-  addLine(-5, H, 0, -3, H, 0, '#444', 0.5);
-  addText(-10, H / 2, 0, H.toFixed(1) + '"', '#666', 9);
-
-  /* Depth dimension (top-right) */
-  addLine(W + 2, H, 0, W + 2, H, D, '#444', 0.5);
-  addText(W + 2, H, D / 2, D.toFixed(1) + '"', '#666', 9);
-
-  /* Build SVG */
-  var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + svgW + ' ' + svgH + '" preserveAspectRatio="xMidYMid meet">';
+  /* Build SVG (zoom adjusts viewBox) */
+  var vbW = svgW / zoom, vbH = svgH / zoom;
+  var vbX = (svgW - vbW) / 2, vbY = (svgH - vbH) / 2;
+  var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + vbX + ' ' + vbY + ' ' + vbW + ' ' + vbH + '" preserveAspectRatio="xMidYMid meet">';
   svg += fills.join('');
   svg += lines.join('');
   svg += '</svg>';
@@ -2747,6 +2932,7 @@ function updateAll() {
   updateGroupVisibility();
   updatePresetLineage();
   updateLinkButtons();
+  updateFractionHints();
   renderZoneSVG();
   renderCabinetSVG();
 }
@@ -2837,16 +3023,70 @@ function renderGroups() {
       range.value = s.default;
       rangeWrap.appendChild(range);
 
-      /* Number */
+      /* Number + Steppers */
       const numWrap = document.createElement("div");
       numWrap.className = "slider-value";
+
+      const stepperWrap = document.createElement("div");
+      stepperWrap.className = "stepper-wrap";
+
+      const stepDown = document.createElement("button");
+      stepDown.type = "button";
+      stepDown.className = "step-btn";
+      stepDown.textContent = "\u2212";
+      stepDown.title = "Decrease by " + s.step;
+
       const num = document.createElement("input");
       num.type = "number";
       num.min = s.min;
       num.max = s.max;
       num.step = s.step;
       num.value = Number(s.default).toFixed(s.decimals);
-      numWrap.appendChild(num);
+
+      const stepUp = document.createElement("button");
+      stepUp.type = "button";
+      stepUp.className = "step-btn";
+      stepUp.textContent = "+";
+      stepUp.title = "Increase by " + s.step;
+
+      stepperWrap.appendChild(stepDown);
+      stepperWrap.appendChild(num);
+      stepperWrap.appendChild(stepUp);
+      numWrap.appendChild(stepperWrap);
+
+      /* Fraction hint (for power-of-2 step sliders) */
+      var fracDenom = getFractionDenom(s.step);
+      if (fracDenom > 0) {
+        var fracHint = document.createElement("span");
+        fracHint.className = "frac-hint";
+        fracHint.dataset.key = s.key;
+        fracHint.textContent = toFraction(s.default, fracDenom);
+        numWrap.appendChild(fracHint);
+      }
+
+      /* Step down button */
+      stepDown.addEventListener("click", function() {
+        pushUndo();
+        var v = Math.max(s.min, +(parseFloat(num.value) - s.step).toFixed(6));
+        state[s.key] = v;
+        num.value = v.toFixed(s.decimals);
+        range.value = v;
+        var slg = getLinkedGroup(s.key);
+        if (slg) onLinkedSliderChange(slg.id, s.key, v);
+        updateAll();
+      });
+
+      /* Step up button */
+      stepUp.addEventListener("click", function() {
+        pushUndo();
+        var v = Math.min(s.max, +(parseFloat(num.value) + s.step).toFixed(6));
+        state[s.key] = v;
+        num.value = v.toFixed(s.decimals);
+        range.value = v;
+        var slg = getLinkedGroup(s.key);
+        if (slg) onLinkedSliderChange(slg.id, s.key, v);
+        updateAll();
+      });
 
       /* Sync: range → number (+ linked propagation) */
       range.addEventListener("input", function() {
@@ -2898,72 +3138,6 @@ function renderGroups() {
 /* CamelCase key → readable label: "DoorOverlayLeft" → "Door Overlay Left" */
 function formatLabel(key) {
   return key.replace(/([A-Z])/g, " $1").replace(/^ /, "");
-}
-
-/* ── Export JSON ── */
-function exportJSON() {
-  const output = {
-    Metadata: {
-      Source: "PIF_Configurator_Web",
-      ExportDate: new Date().toISOString().split("T")[0],
-      Version: "1.0",
-      ParameterCount: totalParams
-    }
-  };
-
-  SLIDER_GROUPS.forEach(group => {
-    const section = SECTION_MAP[group.id];
-    output[section] = {};
-    group.sliders.forEach(s => {
-      output[section][s.key] = {
-        Default: s.default,
-        Min: s.min,
-        Max: s.max,
-        UserValue: state[s.key]
-      };
-    });
-  });
-
-  /* Include hardware selections */
-  output.HardwareSelection = {
-    Hinge: hardwareSelection.hinge,
-    Slide: hardwareSelection.slide,
-    Pull: hardwareSelection.pull
-  };
-
-  /* Include zone stack layout */
-  var dadoCount = Math.round(state.ZS_DadoCount || 0);
-  output.ZoneLayout = {
-    LayoutPreset: state.ZS_LayoutPreset,
-    DadoShelfCount: dadoCount,
-    DadoShelf1_Z: state.ZS_Dado1Z,
-    DadoShelf2_Z: state.ZS_Dado2Z,
-    DadoShelf3_Z: state.ZS_Dado3Z,
-    DadoShelfThickness: state.ZS_DadoThickness,
-    Compartments: []
-  };
-  for (var ci = 0; ci < dadoCount + 1; ci++) {
-    output.ZoneLayout.Compartments.push({
-      Type: ["door", "drawer", "open"][state['ZS_Comp' + (ci + 1) + 'Type'] || 0]
-    });
-  }
-
-  const json = JSON.stringify(output, null, 2);
-  const blob = new Blob([json], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "PIF_UserConfig_" + new Date().toISOString().split("T")[0] + ".json";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-
-  /* Brief feedback */
-  const btn = document.getElementById("btnExport");
-  const orig = btn.textContent;
-  btn.textContent = "Exported!";
-  setTimeout(function() { btn.textContent = orig; }, 1500);
 }
 
 /* ── Reset ── */
@@ -3633,7 +3807,6 @@ document.getElementById("purchaseBtn").addEventListener("click", function() {
   hidePricingModal();
 });
 
-document.getElementById("btnExport").addEventListener("click", exportJSON);
 document.getElementById("btnPDF").addEventListener("click", function() {
   withButtonFeedback("btnPDF", "PDF", generatePDF);
 });
@@ -3714,12 +3887,6 @@ PIF_ANALYTICS.track("page_load", { page: "configurator" });
   applyZonePreset = function(idx) {
     PIF_ANALYTICS.track("zone_preset", { preset: ZONE_LAYOUT_PRESETS[idx] ? ZONE_LAYOUT_PRESETS[idx].name : idx });
     origApplyZonePreset(idx);
-  };
-
-  var origExportJSON = exportJSON;
-  exportJSON = function() {
-    PIF_ANALYTICS.track("export", { type: "json" });
-    origExportJSON();
   };
 
   var origGeneratePDF = generatePDF;
