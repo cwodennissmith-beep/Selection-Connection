@@ -1023,6 +1023,17 @@ const SLIDER_GROUPS = [
     ]
   },
   {
+    id: "face-frame",
+    label: "Face Frame",
+    collapsed: true,
+    sliders: [
+      { key: "FaceFrameStileWidth",  default: 1.5,    min: 0.75, max: 3,   step: 0.001, decimals: 3 },
+      { key: "FaceFrameRailWidth",   default: 1.5,    min: 0.75, max: 3,   step: 0.001, decimals: 3 },
+      { key: "FaceFrameThickness",   default: 0.75,   min: 0.375,max: 1.5, step: 0.001, decimals: 3 },
+      { key: "FaceFrameOverhang",    default: 0.0625, min: 0,    max: 0.25,step: 0.001, decimals: 3 },
+    ]
+  },
+  {
     id: "shelves",
     label: "Shelves",
     collapsed: true,
@@ -1040,10 +1051,10 @@ const SLIDER_GROUPS = [
       { key: "DoorCount",         default: 2,     min: 0,     max: 4,   step: 1,     decimals: 0 },
       { key: "DoorThickness",     default: 0.75,  min: 0.5,   max: 1.5, step: 0.001, decimals: 3 },
       { key: "DoorGap",           default: 0.125, min: 0.063, max: 0.25,step: 0.001, decimals: 3 },
-      { key: "DoorOverlayLeft",   default: 0.5,   min: 0,     max: 1.5, step: 0.001, decimals: 3 },
-      { key: "DoorOverlayRight",  default: 0.5,   min: 0,     max: 1.5, step: 0.001, decimals: 3 },
-      { key: "DoorOverlayTop",    default: 0.5,   min: 0,     max: 1.5, step: 0.001, decimals: 3 },
-      { key: "DoorOverlayBottom", default: 0.5,   min: 0,     max: 1.5, step: 0.001, decimals: 3 },
+      { key: "DoorOverlayLeft",   default: 0.5,   min: -1.5,  max: 1.5, step: 0.001, decimals: 3 },
+      { key: "DoorOverlayRight",  default: 0.5,   min: -1.5,  max: 1.5, step: 0.001, decimals: 3 },
+      { key: "DoorOverlayTop",    default: 0.5,   min: -1.5,  max: 1.5, step: 0.001, decimals: 3 },
+      { key: "DoorOverlayBottom", default: 0.5,   min: -1.5,  max: 1.5, step: 0.001, decimals: 3 },
     ]
   },
   {
@@ -1105,6 +1116,7 @@ const SECTION_MAP = {
   "material-thickness":  "MaterialThickness",
   "toe-kick":            "ToeKick",
   "stretchers-frame":    "StretchersFrame",
+  "face-frame":          "FaceFrame",
   "shelves":             "Shelves",
   "doors":               "DoorParameters",
   "drawers":             "DrawerParameters",
@@ -1625,12 +1637,30 @@ function computeCutList() {
   parts.push({ name: "Back Stretcher",  qty: 1, w: interiorW, h: state.BackStretcherWidth,  t: state.BackStretcherThickness });
   parts.push({ name: "Rear Stretcher",  qty: 1, w: interiorW, h: state.RearStretcherWidth,  t: state.RearStretcherThickness });
 
+  /* ── Face Frame ── */
+  var ffSW = state.FaceFrameStileWidth || 0;
+  var ffRW = state.FaceFrameRailWidth || 0;
+  var ffT  = state.FaceFrameThickness || 0.75;
+  if (ffSW > 0) {
+    var ffH = Math.max(0, H - TK);
+    var ffRailLen = Math.max(0, W - 2 * ffSW);
+    parts.push({ name: "FF Left Stile",   qty: 1, w: ffSW, h: ffH, t: ffT });
+    parts.push({ name: "FF Right Stile",  qty: 1, w: ffSW, h: ffH, t: ffT });
+    parts.push({ name: "FF Top Rail",     qty: 1, w: ffRailLen, h: ffRW, t: ffT });
+    parts.push({ name: "FF Bottom Rail",  qty: 1, w: ffRailLen, h: ffRW, t: ffT });
+  }
+
   var dadoCount = Math.round(state.ZS_DadoCount || 0);
   var shelfW = Math.max(0, interiorW - 2 * DD);
   var shelfD = Math.max(0, D - BPT - state.ShelfSetback);
   var totalDoorW = interiorW + state.DoorOverlayLeft + state.DoorOverlayRight;
   var dbW = Math.max(0, interiorW - 2 * state.DrawerClearance - 2 * state.DrawerBoxSideThickness);
   var dbD = Math.max(0, D - BPT - 1);
+
+  /* Face frame mid-rails at dado shelf divisions */
+  if (ffSW > 0 && dadoCount > 0) {
+    parts.push({ name: "FF Mid Rail", qty: dadoCount, w: Math.max(0, W - 2 * ffSW), h: ffRW, t: ffT });
+  }
 
   if (dadoCount > 0) {
     /* ── Zone Stack Mode ── */
@@ -2480,6 +2510,21 @@ function validateConfig() {
     warnings.push({ key: "ZS_Dado3Z", msg: "Dado 3 position exceeds interior height" });
   }
 
+  /* Face frame constraints */
+  var ffSW = state.FaceFrameStileWidth || 0;
+  var ffRW = state.FaceFrameRailWidth || 0;
+  if (ffSW > 0) {
+    if (2 * ffSW >= W) {
+      warnings.push({ key: "FaceFrameStileWidth", msg: "Face frame stiles (" + (2 * ffSW).toFixed(2) + "\") exceed cabinet width (" + W.toFixed(1) + "\")" });
+    } else if (ffSW > W / 4) {
+      warnings.push({ key: "FaceFrameStileWidth", msg: "Face frame stile width (" + ffSW.toFixed(3) + "\") exceeds 25% of cabinet width" });
+    }
+    var ffOpenH = H - TK - 2 * ffRW;
+    if (ffOpenH <= 0) {
+      warnings.push({ key: "FaceFrameRailWidth", msg: "Face frame rails leave no opening height" });
+    }
+  }
+
   return warnings;
 }
 
@@ -2760,6 +2805,32 @@ function renderCabinetSVG() {
   addLine(0, TK, 0, 0, H, 0, '#555', 1.2);
   addLine(W, TK, 0, W, H, 0, '#555', 1.2);
   addLine(0, TK, D, 0, H, D, '#444', 0.6);
+
+  /* ── Face Frame ── */
+  var ffSW = state.FaceFrameStileWidth || 0;
+  var ffRW = state.FaceFrameRailWidth || 0;
+  var ffOH = state.FaceFrameOverhang || 0;
+  var fz = -0.1; /* slightly in front of box */
+  var ffColor = '#8B6914';
+  var ffFill = 'rgba(139,105,20,0.12)';
+
+  if (ffSW > 0) {
+    /* Left stile */
+    addPoly([[-ffOH, TK, fz], [ffSW - ffOH, TK, fz], [ffSW - ffOH, H, fz], [-ffOH, H, fz]], ffFill, ffColor);
+    /* Right stile */
+    addPoly([[W - ffSW + ffOH, TK, fz], [W + ffOH, TK, fz], [W + ffOH, H, fz], [W - ffSW + ffOH, H, fz]], ffFill, ffColor);
+    /* Top rail */
+    addPoly([[ffSW - ffOH, H - ffRW, fz], [W - ffSW + ffOH, H - ffRW, fz], [W - ffSW + ffOH, H, fz], [ffSW - ffOH, H, fz]], ffFill, ffColor);
+    /* Bottom rail */
+    addPoly([[ffSW - ffOH, TK, fz], [W - ffSW + ffOH, TK, fz], [W - ffSW + ffOH, TK + ffRW, fz], [ffSW - ffOH, TK + ffRW, fz]], ffFill, ffColor);
+
+    /* Mid rails at dado shelf positions */
+    var ffDadoCount = Math.round(state.ZS_DadoCount || 0);
+    for (var fi = 0; fi < ffDadoCount; fi++) {
+      var ffDadoY = TK + BT + (state['ZS_Dado' + (fi + 1) + 'Z'] || 18);
+      addPoly([[ffSW - ffOH, ffDadoY - ffRW / 2, fz], [W - ffSW + ffOH, ffDadoY - ffRW / 2, fz], [W - ffSW + ffOH, ffDadoY + ffRW / 2, fz], [ffSW - ffOH, ffDadoY + ffRW / 2, fz]], ffFill, ffColor);
+    }
+  }
 
   /* ── Interior lines ── */
   var iW = W - 2 * ST;
